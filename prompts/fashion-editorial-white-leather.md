@@ -54,3 +54,11 @@ plastic skin, waxy skin, airbrushed, blurry skin, smoothed skin, anatomy errors,
 ## Негативный промт (RU)
 
 Пластиковая/замыленная кожа, ошибки анатомии, цифровой шум, мультяшность, пересветы, размытая фактура ткани или волос, неестественные цвета, любые татуировки.
+
+---
+
+## Быстрая копия — одной строкой (Midjourney)
+
+```
+high-end fashion editorial photo, medium shot, confident woman with long dark-brown glossy wet-look waves falling over face and shoulders, striking green eyes, sculpted cheekbones, sharp brows, rich red lipstick, white leather cropped jacket with massive statement buckle, white leather mini skirt, second-skin bodysuit, bold pose holding skirt hem and leaning slightly forward, emphasis on waist and legs, flawless clean skin, minimalist premium studio with large window overlooking the Maldives turquoise ocean, soft sculpting light, visible skin texture and leather grain, glossy highlights, edgy glam, euro-lux magazine aesthetic, shot on Canon EOS R5, RF 50mm f/1.2L, f/2.8, ISO 160, hyper-realistic, ultra-detailed --ar 4:5 --style raw --stylize 150 --no tattoos, plastic skin, cartoon, blur, anatomy errors, noise, overexposure, unnatural colors
+```
