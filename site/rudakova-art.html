@@ -1,27 +1,28 @@
-<title>Rudakova Art</title>
+<title>ART PARTY</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: ночная 3D-галерея — картины парят по кругу в луче света, ниже залы-разделы с объёмными карточками */
 :root {
-  --night: #0c0e16;
-  --night-2: #151827;
-  --wall: #1d2135;
-  --line: #2d3250;
-  --text: #ece8df;
-  --muted: #9a9cb2;
-  --light: #f2d29b;      /* тёплый луч прожектора */
-  --violet: #8f7cf6;     /* холодный рефлекс */
-  --free: #7fd3b1;
-  --sold: #f08c9b;
+  --night: #f7f2e8;
+  --night-2: #fffcf6;
+  --wall: #efe6d6;
+  --line: #ddd2bf;
+  --text: #24202a;
+  --muted: #6a6474;
+  --light: #a8661a;      /* тёплый луч прожектора */
+  --violet: #6a55e0;     /* холодный рефлекс */
+  --free: #24855e;
+  --sold: #c23c55;
   --font-display: "Unbounded", "Arial Black", system-ui, sans-serif;
   --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "Menlo", monospace;
   --wrap: 74rem;
-  color-scheme: dark;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body {
   background: var(--night); color: var(--text);
@@ -97,8 +98,8 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
   transform-style: preserve-3d; transition: transform .25s ease, box-shadow .25s ease;
   transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
 }
-.work:hover { box-shadow: 0 30px 60px -30px rgba(0,0,0,.9), 0 0 0 1px color-mix(in srgb, var(--light) 30%, transparent); }
-.work canvas { width: 100%; aspect-ratio: 4 / 5; display: block; border-radius: .4rem; transform: translateZ(40px); box-shadow: 0 18px 30px -18px rgba(0,0,0,.9); }
+.work:hover { box-shadow: 0 30px 60px -30px rgba(60,40,20,.35), 0 0 0 1px color-mix(in srgb, var(--light) 30%, transparent); }
+.work img, .work canvas { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; display: block; border-radius: .4rem; transform: translateZ(18px); box-shadow: 0 18px 30px -18px rgba(60,40,20,.35); }
 .work figcaption { padding-top: .9rem; display: grid; gap: .2rem; transform: translateZ(20px); }
 .work .t { font: 500 1.02rem/1.3 var(--font-display); }
 .work .m { font: 400 .78rem/1.4 var(--font-mono); color: var(--muted); }
@@ -109,12 +110,12 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .reels { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(13rem, 1fr); gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .75rem; perspective: 1200px; }
 .reel { margin: 0; scroll-snap-align: start; display: grid; gap: .6rem; }
 .reel-box { position: relative; aspect-ratio: 9 / 16; max-width: 100%; border-radius: 1.1rem; overflow: hidden; background: var(--night-2); border: 1px solid var(--line); transition: transform .35s ease, box-shadow .35s ease; }
-.reel:hover .reel-box { transform: translateY(-4px) rotateY(-4deg); box-shadow: 0 30px 50px -30px #000, 0 0 0 1px color-mix(in srgb, var(--light) 35%, transparent); }
+.reel:hover .reel-box { transform: translateY(-4px) rotateY(-4deg); box-shadow: 0 30px 50px -30px rgba(60,40,20,.4), 0 0 0 1px color-mix(in srgb, var(--light) 35%, transparent); }
 .reel video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .reel .play {
   position: absolute; inset: auto auto 1rem 1rem; width: 3rem; height: 3rem; border-radius: 50%;
   border: 0; cursor: pointer; background: var(--light); color: var(--night); font-size: 1rem;
-  display: grid; place-items: center; box-shadow: 0 8px 20px -6px #000;
+  display: grid; place-items: center; box-shadow: 0 8px 20px -6px rgba(60,40,20,.4);
 }
 .reel.playing .play { display: none; }
 .reel figcaption { display: grid; gap: .1rem; }
@@ -122,12 +123,12 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .reel .m { font-size: .86rem; color: var(--muted); }
 /* фото-блоки */
 .photo { margin: 0; display: grid; gap: .7rem; }
-.photo img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; border-radius: 1.1rem; border: 1px solid var(--line); background: var(--night-2); }
+.photo img { width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; display: block; border-radius: 1.1rem; border: 1px solid var(--line); background: var(--night-2); }
 .photo figcaption { display: grid; gap: .1rem; }
 .photo .t { font: 500 1rem/1.3 var(--font-display); }
 .photo .m { font-size: .86rem; color: var(--muted); }
 .tilt { transition: transform .35s ease; transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
-.tilt img { box-shadow: 0 24px 40px -28px #000; }
+.tilt img { box-shadow: 0 24px 40px -28px rgba(60,40,20,.45); }
 .age { font: 500 .68rem/1 var(--font-mono); font-style: normal; color: var(--night); background: var(--sold); padding: .15rem .35rem; border-radius: .3rem; vertical-align: middle; }
 .feature { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; margin-top: clamp(2.5rem, 5vw, 4rem); }
 .feature .photo img { aspect-ratio: 4 / 5; object-position: center 62%; }
@@ -138,6 +139,12 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .event > span:not(.label):not(.price) { color: var(--muted); font-size: .92rem; }
 .event .price { font: 700 1.6rem/1 var(--font-display); color: var(--light); margin-top: .3rem; }
 .event .price small { font: 400 .85rem var(--font-body); color: var(--muted); }
+.contacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.contact { display: grid; gap: .6rem; align-content: start; padding: 1.4rem; border-radius: 1rem; background: linear-gradient(150deg, var(--wall), var(--night-2)); border: 1px solid color-mix(in srgb, var(--light) 30%, var(--line)); min-width: 0; }
+.contact b { font: 500 clamp(1.2rem, 2.6vw, 1.6rem)/1.3 var(--font-display); user-select: all; }
+.contact .phone-num { color: var(--text); text-decoration: none; }
+.contact .cta { margin-top: .4rem; }
+@media (max-width: 680px) { .contacts { grid-template-columns: 1fr; } }
 .socials { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .soc { display: grid; gap: .35rem; align-content: start; padding: 1.2rem; border-radius: 1rem; text-decoration: none; color: var(--text); background: var(--night-2); border: 1px solid var(--line); transition: transform .3s ease, border-color .3s ease; min-width: 0; }
 .soc:hover { transform: translateY(-3px); border-color: var(--light); }
@@ -181,7 +188,7 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
   background: var(--night-2); border: 1px solid var(--line); border-radius: 2rem; padding: 1.1rem; display: grid; gap: .65rem;
   max-width: 24rem; margin-inline: auto; width: 100%;
   transform: perspective(1200px) rotateY(-14deg) rotateX(6deg);
-  box-shadow: 30px 40px 80px -40px rgba(0,0,0,.95), 0 0 0 6px var(--wall);
+  box-shadow: 30px 40px 80px -40px rgba(60,40,20,.4), 0 0 0 6px var(--wall);
   transition: transform .5s ease;
 }
 .phone:hover { transform: perspective(1200px) rotateY(0) rotateX(0); }
@@ -191,6 +198,16 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .poll div { position: relative; border: 1px solid var(--line); border-radius: .5rem; padding: .35rem .6rem; font-size: .84rem; overflow: hidden; }
 .poll div::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p); background: color-mix(in srgb, var(--violet) 30%, transparent); }
 .poll span { position: relative; display: flex; justify-content: space-between; gap: .5rem; }
+
+/* лента Telegram-канала */
+.news { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.post { display: grid; gap: .6rem; align-content: start; padding: 1rem; border-radius: 1rem; background: var(--night-2); border: 1px solid var(--line); color: var(--text); text-decoration: none; min-width: 0; transition: transform .3s ease, border-color .3s ease; }
+.post:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--light) 45%, var(--line)); }
+.post img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; border-radius: .6rem; background: var(--wall); }
+.post p { margin: 0; font-size: .92rem; white-space: pre-line; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+.news-empty { grid-column: 1 / -1; color: var(--muted); }
+@media (max-width: 860px) { .news { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .news { grid-template-columns: 1fr; } }
 
 /* order */
 .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; counter-reset: s; padding: 0; margin: 0 0 2.5rem; list-style: none; }
@@ -215,7 +232,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 /* lightbox */
 .lb { position: fixed; inset: 0; z-index: 30; background: color-mix(in srgb, var(--night) 94%, transparent); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 1.5rem; }
 .lb-inner { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 2rem; max-width: 60rem; width: 100%; align-items: center; }
-.lb canvas { width: 100%; max-height: 78vh; object-fit: contain; display: block; border-radius: .5rem; box-shadow: 0 40px 80px -40px #000; }
+.lb img, .lb canvas { width: 100%; height: auto; max-height: 78vh; object-fit: contain; display: block; border-radius: .5rem; box-shadow: 0 40px 80px -40px rgba(60,40,20,.45); }
 .lb h3 { font-size: 1.7rem; margin: .5rem 0 .7rem; }
 .lb .close { position: absolute; top: calc(1rem + env(safe-area-inset-top, 0px)); right: 1rem; }
 
@@ -239,7 +256,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#top">RUDAKOVA<span>.</span>ART</a>
+    <a class="brand" href="#top">ART<span>.</span>PARTY</a>
     <nav class="nav" aria-label="Разделы">
       <a href="#works">Работы</a>
       <a href="#party">Арт-пати</a>
@@ -247,8 +264,9 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
       <a href="#tees">Футболки</a>
       <a href="#about">Обо мне</a>
       <a href="#channel">Канал</a>
+      <a href="#news">Новости</a>
       <a href="#order">Заказать</a>
-      <a href="#social">Соцсети</a>
+      <a href="#social">Контакты</a>
     </nav>
   </div>
 </header>
@@ -256,12 +274,12 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 <div class="hero" id="top">
   <canvas id="stage" aria-label="3D-галерея: картины вращаются по кругу, клик открывает работу"></canvas>
   <div class="hero-copy">
-    <p class="label">Живопись · @rudakova_art</p>
-    <h1>Картины, которые <span class="glow">светятся</span> в&nbsp;вашем доме</h1>
-    <p>Оригинальные работы, картины на заказ и закулисье мастерской. Покрутите галерею и нажмите на картину, чтобы рассмотреть её ближе.</p>
+    <p class="label">Арт-студия · Первоуральск</p>
+    <h1>ART PARTY — картины, которые <span class="glow">светятся</span></h1>
+    <p>Мастер-классы для детей и взрослых, арт-девичники, свидания и корпоративы. Приходите без опыта и уходите со своей картиной. Покрутите галерею и нажмите на картину.</p>
     <div class="cta">
-      <a class="btn" href="#works">Смотреть работы</a>
-      <a class="btn ghost" href="https://www.instagram.com/channel/AbZWuPswmVpcck-8/" target="_blank" rel="noopener">Канал в Instagram ↗</a>
+      <a class="btn" href="#formats">Выбрать мастер-класс</a>
+      <a class="btn ghost" href="https://t.me/artparty_pvk" target="_blank" rel="noopener">Telegram студии ↗</a>
     </div>
     <p class="hint">Перетащите, чтобы повернуть · клик по картине</p>
   </div>
@@ -273,11 +291,12 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
       <div><p class="label">Каталог</p><h2>Работы</h2></div>
       <div class="filters" role="group" aria-label="Фильтр работ">
         <button type="button" data-f="all" aria-pressed="true">Все</button>
-        <button type="button" data-f="free" aria-pressed="false">Доступны</button>
-        <button type="button" data-f="sold" aria-pressed="false">В коллекциях</button>
+        <button type="button" data-f="art" aria-pressed="false">Картины</button>
+        <button type="button" data-f="panel" aria-pressed="false">Панно</button>
+        <button type="button" data-f="decor" aria-pressed="false">Свечи и декор</button>
       </div>
     </div>
-    <p class="note"><b>Образец.</b> Картины здесь — генеративные эскизы, подписи примерные. Замените их фотографиями работ, реальными названиями, техникой и размерами.</p>
+    <p style="color:var(--muted);max-width:40rem;margin:0 0 1.5rem">Работы художника студии. Такие же можно сделать на мастер-классе или заказать готовые.</p>
     <div class="grid" id="grid"></div>
   </section>
 
@@ -396,6 +415,14 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
     </div>
   </section>
 
+  <section id="news">
+    <div class="sec-head">
+      <div><p class="label">Telegram · @artparty_pvk</p><h2>Новости студии</h2></div>
+      <a class="btn ghost" href="https://t.me/artparty_pvk" target="_blank" rel="noopener">Открыть канал ↗</a>
+    </div>
+    <div class="news" id="news-list" aria-live="polite"><p class="news-empty">Загружаем последние посты…</p></div>
+  </section>
+
   <section id="order">
     <div class="sec-head"><div><p class="label">Картина на заказ</p><h2>Как заказать</h2></div></div>
     <ol class="steps">
@@ -419,7 +446,26 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 </main>
 
 <section class="wrap" id="social" style="border-top:1px solid var(--line)">
-  <div class="sec-head"><div><p class="label">Подписывайтесь</p><h2>Мы в соцсетях</h2></div></div>
+  <div class="sec-head"><div><p class="label">Контакты</p><h2>Приходите в студию</h2></div></div>
+  <div class="contacts">
+    <div class="contact">
+      <span class="label">Адрес</span>
+      <b>г. Первоуральск,<br>ул. Береговая, 34А</b>
+      <div class="cta">
+        <a class="btn" href="https://yandex.ru/maps/?text=%D0%9F%D0%B5%D1%80%D0%B2%D0%BE%D1%83%D1%80%D0%B0%D0%BB%D1%8C%D1%81%D0%BA%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%91%D0%B5%D1%80%D0%B5%D0%B3%D0%BE%D0%B2%D0%B0%D1%8F%2C%2034%D0%90" target="_blank" rel="noopener">Открыть на карте ↗</a>
+        <button class="btn ghost copy" type="button" data-copy="г. Первоуральск, ул. Береговая, 34А">Скопировать адрес</button>
+      </div>
+    </div>
+    <div class="contact">
+      <span class="label">Телефон</span>
+      <b><a class="phone-num" href="tel:+79222220280">+7 922 222-02-80</a></b>
+      <div class="cta">
+        <a class="btn" href="tel:+79222220280">Позвонить</a>
+        <button class="btn ghost copy" type="button" data-copy="+7 922 222-02-80">Скопировать номер</button>
+      </div>
+    </div>
+  </div>
+  <p class="label" style="margin:2.5rem 0 1rem">Мы в соцсетях</p>
   <div class="socials">
     <a class="soc" href="https://t.me/artparty_pvk" target="_blank" rel="noopener"><span class="label">Telegram · студия</span><b>artparty_pvk</b><span>Расписание, анонсы и запись на мастер-классы</span></a>
     <a class="soc" href="https://www.instagram.com/rudakova_pvk/" target="_blank" rel="noopener"><span class="label">Instagram · художник</span><b>@rudakova_pvk</b><span>Жизнь студии и закулисье</span></a>
@@ -429,14 +475,14 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 </section>
 
 <footer class="wrap">
-  <span>© Rudakova Art · ART PARTY</span>
-  <span class="mono">t.me/artparty_pvk</span>
+  <span>© ART PARTY, арт-студия</span>
+  <span>Первоуральск, ул. Береговая, 34А · <span class="mono">+7 922 222-02-80</span></span>
 </footer>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
   <button class="btn ghost close" type="button" id="lb-close">Закрыть</button>
   <div class="lb-inner">
-    <canvas id="lb-canvas" width="900" height="1125"></canvas>
+    <img id="lb-img" alt="" width="800" height="1000">
     <div>
       <p class="label" id="lb-no"></p>
       <h3 id="lb-title"></h3>
@@ -448,15 +494,35 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// Пример каталога: замените на реальные работы
+// Каталог работ студии: фото из media/
 const WORKS = [
-  { title: "Утро у залива", tech: "Холст, масло", size: "50×70", year: 2025, status: "free", seed: 3, hues: ["#3550c8", "#d39a2a"] },
-  { title: "Пионы", tech: "Бумага, акварель", size: "30×40", year: 2025, status: "sold", seed: 11, hues: ["#b73a55", "#2f8f78"] },
-  { title: "Северный свет", tech: "Холст, акрил", size: "60×80", year: 2024, status: "free", seed: 21, hues: ["#3550c8", "#2f8f78"] },
-  { title: "Поле в июле", tech: "Холст, масло", size: "40×50", year: 2024, status: "free", seed: 8, hues: ["#d39a2a", "#2f8f78"] },
-  { title: "Вечерний город", tech: "Картон, гуашь", size: "30×40", year: 2024, status: "sold", seed: 17, hues: ["#b73a55", "#3550c8"] },
-  { title: "Тишина", tech: "Холст, масло", size: "80×100", year: 2023, status: "free", seed: 5, hues: ["#d39a2a", "#b73a55"] },
+  { title: "Дерево изобилия, золото", tech: "Круглое панно, объёмная роспись", kind: "panel", img: "media/work-tree-gold.jpg" },
+  { title: "Слон", tech: "Холст, масло, поталь", kind: "art", img: "media/work-elephant.jpg" },
+  { title: "Золотая свеча", tech: "Рельефное кашпо, деревянный фитиль", kind: "decor", img: "media/work-candle-gold.jpg" },
+  { title: "Девушка в тюрбане", tech: "Холст, акрил, золото", kind: "art", img: "media/work-turban.jpg" },
+  { title: "Анатомическое сердце", tech: "Холст, объёмная фактура, подтёки акварелью", kind: "art", img: "media/work-heart.jpg" },
+  { title: "Дерево изобилия, аметист", tech: "Круглое панно, натуральный аметист", kind: "panel", img: "media/work-tree-amethyst.jpg" },
+  { title: "Кружево", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-lace.jpg" },
+  { title: "Карусель", tech: "Шкатулка-свеча, роспись золотом", kind: "decor", img: "media/work-carousel.jpg" },
+  { title: "Горы под звёздами", tech: "Холст, объёмная фактура, серебро", kind: "art", img: "media/work-mountains.jpg" },
+  { title: "Красное вино", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-wine.jpg" },
+  { title: "Дерево изобилия, серебро", tech: "Круглое панно · мини-курс от ART PARTY", kind: "panel", img: "media/work-tree-silver.jpg" },
+  { title: "Белая рубашка", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-shirt.jpg" },
+  { title: "Автобус", tech: "Свеча в кашпо, деревянный фитиль", kind: "decor", img: "media/work-bus.jpg" },
+  { title: "Цензура", tech: "Холст · принт есть и на футболке", kind: "art", adult: true, img: "media/work-censored.jpg" },
+  { title: "Бокал вина", tech: "Холст, монохром с красным акцентом", kind: "art", adult: true, img: "media/work-legs.jpg" },
+  { title: "Танго", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-tango.jpg" },
+  // фото из студии: только в 3D-круге, в каталог не попадают
+  { title: "В студии: «Кружево»", tech: "Фото из студии ART PARTY", kind: "guest", img: "media/guest-lace.jpg" },
+  { title: "В студии: фигурки из гипса", tech: "Фото из студии ART PARTY", kind: "guest", img: "media/guest-plaster.jpg" },
+  { title: "В студии: «Цензура»", tech: "Фото из студии ART PARTY", kind: "guest", img: "media/guest-censored.jpg" },
 ];
+// в 3D-круг на главном экране идут фото из студии и до 10 работ без пометки 18+
+const RING = [
+  ...WORKS.map((w, i) => ({ w, i })).filter(o => o.w.kind === "guest"),
+  ...WORKS.map((w, i) => ({ w, i })).filter(o => o.w.kind !== "guest" && !o.w.adult).slice(0, 10),
+];
+const KIND = { art: "Картина", panel: "Панно", decor: "Свечи и декор", guest: "В студии" };
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const no = i => "№ " + String(i + 1).padStart(3, "0");
 function rng(seed) { let s = seed * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
@@ -491,43 +557,48 @@ function initStage() {
   try { renderer = new THREE.WebGLRenderer({ canvas: el, antialias: true, alpha: false }); }
   catch (e) { return fallbackStage(el); }
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setClearColor(0x0c0e16, 1);
+  renderer.setClearColor(0xf7f2e8, 1);
   renderer.shadowMap.enabled = true;
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x0c0e16, 9, 22);
+  scene.fog = new THREE.Fog(0xf7f2e8, 9, 22);
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
 
   // свет: тёплый прожектор сверху + холодный рефлекс
-  scene.add(new THREE.AmbientLight(0x6670a0, 0.35));
-  const spot = new THREE.SpotLight(0xf2d29b, 2.2, 30, Math.PI / 5, 0.5, 1.2);
+  scene.add(new THREE.AmbientLight(0xfff4e2, 0.9));
+  const spot = new THREE.SpotLight(0xffe2b0, 1.3, 30, Math.PI / 5, 0.5, 1.2);
   spot.position.set(0, 9, 4); spot.castShadow = true; spot.shadow.mapSize.set(1024, 1024);
   scene.add(spot); scene.add(spot.target);
   const rim = new THREE.PointLight(0x8f7cf6, 1.1, 18); rim.position.set(-6, 1, -4); scene.add(rim);
 
   // пол-подиум
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.MeshStandardMaterial({ color: 0x151827, roughness: 0.55, metalness: 0.3 }));
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.MeshStandardMaterial({ color: 0xe9dfcc, roughness: 0.55, metalness: 0.3 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -1.9; floor.receiveShadow = true; scene.add(floor);
-  const ringLine = new THREE.Mesh(new THREE.RingGeometry(4.15, 4.2, 96), new THREE.MeshBasicMaterial({ color: 0xf2d29b, transparent: true, opacity: 0.35 }));
+  const R = Math.max(4.2, Math.min(RING.length, 10) * 0.58);
+  // больше 10 рам — уменьшаем их, чтобы круг не разрастался
+  const S = Math.min(1, 10 / RING.length);
+  const ringLine = new THREE.Mesh(new THREE.RingGeometry(R - 0.05, R, 96), new THREE.MeshBasicMaterial({ color: 0xa8661a, transparent: true, opacity: 0.35 }));
   ringLine.rotation.x = -Math.PI / 2; ringLine.position.y = -1.89; scene.add(ringLine);
 
   // кольцо картин
   const ring = new THREE.Group(); scene.add(ring);
-  const R = 4.2, picks = [];
+  const picks = [];
+  const loader = new THREE.TextureLoader();
+  renderer.outputEncoding = THREE.sRGBEncoding;
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x2a2116, roughness: 0.4, metalness: 0.5 });
-  WORKS.forEach((wk, i) => {
-    const tex = new THREE.CanvasTexture(paint(document.createElement("canvas"), wk.seed, wk.hues));
+  RING.forEach(({ w: wk, i }, k) => {
+    const tex = loader.load(wk.img); tex.encoding = THREE.sRGBEncoding;
     tex.anisotropy = 4;
     const g = new THREE.Group();
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.45, 0.12), frameMat);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(2.0 * S, 2.45 * S, 0.12), frameMat);
     frame.castShadow = true;
-    const art = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2.25), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }));
+    const art = new THREE.Mesh(new THREE.PlaneGeometry(1.8 * S, 2.25 * S), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }));
     art.position.z = 0.065; art.userData.index = i;
     g.add(frame, art);
-    const a = (i / WORKS.length) * Math.PI * 2;
+    const a = (k / RING.length) * Math.PI * 2;
     g.position.set(Math.sin(a) * R, 0.1, Math.cos(a) * R);
     g.rotation.y = a;
-    g.userData.phase = i * 1.3;
+    g.userData.phase = k * 1.3;
     ring.add(g); picks.push(art);
   });
 
@@ -535,7 +606,7 @@ function initStage() {
   const N = 260, pos = new Float32Array(N * 3), rr = rng(7);
   for (let i = 0; i < N; i++) { pos[i*3] = (rr() - .5) * 12; pos[i*3+1] = rr() * 7 - 2; pos[i*3+2] = (rr() - .5) * 12; }
   const dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-  const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xf2d29b, size: 0.035, transparent: true, opacity: 0.7 }));
+  const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xc08a3e, size: 0.035, transparent: true, opacity: 0.7 }));
   scene.add(dust);
 
   // управление: перетаскивание вращает, клик открывает
@@ -592,17 +663,15 @@ const grid = document.getElementById("grid");
 function render(filter) {
   grid.innerHTML = "";
   WORKS.forEach((wk, i) => {
-    if (filter !== "all" && wk.status !== filter) return;
+    if (wk.kind === "guest" || (filter !== "all" && wk.kind !== filter)) return;
     const f = document.createElement("figure");
     f.className = "work"; f.tabIndex = 0; f.setAttribute("role", "button");
     f.setAttribute("aria-label", "Открыть: " + wk.title);
-    f.innerHTML = `<canvas width="480" height="600"></canvas>
-      <figcaption><span class="label">${no(i)} · ${wk.year}</span>
-      <span class="t">${wk.title}</span>
-      <span class="m">${wk.tech}, ${wk.size} см</span>
-      <span class="s ${wk.status}">${wk.status === "free" ? "Доступна" : "В частной коллекции"}</span></figcaption>`;
+    f.innerHTML = `<img src="${wk.img}" alt="${wk.title}" loading="lazy" width="800" height="1000">
+      <figcaption><span class="label">${no(i)} · ${KIND[wk.kind]}</span>
+      <span class="t">${wk.title}${wk.adult ? ' <em class="age">18+</em>' : ""}</span>
+      <span class="m">${wk.tech}</span></figcaption>`;
     grid.appendChild(f);
-    paint(f.querySelector("canvas"), wk.seed, wk.hues);
     if (!reduced) {
       f.addEventListener("pointermove", e => {
         const b = f.getBoundingClientRect();
@@ -624,11 +693,11 @@ document.querySelectorAll(".filters button").forEach(b => b.addEventListener("cl
 const lb = document.getElementById("lb");
 function openLb(i) {
   const wk = WORKS[i];
-  paint(document.getElementById("lb-canvas"), wk.seed, wk.hues);
-  document.getElementById("lb-no").textContent = `${no(i)} · ${wk.year}`;
+  const im = document.getElementById("lb-img"); im.src = wk.img; im.alt = wk.title;
+  document.getElementById("lb-no").textContent = `${no(i)} · ${KIND[wk.kind]}`;
   document.getElementById("lb-title").textContent = wk.title;
-  document.getElementById("lb-meta").textContent = `${wk.tech}, ${wk.size} см · ${wk.status === "free" ? "доступна" : "в частной коллекции"}`;
-  document.getElementById("lb-ask").onclick = () => { lb.hidden = true; document.getElementById("f-idea").value = `Интересует работа «${wk.title}» (${wk.size} см).`; };
+  document.getElementById("lb-meta").textContent = wk.tech;
+  document.getElementById("lb-ask").onclick = () => { lb.hidden = true; document.getElementById("f-idea").value = `Интересует работа «${wk.title}».`; };
   lb.hidden = false; document.getElementById("lb-close").focus();
 }
 document.getElementById("lb-close").addEventListener("click", () => { lb.hidden = true; });
@@ -653,6 +722,26 @@ document.getElementById("order-form").addEventListener("submit", e => {
       .catch(() => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(p); s.removeAllRanges(); s.addRange(rg); copy.textContent = "Выделено — нажмите Ctrl+C"; });
   });
 });
+
+/* ---------- Лента Telegram: последние посты канала через функцию Netlify ---------- */
+(function loadNews() {
+  const list = document.getElementById("news-list");
+  const empty = msg => { list.innerHTML = ""; const p = document.createElement("p"); p.className = "news-empty"; p.innerHTML = msg; list.appendChild(p); };
+  const fallback = () => empty('Посты не загрузились. Свежие новости — в канале <a href="https://t.me/artparty_pvk" target="_blank" rel="noopener">@artparty_pvk</a>.');
+  if (location.protocol === "file:") return fallback();
+  fetch("/.netlify/functions/telegram").then(r => r.json()).then(({ posts }) => {
+    if (!posts || !posts.length) return fallback();
+    list.innerHTML = "";
+    posts.forEach(post => {
+      const a = document.createElement("a");
+      a.className = "post"; a.href = post.url; a.target = "_blank"; a.rel = "noopener";
+      if (post.img) { const im = document.createElement("img"); im.src = post.img; im.alt = ""; im.loading = "lazy"; a.appendChild(im); }
+      if (post.date) { const d = document.createElement("span"); d.className = "label"; d.textContent = new Date(post.date).toLocaleDateString("ru-RU", { day: "numeric", month: "long" }); a.appendChild(d); }
+      if (post.text) { const p = document.createElement("p"); p.textContent = post.text; a.appendChild(p); }
+      list.appendChild(a);
+    });
+  }).catch(fallback);
+})();
 
 /* ---------- Видео: играет одно за раз ---------- */
 const reels = [...document.querySelectorAll(".reel")];
@@ -680,6 +769,18 @@ if (!reduced) document.querySelectorAll(".tilt").forEach(el => {
 document.getElementById("tee-order").addEventListener("click", () => {
   document.getElementById("f-idea").value = "Хочу футболку с росписью: ";
 });
+
+/* ---------- Копирование адреса и телефона ---------- */
+document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
+  const label = b.textContent, text = b.dataset.copy;
+  navigator.clipboard.writeText(text).then(() => { b.textContent = "Скопировано"; })
+    .catch(() => {
+      const s = getSelection(), rg = document.createRange();
+      rg.selectNodeContents(b.closest(".contact").querySelector("b")); s.removeAllRanges(); s.addRange(rg);
+      b.textContent = "Выделено — нажмите Ctrl+C";
+    })
+    .finally(() => setTimeout(() => { b.textContent = label; }, 2500));
+}));
 
 render("all");
 initStage();
