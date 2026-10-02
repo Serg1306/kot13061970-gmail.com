@@ -10,3 +10,14 @@
   to = "/rudakova-art.html"
   status = 200
   force = true
+
+# rudakova-art.html — фрагмент без <meta charset>, поэтому кодировку задаём заголовком.
+[[headers]]
+  for = "/"
+  [headers.values]
+    Content-Type = "text/html; charset=utf-8"
+
+[[headers]]
+  for = "/rudakova-art.html"
+  [headers.values]
+    Content-Type = "text/html; charset=utf-8"
