@@ -138,6 +138,13 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .event > span:not(.label):not(.price) { color: var(--muted); font-size: .92rem; }
 .event .price { font: 700 1.6rem/1 var(--font-display); color: var(--light); margin-top: .3rem; }
 .event .price small { font: 400 .85rem var(--font-body); color: var(--muted); }
+.socials { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.soc { display: grid; gap: .35rem; align-content: start; padding: 1.2rem; border-radius: 1rem; text-decoration: none; color: var(--text); background: var(--night-2); border: 1px solid var(--line); transition: transform .3s ease, border-color .3s ease; min-width: 0; }
+.soc:hover { transform: translateY(-3px); border-color: var(--light); }
+.soc b { font: 500 1.05rem/1.3 var(--font-display); color: var(--light); overflow-wrap: anywhere; }
+.soc > span:last-child { font-size: .88rem; color: var(--muted); }
+@media (max-width: 860px) { .socials { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .socials { grid-template-columns: 1fr; } }
 .formats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .fmt { padding: 1.3rem; border-radius: 1rem; background: var(--night-2); border: 1px solid var(--line); display: grid; gap: .45rem; align-content: start; transition: transform .3s ease, border-color .3s ease; }
 .fmt:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--light) 45%, var(--line)); }
@@ -241,6 +248,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
       <a href="#about">Обо мне</a>
       <a href="#channel">Канал</a>
       <a href="#order">Заказать</a>
+      <a href="#social">Соцсети</a>
     </nav>
   </div>
 </header>
@@ -335,7 +343,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
       <figure class="photo tilt"><img src="media/tee-wine.jpg" alt="Розовая футболка с принтом Wine Time" loading="lazy" width="719" height="1280"><figcaption><span class="t">Wine Time</span><span class="m">Роспись акрилом · розовая футболка</span></figcaption></figure>
       <figure class="photo tilt"><img src="media/tee-pattern.jpg" alt="Белая футболка с ярким юмористическим паттерном на розовом фоне" loading="lazy" width="719" height="1280"><figcaption><span class="t">Паттерн с юмором <em class="age">18+</em></span><span class="m">Для девичников · белая футболка</span></figcaption></figure>
     </div>
-    <div style="margin-top:1.5rem"><a class="btn" href="#order" id="tee-order">Заказать футболку</a></div>
+    <div class="cta" style="margin-top:1.5rem"><a class="btn" href="#order" id="tee-order">Заказать футболку</a><a class="btn ghost" href="https://www.instagram.com/rudakova_art_print/" target="_blank" rel="noopener">Все принты: @rudakova_art_print ↗</a></div>
   </section>
 
   <section id="about">
@@ -410,9 +418,19 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
   </section>
 </main>
 
+<section class="wrap" id="social" style="border-top:1px solid var(--line)">
+  <div class="sec-head"><div><p class="label">Подписывайтесь</p><h2>Мы в соцсетях</h2></div></div>
+  <div class="socials">
+    <a class="soc" href="https://t.me/artparty_pvk" target="_blank" rel="noopener"><span class="label">Telegram · студия</span><b>artparty_pvk</b><span>Расписание, анонсы и запись на мастер-классы</span></a>
+    <a class="soc" href="https://www.instagram.com/rudakova_pvk/" target="_blank" rel="noopener"><span class="label">Instagram · художник</span><b>@rudakova_pvk</b><span>Жизнь студии и закулисье</span></a>
+    <a class="soc" href="https://www.instagram.com/rudakova_art_print/" target="_blank" rel="noopener"><span class="label">Instagram · принты</span><b>@rudakova_art_print</b><span>Футболки с авторской росписью</span></a>
+    <a class="soc" href="https://www.instagram.com/rudakova_art/" target="_blank" rel="noopener"><span class="label">Instagram · картины</span><b>@rudakova_art</b><span>Работы и канал рассылки</span></a>
+  </div>
+</section>
+
 <footer class="wrap">
-  <span>© Rudakova Art</span>
-  <span>Instagram: <span class="mono">@rudakova_art</span></span>
+  <span>© Rudakova Art · ART PARTY</span>
+  <span class="mono">t.me/artparty_pvk</span>
 </footer>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
