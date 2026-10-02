@@ -493,10 +493,17 @@ const WORKS = [
   { title: "Цензура", tech: "Холст · принт есть и на футболке", kind: "art", adult: true, img: "media/work-censored.jpg" },
   { title: "Бокал вина", tech: "Холст, монохром с красным акцентом", kind: "art", adult: true, img: "media/work-legs.jpg" },
   { title: "Танго", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-tango.jpg" },
+  // фото из студии: только в 3D-круге, в каталог не попадают
+  { title: "В студии: «Кружево»", tech: "Фото из студии ART PARTY", kind: "guest", img: "media/guest-lace.jpg" },
+  { title: "В студии: фигурки из гипса", tech: "Фото из студии ART PARTY", kind: "guest", img: "media/guest-plaster.jpg" },
+  { title: "В студии: «Цензура»", tech: "Фото из студии ART PARTY", kind: "guest", img: "media/guest-censored.jpg" },
 ];
-// в 3D-круг на главном экране идут работы без пометки 18+, не больше 10
-const RING = WORKS.map((w, i) => ({ w, i })).filter(o => !o.w.adult).slice(0, 10);
-const KIND = { art: "Картина", panel: "Панно", decor: "Свечи и декор" };
+// в 3D-круг на главном экране идут фото из студии и до 10 работ без пометки 18+
+const RING = [
+  ...WORKS.map((w, i) => ({ w, i })).filter(o => o.w.kind === "guest"),
+  ...WORKS.map((w, i) => ({ w, i })).filter(o => o.w.kind !== "guest" && !o.w.adult).slice(0, 10),
+];
+const KIND = { art: "Картина", panel: "Панно", decor: "Свечи и декор", guest: "В студии" };
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const no = i => "№ " + String(i + 1).padStart(3, "0");
 function rng(seed) { let s = seed * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
@@ -548,7 +555,9 @@ function initStage() {
   // пол-подиум
   const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.MeshStandardMaterial({ color: 0xe9dfcc, roughness: 0.55, metalness: 0.3 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -1.9; floor.receiveShadow = true; scene.add(floor);
-  const R = Math.max(4.2, RING.length * 0.58);
+  const R = Math.max(4.2, Math.min(RING.length, 10) * 0.58);
+  // больше 10 рам — уменьшаем их, чтобы круг не разрастался
+  const S = Math.min(1, 10 / RING.length);
   const ringLine = new THREE.Mesh(new THREE.RingGeometry(R - 0.05, R, 96), new THREE.MeshBasicMaterial({ color: 0xa8661a, transparent: true, opacity: 0.35 }));
   ringLine.rotation.x = -Math.PI / 2; ringLine.position.y = -1.89; scene.add(ringLine);
 
@@ -562,9 +571,9 @@ function initStage() {
     const tex = loader.load(wk.img); tex.encoding = THREE.sRGBEncoding;
     tex.anisotropy = 4;
     const g = new THREE.Group();
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.45, 0.12), frameMat);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(2.0 * S, 2.45 * S, 0.12), frameMat);
     frame.castShadow = true;
-    const art = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2.25), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }));
+    const art = new THREE.Mesh(new THREE.PlaneGeometry(1.8 * S, 2.25 * S), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }));
     art.position.z = 0.065; art.userData.index = i;
     g.add(frame, art);
     const a = (k / RING.length) * Math.PI * 2;
@@ -635,7 +644,7 @@ const grid = document.getElementById("grid");
 function render(filter) {
   grid.innerHTML = "";
   WORKS.forEach((wk, i) => {
-    if (filter !== "all" && wk.kind !== filter) return;
+    if (wk.kind === "guest" || (filter !== "all" && wk.kind !== filter)) return;
     const f = document.createElement("figure");
     f.className = "work"; f.tabIndex = 0; f.setAttribute("role", "button");
     f.setAttribute("aria-label", "Открыть: " + wk.title);
