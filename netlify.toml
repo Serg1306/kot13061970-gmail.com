@@ -1,0 +1,12 @@
+# Netlify: публикуем папку site как статический сайт, без сборки.
+[build]
+  publish = "site"
+  command = ""
+
+# Главная страница открывает лёгкую версию сайта (фото из site/media),
+# а не автономный index.html с картинками внутри файла.
+[[redirects]]
+  from = "/"
+  to = "/rudakova-art.html"
+  status = 200
+  force = true
