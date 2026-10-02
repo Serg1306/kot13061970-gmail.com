@@ -138,6 +138,12 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .event > span:not(.label):not(.price) { color: var(--muted); font-size: .92rem; }
 .event .price { font: 700 1.6rem/1 var(--font-display); color: var(--light); margin-top: .3rem; }
 .event .price small { font: 400 .85rem var(--font-body); color: var(--muted); }
+.contacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.contact { display: grid; gap: .6rem; align-content: start; padding: 1.4rem; border-radius: 1rem; background: linear-gradient(150deg, var(--wall), var(--night-2)); border: 1px solid color-mix(in srgb, var(--light) 30%, var(--line)); min-width: 0; }
+.contact b { font: 500 clamp(1.2rem, 2.6vw, 1.6rem)/1.3 var(--font-display); user-select: all; }
+.contact .phone-num { color: var(--text); text-decoration: none; }
+.contact .cta { margin-top: .4rem; }
+@media (max-width: 680px) { .contacts { grid-template-columns: 1fr; } }
 .socials { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .soc { display: grid; gap: .35rem; align-content: start; padding: 1.2rem; border-radius: 1rem; text-decoration: none; color: var(--text); background: var(--night-2); border: 1px solid var(--line); transition: transform .3s ease, border-color .3s ease; min-width: 0; }
 .soc:hover { transform: translateY(-3px); border-color: var(--light); }
@@ -248,7 +254,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
       <a href="#about">Обо мне</a>
       <a href="#channel">Канал</a>
       <a href="#order">Заказать</a>
-      <a href="#social">Соцсети</a>
+      <a href="#social">Контакты</a>
     </nav>
   </div>
 </header>
@@ -419,7 +425,26 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 </main>
 
 <section class="wrap" id="social" style="border-top:1px solid var(--line)">
-  <div class="sec-head"><div><p class="label">Подписывайтесь</p><h2>Мы в соцсетях</h2></div></div>
+  <div class="sec-head"><div><p class="label">Контакты</p><h2>Приходите в студию</h2></div></div>
+  <div class="contacts">
+    <div class="contact">
+      <span class="label">Адрес</span>
+      <b>г. Первоуральск,<br>ул. Береговая, 34А</b>
+      <div class="cta">
+        <a class="btn" href="https://yandex.ru/maps/?text=%D0%9F%D0%B5%D1%80%D0%B2%D0%BE%D1%83%D1%80%D0%B0%D0%BB%D1%8C%D1%81%D0%BA%2C%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%20%D0%91%D0%B5%D1%80%D0%B5%D0%B3%D0%BE%D0%B2%D0%B0%D1%8F%2C%2034%D0%90" target="_blank" rel="noopener">Открыть на карте ↗</a>
+        <button class="btn ghost copy" type="button" data-copy="г. Первоуральск, ул. Береговая, 34А">Скопировать адрес</button>
+      </div>
+    </div>
+    <div class="contact">
+      <span class="label">Телефон</span>
+      <b><a class="phone-num" href="tel:+79222220280">+7 922 222-02-80</a></b>
+      <div class="cta">
+        <a class="btn" href="tel:+79222220280">Позвонить</a>
+        <button class="btn ghost copy" type="button" data-copy="+7 922 222-02-80">Скопировать номер</button>
+      </div>
+    </div>
+  </div>
+  <p class="label" style="margin:2.5rem 0 1rem">Мы в соцсетях</p>
   <div class="socials">
     <a class="soc" href="https://t.me/artparty_pvk" target="_blank" rel="noopener"><span class="label">Telegram · студия</span><b>artparty_pvk</b><span>Расписание, анонсы и запись на мастер-классы</span></a>
     <a class="soc" href="https://www.instagram.com/rudakova_pvk/" target="_blank" rel="noopener"><span class="label">Instagram · художник</span><b>@rudakova_pvk</b><span>Жизнь студии и закулисье</span></a>
@@ -430,7 +455,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 
 <footer class="wrap">
   <span>© Rudakova Art · ART PARTY</span>
-  <span class="mono">t.me/artparty_pvk</span>
+  <span>Первоуральск, ул. Береговая, 34А · <span class="mono">+7 922 222-02-80</span></span>
 </footer>
 
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
@@ -680,6 +705,18 @@ if (!reduced) document.querySelectorAll(".tilt").forEach(el => {
 document.getElementById("tee-order").addEventListener("click", () => {
   document.getElementById("f-idea").value = "Хочу футболку с росписью: ";
 });
+
+/* ---------- Копирование адреса и телефона ---------- */
+document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
+  const label = b.textContent, text = b.dataset.copy;
+  navigator.clipboard.writeText(text).then(() => { b.textContent = "Скопировано"; })
+    .catch(() => {
+      const s = getSelection(), rg = document.createRange();
+      rg.selectNodeContents(b.closest(".contact").querySelector("b")); s.removeAllRanges(); s.addRange(rg);
+      b.textContent = "Выделено — нажмите Ctrl+C";
+    })
+    .finally(() => setTimeout(() => { b.textContent = label; }, 2500));
+}));
 
 render("all");
 initStage();
