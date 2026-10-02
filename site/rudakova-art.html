@@ -1,200 +1,217 @@
 <title>Rudakova Art</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;500;700&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: мастерская художника — крупные холсты, музейные этикетки, палитра пигментов как навигация */
+/* Layout: ночная 3D-галерея — картины парят по кругу в луче света, ниже залы-разделы с объёмными карточками */
 :root {
-  --paper: #f3f4f1;
-  --paper-2: #e8eae5;
-  --ink: #1d2230;
-  --ink-soft: #5a6070;
-  --rule: #cfd3cc;
-  --ultramarine: #2f45a8;
-  --ochre: #c98a1b;
-  --madder: #a8384a;
-  --viridian: #2f7a68;
-  --font-display: "Prata", "Georgia", "Times New Roman", serif;
-  --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "Menlo", monospace;
-  --wrap: 72rem;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #15171d; --paper-2: #1d2029; --ink: #eceae4; --ink-soft: #a3a7b3; --rule: #2e323d;
-    --ultramarine: #8c9cf0; --ochre: #e0ab4f; --madder: #e07a8a; --viridian: #6cc0a8;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #15171d; --paper-2: #1d2029; --ink: #eceae4; --ink-soft: #a3a7b3; --rule: #2e323d;
-  --ultramarine: #8c9cf0; --ochre: #e0ab4f; --madder: #e07a8a; --viridian: #6cc0a8;
+  --night: #0c0e16;
+  --night-2: #151827;
+  --wall: #1d2135;
+  --line: #2d3250;
+  --text: #ece8df;
+  --muted: #9a9cb2;
+  --light: #f2d29b;      /* тёплый луч прожектора */
+  --violet: #8f7cf6;     /* холодный рефлекс */
+  --free: #7fd3b1;
+  --sold: #f08c9b;
+  --font-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Menlo", monospace;
+  --wrap: 74rem;
   color-scheme: dark;
 }
-
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
-  background: var(--paper); color: var(--ink);
-  font: 400 1rem/1.6 var(--font-body);
+  background: var(--night); color: var(--text);
+  font: 400 1rem/1.65 var(--font-body);
   padding-inline: 1rem;
+  overflow-x: hidden;
 }
 .wrap { max-width: var(--wrap); margin-inline: auto; }
-a { color: var(--ultramarine); }
-a:focus-visible, button:focus-visible { outline: 2px solid var(--ultramarine); outline-offset: 3px; }
-h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
-.label { font: 500 .72rem/1.3 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+a { color: var(--light); }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--light); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; text-wrap: balance; margin: 0; letter-spacing: -.02em; }
+.label { font: 500 .72rem/1.3 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 
 /* header */
 .top {
-  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--rule);
-  margin-inline: -1rem; padding: .75rem 1rem;
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  background: color-mix(in srgb, var(--night) 70%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  margin-inline: -1rem; padding: .8rem 1rem;
 }
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.brand { font-family: var(--font-display); font-size: 1.25rem; text-decoration: none; color: var(--ink); }
-.nav { display: flex; gap: .25rem 1.1rem; flex-wrap: wrap; }
-.nav a { color: var(--ink-soft); text-decoration: none; font-size: .92rem; display: inline-flex; align-items: center; gap: .4rem; }
-.nav a:hover { color: var(--ink); }
-.nav i { width: .6rem; height: .6rem; border-radius: 50% 40% 55% 45%; display: inline-block; }
+.brand { font: 700 1rem/1 var(--font-display); text-decoration: none; color: var(--text); letter-spacing: .02em; }
+.brand span { color: var(--light); }
+.nav { display: flex; gap: .3rem 1.4rem; flex-wrap: wrap; }
+.nav a { color: var(--muted); text-decoration: none; font-size: .92rem; }
+.nav a:hover { color: var(--text); }
 
-/* hero */
-.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; padding-block: clamp(2rem, 6vw, 4.5rem); }
-.hero > * { min-width: 0; }
-.hero h1 { font-size: clamp(2.4rem, 6.2vw, 4.6rem); line-height: 1.04; letter-spacing: -.01em; }
-.hero h1 em { font-style: normal; color: var(--ultramarine); }
-.hero p { color: var(--ink-soft); max-width: 34rem; font-size: 1.08rem; margin: 1.25rem 0 1.75rem; }
-.cta { display: flex; gap: .75rem; flex-wrap: wrap; }
-.btn {
-  display: inline-flex; align-items: center; gap: .5rem; padding: .8rem 1.3rem;
-  font: 500 .95rem/1 var(--font-body); text-decoration: none; border-radius: 2px; cursor: pointer;
-  border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+/* hero: 3D-сцена во всю ширину, текст поверх */
+.hero { position: relative; margin-inline: -1rem; min-height: clamp(560px, 86vh, 820px); display: grid; align-items: center; overflow: hidden; }
+#stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+#stage:active { cursor: grabbing; }
+.hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, var(--night) 0%, color-mix(in srgb, var(--night) 70%, transparent) 34%, transparent 62%),
+              linear-gradient(0deg, var(--night) 0%, transparent 22%);
 }
-.btn.ghost { background: transparent; color: var(--ink); }
-.btn:hover { transform: translateY(-1px); }
-.easel { position: relative; }
-.easel canvas { width: 100%; aspect-ratio: 4 / 5; display: block; background: var(--paper-2); box-shadow: 0 1px 0 var(--rule), 0 24px 48px -28px rgba(20,24,40,.45); }
-.easel .tag { position: absolute; left: -.5rem; bottom: 1.25rem; background: var(--paper); border: 1px solid var(--rule); padding: .6rem .8rem; max-width: 70%; }
-.easel .tag b { display: block; font: 400 1rem/1.3 var(--font-display); margin-top: .2rem; }
+.hero-copy { position: relative; z-index: 2; padding-inline: 1rem; max-width: var(--wrap); margin-inline: auto; width: 100%; pointer-events: none; }
+.hero-copy > * { max-width: 36rem; }
+.hero h1 { font-size: clamp(2.3rem, 6vw, 4.8rem); line-height: 1; font-weight: 700; }
+.hero h1 .glow { color: var(--light); text-shadow: 0 0 40px color-mix(in srgb, var(--light) 45%, transparent); }
+.hero p { color: var(--muted); font-size: 1.08rem; margin: 1.3rem 0 1.8rem; }
+.cta { display: flex; gap: .75rem; flex-wrap: wrap; pointer-events: auto; }
+.hint { margin-top: 2rem; font: 400 .78rem var(--font-mono); color: var(--muted); }
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .9rem 1.4rem;
+  font: 500 .92rem/1 var(--font-body); text-decoration: none; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--light); background: var(--light); color: var(--night);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--light) 70%, transparent); }
+.btn.ghost { background: transparent; color: var(--text); border-color: var(--line); }
 
-.note { border: 1px dashed var(--ochre); color: var(--ink-soft); padding: .7rem .9rem; font-size: .88rem; margin-bottom: 1rem; }
-.note b { color: var(--ink); }
+.note { border: 1px dashed color-mix(in srgb, var(--light) 50%, transparent); color: var(--muted); padding: .7rem .9rem; font-size: .88rem; border-radius: .6rem; margin: 0 0 1.5rem; }
+.note b { color: var(--text); }
 
-/* sections */
-section { padding-block: clamp(2.5rem, 6vw, 4.5rem); border-top: 1px solid var(--rule); }
-.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
-.sec-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+section { padding-block: clamp(3rem, 7vw, 5.5rem); }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+.sec-head h2, .h2 { font-size: clamp(1.9rem, 4.4vw, 3.2rem); }
 
-/* gallery */
+/* gallery: карточки с 3D-наклоном за курсором */
 .filters { display: flex; gap: .4rem; flex-wrap: wrap; }
 .filters button {
-  font: 500 .82rem/1 var(--font-body); padding: .5rem .85rem; border-radius: 999px; cursor: pointer;
-  border: 1px solid var(--rule); background: transparent; color: var(--ink-soft);
+  font: 500 .82rem/1 var(--font-body); padding: .55rem .95rem; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--muted);
 }
-.filters button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2.5vw, 2rem); }
-.work { margin: 0; cursor: zoom-in; }
-.work canvas { width: 100%; aspect-ratio: var(--ar, 4 / 5); display: block; background: var(--paper-2); transition: transform .3s ease; }
-.work:hover canvas { transform: translateY(-3px); }
-.work figcaption { padding-top: .7rem; display: grid; gap: .15rem; }
-.work .t { font-family: var(--font-display); font-size: 1.1rem; }
-.work .m { font: 400 .78rem/1.4 var(--font-mono); color: var(--ink-soft); }
-.work .s { font: 500 .72rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
-.s.free { color: var(--viridian); } .s.sold { color: var(--madder); }
+.filters button[aria-pressed="true"] { background: var(--text); color: var(--night); border-color: var(--text); }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2.5vw, 2rem); perspective: 1000px; }
+.work {
+  margin: 0; cursor: zoom-in; padding: .9rem; border-radius: 1rem;
+  background: linear-gradient(160deg, var(--wall), var(--night-2));
+  border: 1px solid var(--line);
+  transform-style: preserve-3d; transition: transform .25s ease, box-shadow .25s ease;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+}
+.work:hover { box-shadow: 0 30px 60px -30px rgba(0,0,0,.9), 0 0 0 1px color-mix(in srgb, var(--light) 30%, transparent); }
+.work canvas { width: 100%; aspect-ratio: 4 / 5; display: block; border-radius: .4rem; transform: translateZ(40px); box-shadow: 0 18px 30px -18px rgba(0,0,0,.9); }
+.work figcaption { padding-top: .9rem; display: grid; gap: .2rem; transform: translateZ(20px); }
+.work .t { font: 500 1.02rem/1.3 var(--font-display); }
+.work .m { font: 400 .78rem/1.4 var(--font-mono); color: var(--muted); }
+.work .s { font: 500 .7rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; margin-top: .3rem; }
+.s.free { color: var(--free); } .s.sold { color: var(--sold); }
 
 /* about */
-.about { display: grid; grid-template-columns: 1fr 1.3fr; gap: clamp(1.5rem, 4vw, 3.5rem); }
+.about { display: grid; grid-template-columns: 1fr 1.25fr; gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
 .about > * { min-width: 0; }
-.about p { max-width: 38rem; margin: 0 0 1rem; }
-.palette { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: 1.5rem; }
-.swatch { display: flex; gap: .7rem; align-items: center; }
-.swatch i { width: 2.4rem; height: 2.4rem; flex: none; border-radius: 48% 52% 45% 55% / 55% 45% 55% 45%; }
-.swatch span { font-size: .9rem; } .swatch small { display: block; font: .72rem var(--font-mono); color: var(--ink-soft); }
+.about p { max-width: 38rem; margin: 0 0 1rem; color: color-mix(in srgb, var(--text) 85%, var(--muted)); }
+.orbs { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.75rem; }
+.orb { display: grid; justify-items: center; gap: .45rem; font-size: .82rem; color: var(--muted); }
+.orb i {
+  width: 3.4rem; height: 3.4rem; border-radius: 50%; display: block;
+  background: radial-gradient(circle at 32% 28%, #fff8 0 6%, transparent 22%), radial-gradient(circle at 50% 50%, var(--c) 0 55%, color-mix(in srgb, var(--c) 40%, #000) 100%);
+  box-shadow: 0 12px 24px -10px var(--c);
+  animation: bob 5s ease-in-out infinite; animation-delay: var(--d);
+}
+@keyframes bob { 50% { transform: translateY(-6px); } }
 
 /* channel */
-.channel { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+.channel { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3.5rem); align-items: start; }
 .channel > * { min-width: 0; }
-.phone { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 1.25rem; padding: 1rem; display: grid; gap: .6rem; }
-.msg { background: var(--paper); border-radius: .9rem .9rem .9rem .25rem; padding: .65rem .85rem; font-size: .92rem; max-width: 92%; }
-.msg .r { display: block; margin-top: .35rem; font-size: .8rem; color: var(--ink-soft); }
-.poll { display: grid; gap: .35rem; margin-top: .5rem; }
-.poll div { position: relative; border: 1px solid var(--rule); border-radius: .4rem; padding: .35rem .6rem; font-size: .85rem; overflow: hidden; }
-.poll div::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p); background: color-mix(in srgb, var(--ultramarine) 16%, transparent); }
+.rubrics { list-style: none; padding: 0; margin: 1.5rem 0 1.75rem; display: grid; gap: .9rem; }
+.rubrics li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem; padding-bottom: .9rem; border-bottom: 1px solid var(--line); }
+.rubrics li b { font: 500 .76rem/1.6 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--light); }
+.phone {
+  background: var(--night-2); border: 1px solid var(--line); border-radius: 2rem; padding: 1.1rem; display: grid; gap: .65rem;
+  max-width: 24rem; margin-inline: auto; width: 100%;
+  transform: perspective(1200px) rotateY(-14deg) rotateX(6deg);
+  box-shadow: 30px 40px 80px -40px rgba(0,0,0,.95), 0 0 0 6px var(--wall);
+  transition: transform .5s ease;
+}
+.phone:hover { transform: perspective(1200px) rotateY(0) rotateX(0); }
+.msg { background: var(--wall); border-radius: 1rem 1rem 1rem .3rem; padding: .7rem .9rem; font-size: .9rem; }
+.msg .r { display: block; margin-top: .35rem; font-size: .8rem; color: var(--muted); }
+.poll { display: grid; gap: .35rem; margin-top: .55rem; }
+.poll div { position: relative; border: 1px solid var(--line); border-radius: .5rem; padding: .35rem .6rem; font-size: .84rem; overflow: hidden; }
+.poll div::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p); background: color-mix(in srgb, var(--violet) 30%, transparent); }
 .poll span { position: relative; display: flex; justify-content: space-between; gap: .5rem; }
-.rubrics { list-style: none; padding: 0; margin: 1.25rem 0 1.5rem; display: grid; gap: .8rem; }
-.rubrics li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem; padding-bottom: .8rem; border-bottom: 1px solid var(--rule); }
-.rubrics li b { font: 500 .78rem/1.5 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ultramarine); }
 
 /* order */
-.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; counter-reset: s; padding: 0; margin: 0 0 2rem; list-style: none; }
-.steps li { border-top: 2px solid var(--ink); padding-top: .8rem; counter-increment: s; }
-.steps li::before { content: "Шаг " counter(s); display: block; font: 500 .72rem var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .4rem; }
-.steps h3 { font-size: 1.15rem; margin-bottom: .3rem; }
-.steps p { margin: 0; font-size: .92rem; color: var(--ink-soft); }
-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 46rem; }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; counter-reset: s; padding: 0; margin: 0 0 2.5rem; list-style: none; }
+.steps li { counter-increment: s; padding: 1.1rem; border-radius: 1rem; background: var(--night-2); border: 1px solid var(--line); }
+.steps li::before { content: "0" counter(s); display: block; font: 700 1.6rem/1 var(--font-display); color: var(--light); margin-bottom: .7rem; }
+.steps h3 { font-size: 1rem; margin-bottom: .35rem; }
+.steps p { margin: 0; font-size: .9rem; color: var(--muted); }
+form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 48rem; }
 form .full { grid-column: 1 / -1; }
-label { display: grid; gap: .35rem; font-size: .88rem; color: var(--ink-soft); }
+label { display: grid; gap: .4rem; font-size: .86rem; color: var(--muted); }
 input, select, textarea {
-  font: 400 1rem/1.4 var(--font-body); color: var(--ink); background: var(--paper);
-  border: 1px solid var(--rule); border-radius: 2px; padding: .7rem .8rem; width: 100%;
+  font: 400 1rem/1.4 var(--font-body); color: var(--text); background: var(--night-2);
+  border: 1px solid var(--line); border-radius: .7rem; padding: .8rem .9rem; width: 100%;
 }
-input:focus, select:focus, textarea:focus { outline: 2px solid var(--ultramarine); outline-offset: 0; border-color: transparent; }
-.out { grid-column: 1 / -1; background: var(--paper-2); border-left: 3px solid var(--viridian); padding: .9rem 1rem; white-space: pre-wrap; font-size: .92rem; }
-.out-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .8rem; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--light); outline-offset: 0; border-color: transparent; }
+.out { grid-column: 1 / -1; background: var(--night-2); border: 1px solid var(--free); border-radius: .8rem; padding: 1rem; white-space: pre-wrap; font-size: .92rem; }
+.out-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .9rem; }
 
-footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--ink-soft); font-size: .88rem; }
+footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--muted); font-size: .86rem; }
 .mono { font-family: var(--font-mono); user-select: all; }
 
 /* lightbox */
-.lb { position: fixed; inset: 0; z-index: 20; background: color-mix(in srgb, var(--paper) 94%, transparent); display: grid; place-items: center; padding: 1.5rem; }
-.lb-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 2rem; max-width: 60rem; width: 100%; align-items: center; }
-.lb canvas { width: 100%; max-height: 78vh; object-fit: contain; display: block; }
-.lb h3 { font-size: 1.8rem; margin: .4rem 0 .6rem; }
+.lb { position: fixed; inset: 0; z-index: 30; background: color-mix(in srgb, var(--night) 94%, transparent); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 1.5rem; }
+.lb-inner { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 2rem; max-width: 60rem; width: 100%; align-items: center; }
+.lb canvas { width: 100%; max-height: 78vh; object-fit: contain; display: block; border-radius: .5rem; box-shadow: 0 40px 80px -40px #000; }
+.lb h3 { font-size: 1.7rem; margin: .5rem 0 .7rem; }
 .lb .close { position: absolute; top: calc(1rem + env(safe-area-inset-top, 0px)); right: 1rem; }
 
 @media (max-width: 860px) {
-  .hero, .about, .channel, .lb-inner { grid-template-columns: 1fr; }
+  .about, .channel, .lb-inner { grid-template-columns: 1fr; }
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero::after { background: linear-gradient(0deg, var(--night) 8%, color-mix(in srgb, var(--night) 60%, transparent) 60%, transparent 100%); }
+  .hero { align-items: end; padding-bottom: 2.5rem; }
 }
 @media (max-width: 520px) {
   .grid, .steps, form { grid-template-columns: 1fr; }
   .rubrics li { grid-template-columns: 1fr; gap: .2rem; }
-  .easel .tag { left: .5rem; }
+  .phone { transform: none; }
 }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:hover, .work:hover canvas { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 </style>
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#top">Rudakova&nbsp;Art</a>
+    <a class="brand" href="#top">RUDAKOVA<span>.</span>ART</a>
     <nav class="nav" aria-label="Разделы">
-      <a href="#works"><i style="background:var(--ultramarine)"></i>Работы</a>
-      <a href="#about"><i style="background:var(--ochre)"></i>Обо мне</a>
-      <a href="#channel"><i style="background:var(--madder)"></i>Канал</a>
-      <a href="#order"><i style="background:var(--viridian)"></i>Заказать</a>
+      <a href="#works">Работы</a>
+      <a href="#about">Обо мне</a>
+      <a href="#channel">Канал</a>
+      <a href="#order">Заказать</a>
     </nav>
   </div>
 </header>
 
-<main class="wrap" id="top">
-  <div class="hero">
-    <div>
-      <p class="label">Живопись · @rudakova_art</p>
-      <h1>Картины, в которых <em>цвет</em> рассказывает историю</h1>
-      <p>Оригинальные работы, картины на заказ и закулисье мастерской. Выберите работу из каталога или расскажите, какую картину хотите видеть у себя дома.</p>
-      <div class="cta">
-        <a class="btn" href="#works">Смотреть работы</a>
-        <a class="btn ghost" href="https://www.instagram.com/channel/AbZWuPswmVpcck-8/" target="_blank" rel="noopener">Канал в Instagram ↗</a>
-      </div>
+<div class="hero" id="top">
+  <canvas id="stage" aria-label="3D-галерея: картины вращаются по кругу, клик открывает работу"></canvas>
+  <div class="hero-copy">
+    <p class="label">Живопись · @rudakova_art</p>
+    <h1>Картины, которые <span class="glow">светятся</span> в&nbsp;вашем доме</h1>
+    <p>Оригинальные работы, картины на заказ и закулисье мастерской. Покрутите галерею и нажмите на картину, чтобы рассмотреть её ближе.</p>
+    <div class="cta">
+      <a class="btn" href="#works">Смотреть работы</a>
+      <a class="btn ghost" href="https://www.instagram.com/channel/AbZWuPswmVpcck-8/" target="_blank" rel="noopener">Канал в Instagram ↗</a>
     </div>
-    <div class="easel">
-      <canvas id="hero-canvas" width="800" height="1000" aria-label="Абстрактная композиция: место для главной работы"></canvas>
-      <div class="tag"><span class="label">На мольберте</span><b>Место для вашей главной работы</b></div>
-    </div>
+    <p class="hint">Перетащите, чтобы повернуть · клик по картине</p>
   </div>
+</div>
 
+<main class="wrap">
   <section id="works">
     <div class="sec-head">
       <div><p class="label">Каталог</p><h2>Работы</h2></div>
@@ -204,7 +221,7 @@ footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; display: f
         <button type="button" data-f="sold" aria-pressed="false">В коллекциях</button>
       </div>
     </div>
-    <p class="note"><b>Образец.</b> Здесь генеративные эскизы и примерные подписи. Замените их фотографиями картин, реальными названиями, техникой, размерами и ценами.</p>
+    <p class="note"><b>Образец.</b> Картины здесь — генеративные эскизы, подписи примерные. Замените их фотографиями работ, реальными названиями, техникой и размерами.</p>
     <div class="grid" id="grid"></div>
   </section>
 
@@ -212,16 +229,16 @@ footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; display: f
     <div class="about">
       <div>
         <p class="label">Обо мне</p>
-        <h2>Мастерская</h2>
-        <div class="palette" aria-label="Палитра">
-          <div class="swatch"><i style="background:var(--ultramarine)"></i><span>Ультрамарин<small>PB29</small></span></div>
-          <div class="swatch"><i style="background:var(--ochre)"></i><span>Охра<small>PY43</small></span></div>
-          <div class="swatch"><i style="background:var(--madder)"></i><span>Краплак<small>PR83</small></span></div>
-          <div class="swatch"><i style="background:var(--viridian)"></i><span>Изумрудная<small>PG18</small></span></div>
+        <h2 class="h2">Мастерская</h2>
+        <div class="orbs" aria-label="Любимые цвета">
+          <span class="orb"><i style="--c:#3550c8;--d:0s"></i>Ультрамарин</span>
+          <span class="orb"><i style="--c:#d39a2a;--d:.6s"></i>Охра</span>
+          <span class="orb"><i style="--c:#b73a55;--d:1.2s"></i>Краплак</span>
+          <span class="orb"><i style="--c:#2f8f78;--d:1.8s"></i>Изумруд</span>
         </div>
       </div>
       <div>
-        <p class="note"><b>Заполните сами.</b> Текст ниже — шаблон. Впишите свою историю, технику и выставки.</p>
+        <p class="note"><b>Заполните сами.</b> Текст ниже — шаблон: впишите свою историю, технику и выставки.</p>
         <p>Меня зовут [имя]. Пишу [масло / акварель / акрил] и работаю в мастерской в [город]. Рисую [главные темы: цветы, море, портреты, город].</p>
         <p>Каждая картина начинается с цвета: сначала я подбираю палитру, а потом ищу сюжет. В канале показываю процесс от первого мазка до подписи на обороте.</p>
         <p>Работы есть в частных коллекциях в [страны / города]. Принимаю заказы на картины по фото и по вашему настроению.</p>
@@ -233,8 +250,8 @@ footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; display: f
     <div class="channel">
       <div>
         <p class="label">Канал рассылки Instagram</p>
-        <h2>Закулисье мастерской</h2>
-        <p style="color:var(--ink-soft);max-width:34rem">В канале я пишу первой: новые работы раньше ленты, процесс, опросы о следующей картине. Подписчики участвуют реакциями и голосованием.</p>
+        <h2 class="h2">Закулисье мастерской</h2>
+        <p style="color:var(--muted);max-width:34rem;margin-top:1rem">В канале я пишу первой: новые работы раньше ленты, процесс, опросы о следующей картине. Подписчики участвуют реакциями и голосованием.</p>
         <ul class="rubrics">
           <li><b>Пн · Процесс</b><span>Фото и видео этапов: эскиз, подмалёвок, детали.</span></li>
           <li><b>Ср · Выбор</b><span>Опрос: какой сюжет, цвет или формат писать дальше.</span></li>
@@ -292,52 +309,154 @@ footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; display: f
     <div>
       <p class="label" id="lb-no"></p>
       <h3 id="lb-title"></h3>
-      <p class="m" id="lb-meta" style="font-family:var(--font-mono);color:var(--ink-soft)"></p>
+      <p id="lb-meta" style="font-family:var(--font-mono);color:var(--muted);font-size:.88rem"></p>
       <a class="btn" href="#order" id="lb-ask">Спросить о работе</a>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// Пример каталога: замените на реальные работы (title, tech, size, year, status)
+// Пример каталога: замените на реальные работы
 const WORKS = [
-  { title: "Утро у залива", tech: "Холст, масло", size: "50×70", year: 2025, status: "free", seed: 3, hues: ["--ultramarine", "--ochre"], ar: "4 / 5" },
-  { title: "Пионы", tech: "Бумага, акварель", size: "30×40", year: 2025, status: "sold", seed: 11, hues: ["--madder", "--viridian"], ar: "4 / 5" },
-  { title: "Северный свет", tech: "Холст, акрил", size: "60×80", year: 2024, status: "free", seed: 21, hues: ["--ultramarine", "--viridian"], ar: "4 / 5" },
-  { title: "Поле в июле", tech: "Холст, масло", size: "40×50", year: 2024, status: "free", seed: 8, hues: ["--ochre", "--viridian"], ar: "4 / 5" },
-  { title: "Вечерний город", tech: "Картон, гуашь", size: "30×40", year: 2024, status: "sold", seed: 17, hues: ["--madder", "--ultramarine"], ar: "4 / 5" },
-  { title: "Тишина", tech: "Холст, масло", size: "80×100", year: 2023, status: "free", seed: 5, hues: ["--ochre", "--madder"], ar: "4 / 5" },
+  { title: "Утро у залива", tech: "Холст, масло", size: "50×70", year: 2025, status: "free", seed: 3, hues: ["#3550c8", "#d39a2a"] },
+  { title: "Пионы", tech: "Бумага, акварель", size: "30×40", year: 2025, status: "sold", seed: 11, hues: ["#b73a55", "#2f8f78"] },
+  { title: "Северный свет", tech: "Холст, акрил", size: "60×80", year: 2024, status: "free", seed: 21, hues: ["#3550c8", "#2f8f78"] },
+  { title: "Поле в июле", tech: "Холст, масло", size: "40×50", year: 2024, status: "free", seed: 8, hues: ["#d39a2a", "#2f8f78"] },
+  { title: "Вечерний город", tech: "Картон, гуашь", size: "30×40", year: 2024, status: "sold", seed: 17, hues: ["#b73a55", "#3550c8"] },
+  { title: "Тишина", tech: "Холст, масло", size: "80×100", year: 2023, status: "free", seed: 5, hues: ["#d39a2a", "#b73a55"] },
 ];
-
-const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const no = i => "№ " + String(i + 1).padStart(3, "0");
 function rng(seed) { let s = seed * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
 
-// Акварельные «эскизы»: полупрозрачные пятна пигмента на бумаге
+// Генеративный «холст»: пятна пигмента на тёплой бумаге
 function paint(canvas, seed, hues) {
   const ctx = canvas.getContext("2d"), w = canvas.width, h = canvas.height, r = rng(seed);
-  ctx.globalCompositeOperation = "source-over";
-  ctx.fillStyle = css("--paper-2"); ctx.fillRect(0, 0, w, h);
-  const cols = hues.map(css).concat(css("--ink-soft"));
-  for (let i = 0; i < 46; i++) {
-    const col = cols[i % 9 === 0 ? 2 : i % 2], x = r() * w, y = h * (0.15 + r() * 0.8), rad = (0.08 + r() * 0.3) * w;
-    ctx.globalAlpha = 0.05 + r() * 0.08;
-    ctx.fillStyle = col; ctx.beginPath();
+  ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  ctx.fillStyle = "#efe9dd"; ctx.fillRect(0, 0, w, h);
+  const cols = hues.concat("#2a2c3a");
+  for (let i = 0; i < 52; i++) {
+    const col = cols[i % 9 === 0 ? 2 : i % 2], x = r() * w, y = h * (0.12 + r() * 0.82), rad = (0.08 + r() * 0.3) * w;
+    ctx.globalAlpha = 0.06 + r() * 0.1; ctx.fillStyle = col; ctx.beginPath();
     for (let a = 0; a <= Math.PI * 2 + 0.01; a += Math.PI / 10) {
-      const k = rad * (0.7 + r() * 0.45);
-      const px = x + Math.cos(a) * k, py = y + Math.sin(a) * k * 0.7;
+      const k = rad * (0.7 + r() * 0.45), px = x + Math.cos(a) * k, py = y + Math.sin(a) * k * 0.7;
       a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
     }
     ctx.closePath(); ctx.fill();
   }
-  // горизонт
-  ctx.globalAlpha = 0.35; ctx.fillStyle = cols[0];
-  ctx.fillRect(0, h * (0.45 + r() * 0.2), w, h * 0.006);
-  // зерно бумаги
-  ctx.globalAlpha = 0.05; ctx.fillStyle = css("--ink");
+  ctx.globalAlpha = 0.4; ctx.fillStyle = cols[0]; ctx.fillRect(0, h * (0.45 + r() * 0.2), w, h * 0.006);
+  ctx.globalAlpha = 0.06; ctx.fillStyle = "#000";
   for (let i = 0; i < 2500; i++) ctx.fillRect(r() * w, r() * h, 1.5, 1.5);
   ctx.globalAlpha = 1;
+  return canvas;
 }
 
+/* ---------- 3D-галерея (Three.js) ---------- */
+function initStage() {
+  const el = document.getElementById("stage");
+  if (!window.THREE) return fallbackStage(el);
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas: el, antialias: true, alpha: false }); }
+  catch (e) { return fallbackStage(el); }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setClearColor(0x0c0e16, 1);
+  renderer.shadowMap.enabled = true;
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x0c0e16, 9, 22);
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+
+  // свет: тёплый прожектор сверху + холодный рефлекс
+  scene.add(new THREE.AmbientLight(0x6670a0, 0.35));
+  const spot = new THREE.SpotLight(0xf2d29b, 2.2, 30, Math.PI / 5, 0.5, 1.2);
+  spot.position.set(0, 9, 4); spot.castShadow = true; spot.shadow.mapSize.set(1024, 1024);
+  scene.add(spot); scene.add(spot.target);
+  const rim = new THREE.PointLight(0x8f7cf6, 1.1, 18); rim.position.set(-6, 1, -4); scene.add(rim);
+
+  // пол-подиум
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.MeshStandardMaterial({ color: 0x151827, roughness: 0.55, metalness: 0.3 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = -1.9; floor.receiveShadow = true; scene.add(floor);
+  const ringLine = new THREE.Mesh(new THREE.RingGeometry(4.15, 4.2, 96), new THREE.MeshBasicMaterial({ color: 0xf2d29b, transparent: true, opacity: 0.35 }));
+  ringLine.rotation.x = -Math.PI / 2; ringLine.position.y = -1.89; scene.add(ringLine);
+
+  // кольцо картин
+  const ring = new THREE.Group(); scene.add(ring);
+  const R = 4.2, picks = [];
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x2a2116, roughness: 0.4, metalness: 0.5 });
+  WORKS.forEach((wk, i) => {
+    const tex = new THREE.CanvasTexture(paint(document.createElement("canvas"), wk.seed, wk.hues));
+    tex.anisotropy = 4;
+    const g = new THREE.Group();
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.45, 0.12), frameMat);
+    frame.castShadow = true;
+    const art = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2.25), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }));
+    art.position.z = 0.065; art.userData.index = i;
+    g.add(frame, art);
+    const a = (i / WORKS.length) * Math.PI * 2;
+    g.position.set(Math.sin(a) * R, 0.1, Math.cos(a) * R);
+    g.rotation.y = a;
+    g.userData.phase = i * 1.3;
+    ring.add(g); picks.push(art);
+  });
+
+  // пылинки в луче
+  const N = 260, pos = new Float32Array(N * 3), rr = rng(7);
+  for (let i = 0; i < N; i++) { pos[i*3] = (rr() - .5) * 12; pos[i*3+1] = rr() * 7 - 2; pos[i*3+2] = (rr() - .5) * 12; }
+  const dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: 0xf2d29b, size: 0.035, transparent: true, opacity: 0.7 }));
+  scene.add(dust);
+
+  // управление: перетаскивание вращает, клик открывает
+  let rot = 0, vel = reduced ? 0 : 0.0025, drag = false, lastX = 0, moved = 0, mx = 0, my = 0;
+  el.addEventListener("pointerdown", e => { drag = true; lastX = e.clientX; moved = 0; el.setPointerCapture(e.pointerId); });
+  el.addEventListener("pointermove", e => {
+    const b = el.getBoundingClientRect();
+    mx = ((e.clientX - b.left) / b.width - .5); my = ((e.clientY - b.top) / b.height - .5);
+    if (!drag) return;
+    const dx = e.clientX - lastX; lastX = e.clientX; moved += Math.abs(dx);
+    rot += dx * 0.006; vel = dx * 0.0006;
+  });
+  el.addEventListener("pointerup", e => {
+    drag = false;
+    if (moved > 6) return;
+    const b = el.getBoundingClientRect(), ray = new THREE.Raycaster();
+    ray.setFromCamera({ x: ((e.clientX - b.left) / b.width) * 2 - 1, y: -((e.clientY - b.top) / b.height) * 2 + 1 }, camera);
+    const hit = ray.intersectObjects(picks)[0];
+    if (hit) openLb(hit.object.userData.index);
+  });
+
+  function resize() {
+    const w = el.clientWidth, h = el.clientHeight; renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    // на узком экране сцена по центру, на широком — справа от текста
+    ring.position.x = w > 860 ? 3.2 : 0; spot.target.position.x = ring.position.x; floor.position.x = ringLine.position.x = ring.position.x;
+  }
+  addEventListener("resize", resize); resize();
+
+  const clock = new THREE.Clock();
+  let visible = true;
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(el);
+  (function loop() {
+    requestAnimationFrame(loop);
+    if (!visible) return;
+    const t = clock.getElapsedTime();
+    if (!drag) { vel += ((reduced ? 0 : 0.0025) - vel) * 0.02; rot += vel; }
+    ring.rotation.y = rot + scrollY * 0.0015;
+    if (!reduced) ring.children.forEach(g => { g.position.y = 0.1 + Math.sin(t * 0.8 + g.userData.phase) * 0.12; });
+    dust.rotation.y = t * 0.02;
+    camera.position.set(mx * 1.2, 1.4 - my * 0.8, 10.5);
+    camera.lookAt(ring.position.x * 0.55, 0, 0);
+    renderer.render(scene, camera);
+  })();
+}
+// без WebGL: показываем одну плоскую картину
+function fallbackStage(el) {
+  el.width = 800; el.height = 1000; paint(el, 42, ["#3550c8", "#d39a2a"]);
+  el.style.cssText += "object-fit:contain;opacity:.6";
+}
+
+/* ---------- Каталог с 3D-наклоном ---------- */
 const grid = document.getElementById("grid");
 function render(filter) {
   grid.innerHTML = "";
@@ -346,49 +465,52 @@ function render(filter) {
     const f = document.createElement("figure");
     f.className = "work"; f.tabIndex = 0; f.setAttribute("role", "button");
     f.setAttribute("aria-label", "Открыть: " + wk.title);
-    f.innerHTML = `<canvas width="480" height="600" style="--ar:${wk.ar}"></canvas>
-      <figcaption><span class="label">№ ${String(i + 1).padStart(3, "0")} · ${wk.year}</span>
+    f.innerHTML = `<canvas width="480" height="600"></canvas>
+      <figcaption><span class="label">${no(i)} · ${wk.year}</span>
       <span class="t">${wk.title}</span>
       <span class="m">${wk.tech}, ${wk.size} см</span>
       <span class="s ${wk.status}">${wk.status === "free" ? "Доступна" : "В частной коллекции"}</span></figcaption>`;
     grid.appendChild(f);
     paint(f.querySelector("canvas"), wk.seed, wk.hues);
-    const open = () => openLb(wk, i);
-    f.addEventListener("click", open);
-    f.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+    if (!reduced) {
+      f.addEventListener("pointermove", e => {
+        const b = f.getBoundingClientRect();
+        f.style.setProperty("--ry", ((e.clientX - b.left) / b.width - .5) * 16 + "deg");
+        f.style.setProperty("--rx", -((e.clientY - b.top) / b.height - .5) * 16 + "deg");
+      });
+      f.addEventListener("pointerleave", () => { f.style.setProperty("--rx", "0deg"); f.style.setProperty("--ry", "0deg"); });
+    }
+    f.addEventListener("click", () => openLb(i));
+    f.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openLb(i); } });
   });
 }
-let current = "all";
 document.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => {
-  current = b.dataset.f;
   document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", x === b));
-  render(current);
+  render(b.dataset.f);
 }));
 
+/* ---------- Просмотр работы ---------- */
 const lb = document.getElementById("lb");
-function openLb(wk, i) {
+function openLb(i) {
+  const wk = WORKS[i];
   paint(document.getElementById("lb-canvas"), wk.seed, wk.hues);
-  document.getElementById("lb-no").textContent = `№ ${String(i + 1).padStart(3, "0")} · ${wk.year}`;
+  document.getElementById("lb-no").textContent = `${no(i)} · ${wk.year}`;
   document.getElementById("lb-title").textContent = wk.title;
   document.getElementById("lb-meta").textContent = `${wk.tech}, ${wk.size} см · ${wk.status === "free" ? "доступна" : "в частной коллекции"}`;
-  document.getElementById("lb-ask").onclick = () => {
-    closeLb(); document.getElementById("f-idea").value = `Интересует работа «${wk.title}» (${wk.size} см).`;
-  };
+  document.getElementById("lb-ask").onclick = () => { lb.hidden = true; document.getElementById("f-idea").value = `Интересует работа «${wk.title}» (${wk.size} см).`; };
   lb.hidden = false; document.getElementById("lb-close").focus();
 }
-function closeLb() { lb.hidden = true; }
-document.getElementById("lb-close").addEventListener("click", closeLb);
-lb.addEventListener("click", e => { if (e.target === lb) closeLb(); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden) closeLb(); });
+document.getElementById("lb-close").addEventListener("click", () => { lb.hidden = true; });
+lb.addEventListener("click", e => { if (e.target === lb) lb.hidden = true; });
+document.addEventListener("keydown", e => { if (e.key === "Escape") lb.hidden = true; });
 
-// Форма собирает текст сообщения, который можно скопировать и отправить в Direct
+/* ---------- Форма заказа: собирает текст для Direct ---------- */
 document.getElementById("order-form").addEventListener("submit", e => {
   e.preventDefault();
-  const name = document.getElementById("f-name").value.trim();
-  const out = document.getElementById("out");
-  if (!name) { document.getElementById("f-name").focus(); out.hidden = false; out.textContent = "Укажите имя, чтобы подготовить сообщение."; return; }
-  const text = `Здравствуйте! Меня зовут ${name}. Хочу заказать картину ${document.getElementById("f-size").value}.\n${document.getElementById("f-idea").value.trim() || "Идею расскажу в переписке."}`;
+  const name = document.getElementById("f-name").value.trim(), out = document.getElementById("out");
   out.hidden = false;
+  if (!name) { document.getElementById("f-name").focus(); out.textContent = "Укажите имя, чтобы подготовить сообщение."; return; }
+  const text = `Здравствуйте! Меня зовут ${name}. Хочу заказать картину ${document.getElementById("f-size").value}.\n${document.getElementById("f-idea").value.trim() || "Идею расскажу в переписке."}`;
   out.innerHTML = "";
   const p = document.createElement("div"); p.textContent = text; out.appendChild(p);
   const act = document.createElement("div"); act.className = "out-actions";
@@ -401,9 +523,6 @@ document.getElementById("order-form").addEventListener("submit", e => {
   });
 });
 
-function paintAll() { paint(document.getElementById("hero-canvas"), 42, ["--ultramarine", "--ochre"]); render(current); }
-paintAll();
-document.fonts?.ready.then(() => {});
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintAll);
-new MutationObserver(paintAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+render("all");
+initStage();
 </script>
