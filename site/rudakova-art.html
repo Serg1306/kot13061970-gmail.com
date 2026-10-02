@@ -105,6 +105,23 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .work .s { font: 500 .7rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; margin-top: .3rem; }
 .s.free { color: var(--free); } .s.sold { color: var(--sold); }
 
+/* reels: вертикальные видео лентой */
+.reels { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(13rem, 1fr); gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .75rem; perspective: 1200px; }
+.reel { margin: 0; scroll-snap-align: start; display: grid; gap: .6rem; }
+.reel-box { position: relative; aspect-ratio: 9 / 16; max-width: 100%; border-radius: 1.1rem; overflow: hidden; background: var(--night-2); border: 1px solid var(--line); transition: transform .35s ease, box-shadow .35s ease; }
+.reel:hover .reel-box { transform: translateY(-4px) rotateY(-4deg); box-shadow: 0 30px 50px -30px #000, 0 0 0 1px color-mix(in srgb, var(--light) 35%, transparent); }
+.reel video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.reel .play {
+  position: absolute; inset: auto auto 1rem 1rem; width: 3rem; height: 3rem; border-radius: 50%;
+  border: 0; cursor: pointer; background: var(--light); color: var(--night); font-size: 1rem;
+  display: grid; place-items: center; box-shadow: 0 8px 20px -6px #000;
+}
+.reel.playing .play { display: none; }
+.reel figcaption { display: grid; gap: .1rem; }
+.reel .t { font: 500 .98rem/1.3 var(--font-display); }
+.reel .m { font-size: .86rem; color: var(--muted); }
+.credit { margin-top: 1rem; font: 400 .78rem var(--font-mono); color: var(--muted); }
+
 /* about */
 .about { display: grid; grid-template-columns: 1fr 1.25fr; gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
 .about > * { min-width: 0; }
@@ -190,6 +207,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
     <a class="brand" href="#top">RUDAKOVA<span>.</span>ART</a>
     <nav class="nav" aria-label="Разделы">
       <a href="#works">Работы</a>
+      <a href="#party">Арт-пати</a>
       <a href="#about">Обо мне</a>
       <a href="#channel">Канал</a>
       <a href="#order">Заказать</a>
@@ -223,6 +241,26 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
     </div>
     <p class="note"><b>Образец.</b> Картины здесь — генеративные эскизы, подписи примерные. Замените их фотографиями работ, реальными названиями, техникой и размерами.</p>
     <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="party">
+    <div class="sec-head">
+      <div><p class="label">Студия ART PARTY</p><h2>Как проходят арт-пати</h2></div>
+      <p style="color:var(--muted);max-width:26rem;margin:0">Мастер-классы для детей и взрослых, девичники и корпоративы. Нажмите на видео, чтобы включить звук.</p>
+    </div>
+    <div class="reels" id="reels">
+      <figure class="reel"><div class="reel-box"><video src="media/party-4.mp4" poster="media/party-4.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: идея для корпоратива">▶</button></div>
+        <figcaption><span class="t">Идея для корпоратива</span><span class="m">Коллеги пишут картины вместе</span></figcaption></figure>
+      <figure class="reel"><div class="reel-box"><video src="media/party-3.mp4" poster="media/party-3.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: арт-девичник">▶</button></div>
+        <figcaption><span class="t">Арт-девичник</span><span class="m">Подруги, шампанское, творчество</span></figcaption></figure>
+      <figure class="reel"><div class="reel-box"><video src="media/party-5.mp4" poster="media/party-5.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: мастер-класс">▶</button></div>
+        <figcaption><span class="t">Мастер-класс</span><span class="m">Объёмная картина с пончиками</span></figcaption></figure>
+      <figure class="reel"><div class="reel-box"><video src="media/party-2.mp4" poster="media/party-2.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: роспись футболок">▶</button></div>
+        <figcaption><span class="t">Роспись футболок</span><span class="m">Авторский принт своими руками</span></figcaption></figure>
+      <figure class="reel"><div class="reel-box"><video src="media/party-1.mp4" poster="media/party-1.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: занятия с детьми">▶</button></div>
+        <figcaption><span class="t">Занятия с детьми</span><span class="m">«А тебе не скучно?» — ни капли</span></figcaption></figure>
+    </div>
+    <p class="credit">Видео: <a href="https://t.me/artparty_pvk" target="_blank" rel="noopener">t.me/artparty_pvk</a>, публикуется с согласия автора</p>
   </section>
 
   <section id="about">
@@ -521,6 +559,20 @@ document.getElementById("order-form").addEventListener("submit", e => {
     navigator.clipboard.writeText(text).then(() => { copy.textContent = "Скопировано"; })
       .catch(() => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(p); s.removeAllRanges(); s.addRange(rg); copy.textContent = "Выделено — нажмите Ctrl+C"; });
   });
+});
+
+/* ---------- Видео: играет одно за раз ---------- */
+const reels = [...document.querySelectorAll(".reel")];
+reels.forEach(r => {
+  const v = r.querySelector("video");
+  const toggle = () => {
+    if (v.paused) {
+      reels.forEach(o => { if (o !== r) { o.querySelector("video").pause(); o.classList.remove("playing"); } });
+      v.play().then(() => r.classList.add("playing")).catch(() => {});
+    } else { v.pause(); r.classList.remove("playing"); }
+  };
+  r.querySelector(".play").addEventListener("click", toggle);
+  v.addEventListener("click", toggle);
 });
 
 render("all");
