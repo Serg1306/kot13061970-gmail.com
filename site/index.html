@@ -204,6 +204,16 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .poll div::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p); background: color-mix(in srgb, var(--violet) 30%, transparent); }
 .poll span { position: relative; display: flex; justify-content: space-between; gap: .5rem; }
 
+/* лента Telegram-канала */
+.news { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.post { display: grid; gap: .6rem; align-content: start; padding: 1rem; border-radius: 1rem; background: var(--night-2); border: 1px solid var(--line); color: var(--text); text-decoration: none; min-width: 0; transition: transform .3s ease, border-color .3s ease; }
+.post:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--light) 45%, var(--line)); }
+.post img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; border-radius: .6rem; background: var(--wall); }
+.post p { margin: 0; font-size: .92rem; white-space: pre-line; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+.news-empty { grid-column: 1 / -1; color: var(--muted); }
+@media (max-width: 860px) { .news { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .news { grid-template-columns: 1fr; } }
+
 /* order */
 .steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; counter-reset: s; padding: 0; margin: 0 0 2.5rem; list-style: none; }
 .steps li { counter-increment: s; padding: 1.1rem; border-radius: 1rem; background: var(--night-2); border: 1px solid var(--line); }
@@ -261,6 +271,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
       <a href="#tees">Футболки</a>
       <a href="#about">Обо мне</a>
       <a href="#channel">Канал</a>
+      <a href="#news">Новости</a>
       <a href="#order">Заказать</a>
       <a href="#social">Контакты</a>
     </nav>
@@ -409,6 +420,14 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
         <div class="msg">Готово! Работа будет в ленте завтра, а здесь вы видите её первыми.<span class="r">😍 ❤️</span></div>
       </div>
     </div>
+  </section>
+
+  <section id="news">
+    <div class="sec-head">
+      <div><p class="label">Telegram · @artparty_pvk</p><h2>Новости студии</h2></div>
+      <a class="btn ghost" href="https://t.me/artparty_pvk" target="_blank" rel="noopener">Открыть канал ↗</a>
+    </div>
+    <div class="news" id="news-list" aria-live="polite"><p class="news-empty">Загружаем последние посты…</p></div>
   </section>
 
   <section id="order">
@@ -710,6 +729,26 @@ document.getElementById("order-form").addEventListener("submit", e => {
       .catch(() => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(p); s.removeAllRanges(); s.addRange(rg); copy.textContent = "Выделено — нажмите Ctrl+C"; });
   });
 });
+
+/* ---------- Лента Telegram: последние посты канала через функцию Netlify ---------- */
+(function loadNews() {
+  const list = document.getElementById("news-list");
+  const empty = msg => { list.innerHTML = ""; const p = document.createElement("p"); p.className = "news-empty"; p.innerHTML = msg; list.appendChild(p); };
+  const fallback = () => empty('Посты не загрузились. Свежие новости — в канале <a href="https://t.me/artparty_pvk" target="_blank" rel="noopener">@artparty_pvk</a>.');
+  if (location.protocol === "file:") return fallback();
+  fetch("/.netlify/functions/telegram").then(r => r.json()).then(({ posts }) => {
+    if (!posts || !posts.length) return fallback();
+    list.innerHTML = "";
+    posts.forEach(post => {
+      const a = document.createElement("a");
+      a.className = "post"; a.href = post.url; a.target = "_blank"; a.rel = "noopener";
+      if (post.img) { const im = document.createElement("img"); im.src = post.img; im.alt = ""; im.loading = "lazy"; a.appendChild(im); }
+      if (post.date) { const d = document.createElement("span"); d.className = "label"; d.textContent = new Date(post.date).toLocaleDateString("ru-RU", { day: "numeric", month: "long" }); a.appendChild(d); }
+      if (post.text) { const p = document.createElement("p"); p.textContent = post.text; a.appendChild(p); }
+      list.appendChild(a);
+    });
+  }).catch(fallback);
+})();
 
 /* ---------- Видео: играет одно за раз ---------- */
 const reels = [...document.querySelectorAll(".reel")];

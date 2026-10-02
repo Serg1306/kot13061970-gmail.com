@@ -21,3 +21,7 @@
   for = "/rudakova-art.html"
   [headers.values]
     Content-Type = "text/html; charset=utf-8"
+
+# Функция с лентой Telegram-канала: /.netlify/functions/telegram
+[functions]
+  directory = "netlify/functions"
