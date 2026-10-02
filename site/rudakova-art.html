@@ -120,6 +120,34 @@ section { padding-block: clamp(3rem, 7vw, 5.5rem); }
 .reel figcaption { display: grid; gap: .1rem; }
 .reel .t { font: 500 .98rem/1.3 var(--font-display); }
 .reel .m { font-size: .86rem; color: var(--muted); }
+/* фото-блоки */
+.photo { margin: 0; display: grid; gap: .7rem; }
+.photo img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; border-radius: 1.1rem; border: 1px solid var(--line); background: var(--night-2); }
+.photo figcaption { display: grid; gap: .1rem; }
+.photo .t { font: 500 1rem/1.3 var(--font-display); }
+.photo .m { font-size: .86rem; color: var(--muted); }
+.tilt { transition: transform .35s ease; transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
+.tilt img { box-shadow: 0 24px 40px -28px #000; }
+.age { font: 500 .68rem/1 var(--font-mono); font-style: normal; color: var(--night); background: var(--sold); padding: .15rem .35rem; border-radius: .3rem; vertical-align: middle; }
+.feature { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; margin-top: clamp(2.5rem, 5vw, 4rem); }
+.feature .photo img { aspect-ratio: 4 / 5; object-position: center 62%; }
+.feature h3 { font-size: clamp(1.4rem, 3vw, 2rem); margin: .5rem 0 .8rem; }
+.feature-copy > p { color: var(--muted); max-width: 34rem; margin: 0 0 1.5rem; }
+.event { display: grid; gap: .4rem; padding: 1.2rem 1.3rem; border-radius: 1rem; background: linear-gradient(150deg, var(--wall), var(--night-2)); border: 1px solid color-mix(in srgb, var(--light) 35%, var(--line)); max-width: 30rem; }
+.event b { font: 700 1.3rem/1.2 var(--font-display); }
+.event > span:not(.label):not(.price) { color: var(--muted); font-size: .92rem; }
+.event .price { font: 700 1.6rem/1 var(--font-display); color: var(--light); margin-top: .3rem; }
+.event .price small { font: 400 .85rem var(--font-body); color: var(--muted); }
+.formats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.fmt { padding: 1.3rem; border-radius: 1rem; background: var(--night-2); border: 1px solid var(--line); display: grid; gap: .45rem; align-content: start; transition: transform .3s ease, border-color .3s ease; }
+.fmt:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--light) 45%, var(--line)); }
+.fmt h3 { font-size: 1.1rem; }
+.fmt p { margin: 0; color: var(--muted); font-size: .92rem; }
+@media (max-width: 860px) { .formats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .formats { grid-template-columns: 1fr; } }
+.tees { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2.5vw, 2rem); }
+@media (max-width: 860px) { .feature { grid-template-columns: 1fr; } .tees { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .tees { grid-template-columns: 1fr; } }
 .credit { margin-top: 1rem; font: 400 .78rem var(--font-mono); color: var(--muted); }
 
 /* about */
@@ -208,6 +236,8 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
     <nav class="nav" aria-label="Разделы">
       <a href="#works">Работы</a>
       <a href="#party">Арт-пати</a>
+      <a href="#formats">Форматы</a>
+      <a href="#tees">Футболки</a>
       <a href="#about">Обо мне</a>
       <a href="#channel">Канал</a>
       <a href="#order">Заказать</a>
@@ -253,6 +283,8 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
         <figcaption><span class="t">Идея для корпоратива</span><span class="m">Коллеги пишут картины вместе</span></figcaption></figure>
       <figure class="reel"><div class="reel-box"><video src="media/party-3.mp4" poster="media/party-3.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: арт-девичник">▶</button></div>
         <figcaption><span class="t">Арт-девичник</span><span class="m">Подруги, шампанское, творчество</span></figcaption></figure>
+      <figure class="reel"><div class="reel-box"><video src="media/party-6.mp4" poster="media/party-6.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: Bride to be">▶</button></div>
+        <figcaption><span class="t">Bride to be</span><span class="m">Девичник невесты в студии</span></figcaption></figure>
       <figure class="reel"><div class="reel-box"><video src="media/party-5.mp4" poster="media/party-5.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: мастер-класс">▶</button></div>
         <figcaption><span class="t">Мастер-класс</span><span class="m">Объёмная картина с пончиками</span></figcaption></figure>
       <figure class="reel"><div class="reel-box"><video src="media/party-2.mp4" poster="media/party-2.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: роспись футболок">▶</button></div>
@@ -260,7 +292,50 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
       <figure class="reel"><div class="reel-box"><video src="media/party-1.mp4" poster="media/party-1.jpg" playsinline loop preload="none"></video><button class="play" type="button" aria-label="Смотреть: занятия с детьми">▶</button></div>
         <figcaption><span class="t">Занятия с детьми</span><span class="m">«А тебе не скучно?» — ни капли</span></figcaption></figure>
     </div>
-    <p class="credit">Видео: <a href="https://t.me/artparty_pvk" target="_blank" rel="noopener">t.me/artparty_pvk</a>, публикуется с согласия автора</p>
+    <div class="feature">
+      <figure class="photo tilt"><img src="media/class-sea.jpg" alt="Четыре участницы мастер-класса держат свои картины: девушка у окна с видом на море, вино и пионы" loading="lazy" width="721" height="1280"></figure>
+      <div class="feature-copy">
+        <p class="label">Результат одного вечера</p>
+        <h3>Каждая уходит домой со своей картиной</h3>
+        <p>На мастер-классе все пишут один сюжет, а картины получаются разными: свой цвет волос, свои цветы, своё настроение. Опыт не нужен, художник ведёт шаг за шагом.</p>
+        <div class="event">
+          <span class="label">Формат для взрослых · 18+</span>
+          <b>Свободная живопись</b>
+          <span>Картину выбираете сами из каталога: ню, силуэты, экспрессия. Холст и все материалы включены в стоимость.</span>
+          <span>Сеансы в 12:00 и 18:15</span>
+          <span class="price">от 900 ₽ <small>/ 1 час</small></span>
+        </div>
+      </div>
+    </div>
+    <p class="credit">Фото и видео: <a href="https://t.me/artparty_pvk" target="_blank" rel="noopener">t.me/artparty_pvk</a>, публикуются с согласия автора</p>
+  </section>
+
+  <section id="formats">
+    <div class="sec-head">
+      <div><p class="label">Чем заняться в студии</p><h2>Форматы</h2></div>
+      <a class="btn ghost" href="https://t.me/artparty_pvk" target="_blank" rel="noopener">Расписание в Telegram ↗</a>
+    </div>
+    <div class="formats">
+      <article class="fmt"><span class="label">Для пар</span><h3>Мастер-класс на свидание</h3><p>Семь небанальных сценариев для двоих: пишете вместе или наперегонки, уносите парные картины.</p></article>
+      <article class="fmt"><span class="label">Для детей</span><h3>Картины с автомобилями</h3><p>Объёмная фактурная паста, брызги и настоящая модель машинки прямо на холсте. Начало в 12:00.</p></article>
+      <article class="fmt"><span class="label">18+</span><h3>Свободная живопись</h3><p>Выбираете картину из каталога и пишете в своём темпе. Оплата по часам, материалы включены.</p></article>
+      <article class="fmt"><span class="label">Для компаний</span><h3>Корпоратив</h3><p>Команда пишет картины вместе. Можно один сюжет на всех или большое общее полотно.</p></article>
+      <article class="fmt"><span class="label">Для подруг</span><h3>Арт-девичник и Bride to be</h3><p>Шампанское, музыка, декор зала, роспись футболок или картины на память.</p></article>
+      <article class="fmt"><span class="label">Для всех</span><h3>Мастер-класс по сюжету</h3><p>Новый сюжет каждую неделю. Опыт не нужен, художник ведёт шаг за шагом.</p></article>
+    </div>
+  </section>
+
+  <section id="tees">
+    <div class="sec-head">
+      <div><p class="label">Роспись вручную</p><h2>Авторские футболки</h2></div>
+      <p style="color:var(--muted);max-width:26rem;margin:0">Каждый принт нарисован от руки и подписан. Можно заказать готовый или придумать свой.</p>
+    </div>
+    <div class="tees">
+      <figure class="photo tilt"><img src="media/tee-heart.jpg" alt="Белая футболка с разноцветным анатомическим сердцем" loading="lazy" width="719" height="1280"><figcaption><span class="t">Сердце</span><span class="m">Акварельная роспись · белая футболка</span></figcaption></figure>
+      <figure class="photo tilt"><img src="media/tee-wine.jpg" alt="Розовая футболка с принтом Wine Time" loading="lazy" width="719" height="1280"><figcaption><span class="t">Wine Time</span><span class="m">Роспись акрилом · розовая футболка</span></figcaption></figure>
+      <figure class="photo tilt"><img src="media/tee-pattern.jpg" alt="Белая футболка с ярким юмористическим паттерном на розовом фоне" loading="lazy" width="719" height="1280"><figcaption><span class="t">Паттерн с юмором <em class="age">18+</em></span><span class="m">Для девичников · белая футболка</span></figcaption></figure>
+    </div>
+    <div style="margin-top:1.5rem"><a class="btn" href="#order" id="tee-order">Заказать футболку</a></div>
   </section>
 
   <section id="about">
@@ -573,6 +648,19 @@ reels.forEach(r => {
   };
   r.querySelector(".play").addEventListener("click", toggle);
   v.addEventListener("click", toggle);
+});
+
+/* ---------- 3D-наклон фото за курсором ---------- */
+if (!reduced) document.querySelectorAll(".tilt").forEach(el => {
+  el.addEventListener("pointermove", e => {
+    const b = el.getBoundingClientRect();
+    el.style.setProperty("--ry", ((e.clientX - b.left) / b.width - .5) * 12 + "deg");
+    el.style.setProperty("--rx", -((e.clientY - b.top) / b.height - .5) * 12 + "deg");
+  });
+  el.addEventListener("pointerleave", () => { el.style.setProperty("--rx", "0deg"); el.style.setProperty("--ry", "0deg"); });
+});
+document.getElementById("tee-order").addEventListener("click", () => {
+  document.getElementById("f-idea").value = "Хочу футболку с росписью: ";
 });
 
 render("all");
