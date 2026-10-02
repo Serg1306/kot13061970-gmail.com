@@ -1,0 +1,409 @@
+<title>Rudakova Art</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: мастерская художника — крупные холсты, музейные этикетки, палитра пигментов как навигация */
+:root {
+  --paper: #f3f4f1;
+  --paper-2: #e8eae5;
+  --ink: #1d2230;
+  --ink-soft: #5a6070;
+  --rule: #cfd3cc;
+  --ultramarine: #2f45a8;
+  --ochre: #c98a1b;
+  --madder: #a8384a;
+  --viridian: #2f7a68;
+  --font-display: "Prata", "Georgia", "Times New Roman", serif;
+  --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Menlo", monospace;
+  --wrap: 72rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #15171d; --paper-2: #1d2029; --ink: #eceae4; --ink-soft: #a3a7b3; --rule: #2e323d;
+    --ultramarine: #8c9cf0; --ochre: #e0ab4f; --madder: #e07a8a; --viridian: #6cc0a8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #15171d; --paper-2: #1d2029; --ink: #eceae4; --ink-soft: #a3a7b3; --rule: #2e323d;
+  --ultramarine: #8c9cf0; --ochre: #e0ab4f; --madder: #e07a8a; --viridian: #6cc0a8;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink);
+  font: 400 1rem/1.6 var(--font-body);
+  padding-inline: 1rem;
+}
+.wrap { max-width: var(--wrap); margin-inline: auto; }
+a { color: var(--ultramarine); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--ultramarine); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; }
+.label { font: 500 .72rem/1.3 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+  margin-inline: -1rem; padding: .75rem 1rem;
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.brand { font-family: var(--font-display); font-size: 1.25rem; text-decoration: none; color: var(--ink); }
+.nav { display: flex; gap: .25rem 1.1rem; flex-wrap: wrap; }
+.nav a { color: var(--ink-soft); text-decoration: none; font-size: .92rem; display: inline-flex; align-items: center; gap: .4rem; }
+.nav a:hover { color: var(--ink); }
+.nav i { width: .6rem; height: .6rem; border-radius: 50% 40% 55% 45%; display: inline-block; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(1.5rem, 4vw, 3.5rem); align-items: center; padding-block: clamp(2rem, 6vw, 4.5rem); }
+.hero > * { min-width: 0; }
+.hero h1 { font-size: clamp(2.4rem, 6.2vw, 4.6rem); line-height: 1.04; letter-spacing: -.01em; }
+.hero h1 em { font-style: normal; color: var(--ultramarine); }
+.hero p { color: var(--ink-soft); max-width: 34rem; font-size: 1.08rem; margin: 1.25rem 0 1.75rem; }
+.cta { display: flex; gap: .75rem; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem; padding: .8rem 1.3rem;
+  font: 500 .95rem/1 var(--font-body); text-decoration: none; border-radius: 2px; cursor: pointer;
+  border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+}
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn:hover { transform: translateY(-1px); }
+.easel { position: relative; }
+.easel canvas { width: 100%; aspect-ratio: 4 / 5; display: block; background: var(--paper-2); box-shadow: 0 1px 0 var(--rule), 0 24px 48px -28px rgba(20,24,40,.45); }
+.easel .tag { position: absolute; left: -.5rem; bottom: 1.25rem; background: var(--paper); border: 1px solid var(--rule); padding: .6rem .8rem; max-width: 70%; }
+.easel .tag b { display: block; font: 400 1rem/1.3 var(--font-display); margin-top: .2rem; }
+
+.note { border: 1px dashed var(--ochre); color: var(--ink-soft); padding: .7rem .9rem; font-size: .88rem; margin-bottom: 1rem; }
+.note b { color: var(--ink); }
+
+/* sections */
+section { padding-block: clamp(2.5rem, 6vw, 4.5rem); border-top: 1px solid var(--rule); }
+.sec-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+.sec-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+
+/* gallery */
+.filters { display: flex; gap: .4rem; flex-wrap: wrap; }
+.filters button {
+  font: 500 .82rem/1 var(--font-body); padding: .5rem .85rem; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--rule); background: transparent; color: var(--ink-soft);
+}
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2.5vw, 2rem); }
+.work { margin: 0; cursor: zoom-in; }
+.work canvas { width: 100%; aspect-ratio: var(--ar, 4 / 5); display: block; background: var(--paper-2); transition: transform .3s ease; }
+.work:hover canvas { transform: translateY(-3px); }
+.work figcaption { padding-top: .7rem; display: grid; gap: .15rem; }
+.work .t { font-family: var(--font-display); font-size: 1.1rem; }
+.work .m { font: 400 .78rem/1.4 var(--font-mono); color: var(--ink-soft); }
+.work .s { font: 500 .72rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.s.free { color: var(--viridian); } .s.sold { color: var(--madder); }
+
+/* about */
+.about { display: grid; grid-template-columns: 1fr 1.3fr; gap: clamp(1.5rem, 4vw, 3.5rem); }
+.about > * { min-width: 0; }
+.about p { max-width: 38rem; margin: 0 0 1rem; }
+.palette { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: 1.5rem; }
+.swatch { display: flex; gap: .7rem; align-items: center; }
+.swatch i { width: 2.4rem; height: 2.4rem; flex: none; border-radius: 48% 52% 45% 55% / 55% 45% 55% 45%; }
+.swatch span { font-size: .9rem; } .swatch small { display: block; font: .72rem var(--font-mono); color: var(--ink-soft); }
+
+/* channel */
+.channel { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); align-items: start; }
+.channel > * { min-width: 0; }
+.phone { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 1.25rem; padding: 1rem; display: grid; gap: .6rem; }
+.msg { background: var(--paper); border-radius: .9rem .9rem .9rem .25rem; padding: .65rem .85rem; font-size: .92rem; max-width: 92%; }
+.msg .r { display: block; margin-top: .35rem; font-size: .8rem; color: var(--ink-soft); }
+.poll { display: grid; gap: .35rem; margin-top: .5rem; }
+.poll div { position: relative; border: 1px solid var(--rule); border-radius: .4rem; padding: .35rem .6rem; font-size: .85rem; overflow: hidden; }
+.poll div::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p); background: color-mix(in srgb, var(--ultramarine) 16%, transparent); }
+.poll span { position: relative; display: flex; justify-content: space-between; gap: .5rem; }
+.rubrics { list-style: none; padding: 0; margin: 1.25rem 0 1.5rem; display: grid; gap: .8rem; }
+.rubrics li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem; padding-bottom: .8rem; border-bottom: 1px solid var(--rule); }
+.rubrics li b { font: 500 .78rem/1.5 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ultramarine); }
+
+/* order */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; counter-reset: s; padding: 0; margin: 0 0 2rem; list-style: none; }
+.steps li { border-top: 2px solid var(--ink); padding-top: .8rem; counter-increment: s; }
+.steps li::before { content: "Шаг " counter(s); display: block; font: 500 .72rem var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: .4rem; }
+.steps h3 { font-size: 1.15rem; margin-bottom: .3rem; }
+.steps p { margin: 0; font-size: .92rem; color: var(--ink-soft); }
+form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 46rem; }
+form .full { grid-column: 1 / -1; }
+label { display: grid; gap: .35rem; font-size: .88rem; color: var(--ink-soft); }
+input, select, textarea {
+  font: 400 1rem/1.4 var(--font-body); color: var(--ink); background: var(--paper);
+  border: 1px solid var(--rule); border-radius: 2px; padding: .7rem .8rem; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--ultramarine); outline-offset: 0; border-color: transparent; }
+.out { grid-column: 1 / -1; background: var(--paper-2); border-left: 3px solid var(--viridian); padding: .9rem 1rem; white-space: pre-wrap; font-size: .92rem; }
+.out-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .8rem; }
+
+footer { border-top: 1px solid var(--rule); padding-block: 2rem 3rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--ink-soft); font-size: .88rem; }
+.mono { font-family: var(--font-mono); user-select: all; }
+
+/* lightbox */
+.lb { position: fixed; inset: 0; z-index: 20; background: color-mix(in srgb, var(--paper) 94%, transparent); display: grid; place-items: center; padding: 1.5rem; }
+.lb-inner { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 2rem; max-width: 60rem; width: 100%; align-items: center; }
+.lb canvas { width: 100%; max-height: 78vh; object-fit: contain; display: block; }
+.lb h3 { font-size: 1.8rem; margin: .4rem 0 .6rem; }
+.lb .close { position: absolute; top: calc(1rem + env(safe-area-inset-top, 0px)); right: 1rem; }
+
+@media (max-width: 860px) {
+  .hero, .about, .channel, .lb-inner { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .grid, .steps, form { grid-template-columns: 1fr; }
+  .rubrics li { grid-template-columns: 1fr; gap: .2rem; }
+  .easel .tag { left: .5rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:hover, .work:hover canvas { transform: none; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">Rudakova&nbsp;Art</a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#works"><i style="background:var(--ultramarine)"></i>Работы</a>
+      <a href="#about"><i style="background:var(--ochre)"></i>Обо мне</a>
+      <a href="#channel"><i style="background:var(--madder)"></i>Канал</a>
+      <a href="#order"><i style="background:var(--viridian)"></i>Заказать</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <div>
+      <p class="label">Живопись · @rudakova_art</p>
+      <h1>Картины, в которых <em>цвет</em> рассказывает историю</h1>
+      <p>Оригинальные работы, картины на заказ и закулисье мастерской. Выберите работу из каталога или расскажите, какую картину хотите видеть у себя дома.</p>
+      <div class="cta">
+        <a class="btn" href="#works">Смотреть работы</a>
+        <a class="btn ghost" href="https://www.instagram.com/channel/AbZWuPswmVpcck-8/" target="_blank" rel="noopener">Канал в Instagram ↗</a>
+      </div>
+    </div>
+    <div class="easel">
+      <canvas id="hero-canvas" width="800" height="1000" aria-label="Абстрактная композиция: место для главной работы"></canvas>
+      <div class="tag"><span class="label">На мольберте</span><b>Место для вашей главной работы</b></div>
+    </div>
+  </div>
+
+  <section id="works">
+    <div class="sec-head">
+      <div><p class="label">Каталог</p><h2>Работы</h2></div>
+      <div class="filters" role="group" aria-label="Фильтр работ">
+        <button type="button" data-f="all" aria-pressed="true">Все</button>
+        <button type="button" data-f="free" aria-pressed="false">Доступны</button>
+        <button type="button" data-f="sold" aria-pressed="false">В коллекциях</button>
+      </div>
+    </div>
+    <p class="note"><b>Образец.</b> Здесь генеративные эскизы и примерные подписи. Замените их фотографиями картин, реальными названиями, техникой, размерами и ценами.</p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="about">
+    <div class="about">
+      <div>
+        <p class="label">Обо мне</p>
+        <h2>Мастерская</h2>
+        <div class="palette" aria-label="Палитра">
+          <div class="swatch"><i style="background:var(--ultramarine)"></i><span>Ультрамарин<small>PB29</small></span></div>
+          <div class="swatch"><i style="background:var(--ochre)"></i><span>Охра<small>PY43</small></span></div>
+          <div class="swatch"><i style="background:var(--madder)"></i><span>Краплак<small>PR83</small></span></div>
+          <div class="swatch"><i style="background:var(--viridian)"></i><span>Изумрудная<small>PG18</small></span></div>
+        </div>
+      </div>
+      <div>
+        <p class="note"><b>Заполните сами.</b> Текст ниже — шаблон. Впишите свою историю, технику и выставки.</p>
+        <p>Меня зовут [имя]. Пишу [масло / акварель / акрил] и работаю в мастерской в [город]. Рисую [главные темы: цветы, море, портреты, город].</p>
+        <p>Каждая картина начинается с цвета: сначала я подбираю палитру, а потом ищу сюжет. В канале показываю процесс от первого мазка до подписи на обороте.</p>
+        <p>Работы есть в частных коллекциях в [страны / города]. Принимаю заказы на картины по фото и по вашему настроению.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="channel">
+    <div class="channel">
+      <div>
+        <p class="label">Канал рассылки Instagram</p>
+        <h2>Закулисье мастерской</h2>
+        <p style="color:var(--ink-soft);max-width:34rem">В канале я пишу первой: новые работы раньше ленты, процесс, опросы о следующей картине. Подписчики участвуют реакциями и голосованием.</p>
+        <ul class="rubrics">
+          <li><b>Пн · Процесс</b><span>Фото и видео этапов: эскиз, подмалёвок, детали.</span></li>
+          <li><b>Ср · Выбор</b><span>Опрос: какой сюжет, цвет или формат писать дальше.</span></li>
+          <li><b>Пт · Первыми</b><span>Новая работа в канале за сутки до публикации в ленте.</span></li>
+          <li><b>Раз в месяц</b><span>Вопрос–ответ: материалы, техника, как выбрать картину в интерьер.</span></li>
+        </ul>
+        <a class="btn" href="https://www.instagram.com/channel/AbZWuPswmVpcck-8/" target="_blank" rel="noopener">Вступить в канал ↗</a>
+      </div>
+      <div class="phone" aria-label="Пример сообщений в канале">
+        <span class="label">Пример ленты канала</span>
+        <div class="msg">Доброе утро! Сегодня начинаю большой холст 80×100. Покажу подмалёвок вечером 🎨<span class="r">❤️ 🔥 👏</span></div>
+        <div class="msg">Какой фон выбрать для новой работы?
+          <div class="poll">
+            <div style="--p:58%"><span>Глубокий ультрамарин<b>58%</b></span></div>
+            <div style="--p:29%"><span>Тёплая охра<b>29%</b></span></div>
+            <div style="--p:13%"><span>Светлый, почти белый<b>13%</b></span></div>
+          </div>
+        </div>
+        <div class="msg">Готово! Работа будет в ленте завтра, а здесь вы видите её первыми.<span class="r">😍 ❤️</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="order">
+    <div class="sec-head"><div><p class="label">Картина на заказ</p><h2>Как заказать</h2></div></div>
+    <ol class="steps">
+      <li><h3>Заявка</h3><p>Опишите идею, размер и место, где будет висеть картина.</p></li>
+      <li><h3>Эскиз</h3><p>Присылаю эскиз и палитру, вносим правки.</p></li>
+      <li><h3>Работа</h3><p>Пишу картину и показываю этапы в процессе.</p></li>
+      <li><h3>Доставка</h3><p>Упаковка, сертификат подлинности, отправка.</p></li>
+    </ol>
+    <form id="order-form" novalidate>
+      <label>Имя<input id="f-name" name="name" required placeholder="Как к вам обращаться"></label>
+      <label>Размер
+        <select id="f-size" name="size">
+          <option>30×40 см</option><option selected>50×70 см</option><option>60×80 см</option><option>80×100 см</option><option>Другой</option>
+        </select>
+      </label>
+      <label class="full">Идея<textarea id="f-idea" name="idea" rows="4" placeholder="Сюжет, цвета, настроение, интерьер"></textarea></label>
+      <div class="full"><button class="btn" type="submit">Подготовить сообщение</button></div>
+      <div class="out" id="out" hidden></div>
+    </form>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>© Rudakova Art</span>
+  <span>Instagram: <span class="mono">@rudakova_art</span></span>
+</footer>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lb-title">
+  <button class="btn ghost close" type="button" id="lb-close">Закрыть</button>
+  <div class="lb-inner">
+    <canvas id="lb-canvas" width="900" height="1125"></canvas>
+    <div>
+      <p class="label" id="lb-no"></p>
+      <h3 id="lb-title"></h3>
+      <p class="m" id="lb-meta" style="font-family:var(--font-mono);color:var(--ink-soft)"></p>
+      <a class="btn" href="#order" id="lb-ask">Спросить о работе</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Пример каталога: замените на реальные работы (title, tech, size, year, status)
+const WORKS = [
+  { title: "Утро у залива", tech: "Холст, масло", size: "50×70", year: 2025, status: "free", seed: 3, hues: ["--ultramarine", "--ochre"], ar: "4 / 5" },
+  { title: "Пионы", tech: "Бумага, акварель", size: "30×40", year: 2025, status: "sold", seed: 11, hues: ["--madder", "--viridian"], ar: "4 / 5" },
+  { title: "Северный свет", tech: "Холст, акрил", size: "60×80", year: 2024, status: "free", seed: 21, hues: ["--ultramarine", "--viridian"], ar: "4 / 5" },
+  { title: "Поле в июле", tech: "Холст, масло", size: "40×50", year: 2024, status: "free", seed: 8, hues: ["--ochre", "--viridian"], ar: "4 / 5" },
+  { title: "Вечерний город", tech: "Картон, гуашь", size: "30×40", year: 2024, status: "sold", seed: 17, hues: ["--madder", "--ultramarine"], ar: "4 / 5" },
+  { title: "Тишина", tech: "Холст, масло", size: "80×100", year: 2023, status: "free", seed: 5, hues: ["--ochre", "--madder"], ar: "4 / 5" },
+];
+
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function rng(seed) { let s = seed * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
+
+// Акварельные «эскизы»: полупрозрачные пятна пигмента на бумаге
+function paint(canvas, seed, hues) {
+  const ctx = canvas.getContext("2d"), w = canvas.width, h = canvas.height, r = rng(seed);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = css("--paper-2"); ctx.fillRect(0, 0, w, h);
+  const cols = hues.map(css).concat(css("--ink-soft"));
+  for (let i = 0; i < 46; i++) {
+    const col = cols[i % 9 === 0 ? 2 : i % 2], x = r() * w, y = h * (0.15 + r() * 0.8), rad = (0.08 + r() * 0.3) * w;
+    ctx.globalAlpha = 0.05 + r() * 0.08;
+    ctx.fillStyle = col; ctx.beginPath();
+    for (let a = 0; a <= Math.PI * 2 + 0.01; a += Math.PI / 10) {
+      const k = rad * (0.7 + r() * 0.45);
+      const px = x + Math.cos(a) * k, py = y + Math.sin(a) * k * 0.7;
+      a === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+  // горизонт
+  ctx.globalAlpha = 0.35; ctx.fillStyle = cols[0];
+  ctx.fillRect(0, h * (0.45 + r() * 0.2), w, h * 0.006);
+  // зерно бумаги
+  ctx.globalAlpha = 0.05; ctx.fillStyle = css("--ink");
+  for (let i = 0; i < 2500; i++) ctx.fillRect(r() * w, r() * h, 1.5, 1.5);
+  ctx.globalAlpha = 1;
+}
+
+const grid = document.getElementById("grid");
+function render(filter) {
+  grid.innerHTML = "";
+  WORKS.forEach((wk, i) => {
+    if (filter !== "all" && wk.status !== filter) return;
+    const f = document.createElement("figure");
+    f.className = "work"; f.tabIndex = 0; f.setAttribute("role", "button");
+    f.setAttribute("aria-label", "Открыть: " + wk.title);
+    f.innerHTML = `<canvas width="480" height="600" style="--ar:${wk.ar}"></canvas>
+      <figcaption><span class="label">№ ${String(i + 1).padStart(3, "0")} · ${wk.year}</span>
+      <span class="t">${wk.title}</span>
+      <span class="m">${wk.tech}, ${wk.size} см</span>
+      <span class="s ${wk.status}">${wk.status === "free" ? "Доступна" : "В частной коллекции"}</span></figcaption>`;
+    grid.appendChild(f);
+    paint(f.querySelector("canvas"), wk.seed, wk.hues);
+    const open = () => openLb(wk, i);
+    f.addEventListener("click", open);
+    f.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+  });
+}
+let current = "all";
+document.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => {
+  current = b.dataset.f;
+  document.querySelectorAll(".filters button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render(current);
+}));
+
+const lb = document.getElementById("lb");
+function openLb(wk, i) {
+  paint(document.getElementById("lb-canvas"), wk.seed, wk.hues);
+  document.getElementById("lb-no").textContent = `№ ${String(i + 1).padStart(3, "0")} · ${wk.year}`;
+  document.getElementById("lb-title").textContent = wk.title;
+  document.getElementById("lb-meta").textContent = `${wk.tech}, ${wk.size} см · ${wk.status === "free" ? "доступна" : "в частной коллекции"}`;
+  document.getElementById("lb-ask").onclick = () => {
+    closeLb(); document.getElementById("f-idea").value = `Интересует работа «${wk.title}» (${wk.size} см).`;
+  };
+  lb.hidden = false; document.getElementById("lb-close").focus();
+}
+function closeLb() { lb.hidden = true; }
+document.getElementById("lb-close").addEventListener("click", closeLb);
+lb.addEventListener("click", e => { if (e.target === lb) closeLb(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !lb.hidden) closeLb(); });
+
+// Форма собирает текст сообщения, который можно скопировать и отправить в Direct
+document.getElementById("order-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = document.getElementById("f-name").value.trim();
+  const out = document.getElementById("out");
+  if (!name) { document.getElementById("f-name").focus(); out.hidden = false; out.textContent = "Укажите имя, чтобы подготовить сообщение."; return; }
+  const text = `Здравствуйте! Меня зовут ${name}. Хочу заказать картину ${document.getElementById("f-size").value}.\n${document.getElementById("f-idea").value.trim() || "Идею расскажу в переписке."}`;
+  out.hidden = false;
+  out.innerHTML = "";
+  const p = document.createElement("div"); p.textContent = text; out.appendChild(p);
+  const act = document.createElement("div"); act.className = "out-actions";
+  act.innerHTML = `<button type="button" class="btn">Скопировать</button><a class="btn ghost" href="https://www.instagram.com/rudakova_art/" target="_blank" rel="noopener">Открыть Instagram ↗</a>`;
+  out.appendChild(act);
+  const copy = act.querySelector("button");
+  copy.addEventListener("click", () => {
+    navigator.clipboard.writeText(text).then(() => { copy.textContent = "Скопировано"; })
+      .catch(() => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(p); s.removeAllRanges(); s.addRange(rg); copy.textContent = "Выделено — нажмите Ctrl+C"; });
+  });
+});
+
+function paintAll() { paint(document.getElementById("hero-canvas"), 42, ["--ultramarine", "--ochre"]); render(current); }
+paintAll();
+document.fonts?.ready.then(() => {});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintAll);
+new MutationObserver(paintAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>
