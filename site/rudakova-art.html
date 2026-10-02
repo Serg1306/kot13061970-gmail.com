@@ -478,15 +478,21 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem 3rem; display: f
 // Каталог работ студии: фото из media/
 const WORKS = [
   { title: "Дерево изобилия, золото", tech: "Круглое панно, объёмная роспись", kind: "panel", img: "media/work-tree-gold.jpg" },
-  { title: "Горы под звёздами", tech: "Холст, объёмная фактура, серебро", kind: "art", img: "media/work-mountains.jpg" },
+  { title: "Слон", tech: "Холст, масло, поталь", kind: "art", img: "media/work-elephant.jpg" },
   { title: "Золотая свеча", tech: "Рельефное кашпо, деревянный фитиль", kind: "decor", img: "media/work-candle-gold.jpg" },
+  { title: "Анатомическое сердце", tech: "Холст, объёмная фактура, подтёки акварелью", kind: "art", img: "media/work-heart.jpg" },
+  { title: "Дерево изобилия, аметист", tech: "Круглое панно, натуральный аметист", kind: "panel", img: "media/work-tree-amethyst.jpg" },
   { title: "Кружево", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-lace.jpg" },
   { title: "Карусель", tech: "Шкатулка-свеча, роспись золотом", kind: "decor", img: "media/work-carousel.jpg" },
-  { title: "Дерево изобилия, серебро", tech: "Круглое панно · мини-курс от ART PARTY", kind: "panel", img: "media/work-tree-silver.jpg" },
+  { title: "Горы под звёздами", tech: "Холст, объёмная фактура, серебро", kind: "art", img: "media/work-mountains.jpg" },
   { title: "Красное вино", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-wine.jpg" },
+  { title: "Дерево изобилия, серебро", tech: "Круглое панно · мини-курс от ART PARTY", kind: "panel", img: "media/work-tree-silver.jpg" },
+  { title: "Белая рубашка", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-shirt.jpg" },
   { title: "Автобус", tech: "Свеча в кашпо, деревянный фитиль", kind: "decor", img: "media/work-bus.jpg" },
   { title: "Танго", tech: "Живопись на холсте · свободная живопись", kind: "art", adult: true, img: "media/work-tango.jpg" },
 ];
+// в 3D-круг на главном экране идут работы без пометки 18+, не больше 10
+const RING = WORKS.map((w, i) => ({ w, i })).filter(o => !o.w.adult).slice(0, 10);
 const KIND = { art: "Картина", panel: "Панно", decor: "Свечи и декор" };
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const no = i => "№ " + String(i + 1).padStart(3, "0");
@@ -539,7 +545,7 @@ function initStage() {
   // пол-подиум
   const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.MeshStandardMaterial({ color: 0x151827, roughness: 0.55, metalness: 0.3 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -1.9; floor.receiveShadow = true; scene.add(floor);
-  const R = Math.max(4.2, WORKS.length * 0.58);
+  const R = Math.max(4.2, RING.length * 0.58);
   const ringLine = new THREE.Mesh(new THREE.RingGeometry(R - 0.05, R, 96), new THREE.MeshBasicMaterial({ color: 0xf2d29b, transparent: true, opacity: 0.35 }));
   ringLine.rotation.x = -Math.PI / 2; ringLine.position.y = -1.89; scene.add(ringLine);
 
@@ -549,7 +555,7 @@ function initStage() {
   const loader = new THREE.TextureLoader();
   renderer.outputEncoding = THREE.sRGBEncoding;
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x2a2116, roughness: 0.4, metalness: 0.5 });
-  WORKS.forEach((wk, i) => {
+  RING.forEach(({ w: wk, i }, k) => {
     const tex = loader.load(wk.img); tex.encoding = THREE.sRGBEncoding;
     tex.anisotropy = 4;
     const g = new THREE.Group();
@@ -558,10 +564,10 @@ function initStage() {
     const art = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 2.25), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85 }));
     art.position.z = 0.065; art.userData.index = i;
     g.add(frame, art);
-    const a = (i / WORKS.length) * Math.PI * 2;
+    const a = (k / RING.length) * Math.PI * 2;
     g.position.set(Math.sin(a) * R, 0.1, Math.cos(a) * R);
     g.rotation.y = a;
-    g.userData.phase = i * 1.3;
+    g.userData.phase = k * 1.3;
     ring.add(g); picks.push(art);
   });
 
