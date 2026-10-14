@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Модерация — Любовь в цифрах</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root { --ink: #23163a; --muted: #6d6380; --line: #ddd6e8; --card: #fff; --rose: #d93a63; --blue: #3b6fd8; --bg: #f1e1f6; --ok: #1f8a5b; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45; --card: #211a2d; --rose: #f0638a; --blue: #7aa2f7; --bg: #24183a; --ok: #4cc38a; color-scheme: dark; } }
+* { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.55 "Golos Text", system-ui, sans-serif; padding: 0 1rem 3rem; }
+main { max-width: 64rem; margin: 0 auto; }
+a { color: var(--rose); }
+img { max-width: 100%; display: block; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.logo { display: inline-block; font-family: "Great Vibes", cursive; font-size: 2.2rem; color: var(--ink); text-decoration: none; margin: 1.2rem 0 .3rem; }
+h1, h2, h3 { font-family: "Prata", Georgia, serif; font-weight: 400; line-height: 1.2; }
+h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); margin: .3rem 0 1rem; }
+h2 { font-size: 1.3rem; margin: 1.6rem 0 .6rem; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 1rem 1.1rem; min-width: 0; }
+.muted { color: var(--muted); font-size: .92rem; }
+.btn { font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: .5rem 1rem; cursor: pointer; }
+.btn:hover { border-color: var(--rose); }
+.btn.rose { background: var(--rose); border-color: var(--rose); color: #fff; }
+.btn.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.btn:disabled { opacity: .5; cursor: default; }
+input, textarea { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .6rem .8rem; width: 100%; }
+textarea { min-height: 5rem; resize: vertical; }
+.row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0 1rem; }
+.tab { position: relative; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.badge { display: inline-block; min-width: 1.4em; padding: 0 .35em; margin-left: .35em; border-radius: 999px; background: var(--rose); color: #fff; font-size: .78rem; text-align: center; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr)); gap: .8rem; }
+.thumb { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; background: var(--line); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.pair figure { margin: 0; min-width: 0; }
+.pair figcaption { font-size: .85rem; color: var(--muted); margin-top: .25rem; }
+.gesture { font-weight: 600; margin: .6rem 0; }
+.who { overflow-wrap: anywhere; }
+.list { display: grid; gap: .8rem; }
+.report { display: grid; grid-template-columns: 5rem 1fr; gap: .8rem; align-items: start; }
+.report .thumb { width: 5rem; }
+.support { display: grid; grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); gap: .8rem; }
+.threads { display: grid; gap: .4rem; align-content: start; }
+.thread { text-align: left; border-radius: 14px; width: 100%; overflow-wrap: anywhere; }
+.thread[aria-current="true"] { border-color: var(--rose); }
+.thread .muted { font-weight: 400; }
+.msgs { display: grid; gap: .4rem; max-height: 55vh; overflow-y: auto; margin-bottom: .8rem; padding-right: .2rem; }
+.msg { max-width: 85%; padding: .45rem .75rem; border-radius: 14px; background: var(--bg); white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.mine { justify-self: end; background: var(--rose); color: #fff; }
+.msg .t { display: block; font-size: .75rem; opacity: .75; }
+.stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr)); gap: .8rem; }
+.stat b { display: block; font-family: "Prata", Georgia, serif; font-size: 2rem; font-weight: 400; }
+.empty { padding: 1.5rem; text-align: center; color: var(--muted); }
+.login { max-width: 26rem; }
+.login label { display: block; margin: .8rem 0 .3rem; }
+.err { color: var(--rose); min-height: 1.4em; margin: .4rem 0 0; }
+[hidden] { display: none !important; }
+@media (max-width: 640px) {
+  body { padding: 0 1rem 2rem; }
+  .support { grid-template-columns: 1fr; }
+  .support.open .threads { display: none; }
+  .support:not(.open) .chat { display: none; }
+}
+@media (min-width: 641px) { .back { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <a class="logo" href="./">Любовь в цифрах</a>
+    <button class="btn" id="logout" type="button" hidden>Выйти</button>
+  </div>
+  <h1>Модерация</h1>
+
+  <section id="login" class="card login" hidden>
+    <p>Войдите с почтой модератора — на неё придёт код.</p>
+    <form id="emailForm">
+      <label for="email">Электронная почта</label>
+      <input id="email" type="email" autocomplete="email" required>
+      <p class="row" style="margin-top:.8rem"><button class="btn rose" type="submit">Получить код</button></p>
+    </form>
+    <form id="codeForm" hidden>
+      <label for="code">Код из письма</label>
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="\d{6}" required>
+      <p class="row" style="margin-top:.8rem"><button class="btn rose" type="submit">Войти</button> <button class="btn" type="button" id="again">Другая почта</button></p>
+    </form>
+    <p class="err" id="loginErr" role="alert"></p>
+  </section>
+
+  <section id="denied" class="card" hidden>
+    <p>Эта почта не входит в список модераторов. Добавьте её в переменную <code>ADMIN_EMAILS</code> на сервере и перезапустите его.</p>
+  </section>
+
+  <section id="panel" hidden>
+    <nav class="tabs" role="tablist">
+      <button class="btn tab" role="tab" data-tab="photos">Фото на модерации<span class="badge" data-count="photos" hidden></span></button>
+      <button class="btn tab" role="tab" data-tab="verify">Подтверждение<span class="badge" data-count="verify" hidden></span></button>
+      <button class="btn tab" role="tab" data-tab="reports">Жалобы<span class="badge" data-count="reports" hidden></span></button>
+      <button class="btn tab" role="tab" data-tab="support">Поддержка<span class="badge" data-count="support" hidden></span></button>
+      <button class="btn tab" role="tab" data-tab="stats">Статистика</button>
+    </nav>
+    <div id="view" aria-live="polite"></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const when = t => t ? new Date(t).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  const REASONS = { fake: 'Фейковая анкета', scam: 'Мошенничество', rude: 'Грубость', photos: 'Неприемлемые фото', minor: 'Несовершеннолетний', other: 'Другое' };
+  const ERRORS = { bad_email: 'Проверьте адрес почты.', too_often: 'Код уже отправлен, подождите минуту.', bad_code: 'Неверный код.', code_expired: 'Код устарел, запросите новый.', too_many_attempts: 'Слишком много попыток, запросите новый код.', mail_failed: 'Не удалось отправить письмо, проверьте настройки почты.', rate_limited: 'Слишком много запросов, подождите.' };
+
+  let queue = null, tab = 'photos', thread = null, email = '';
+
+  async function api(method, url, body) {
+    const opts = { method, headers: { 'X-Requested-With': 'lvc' }, credentials: 'same-origin' };
+    if (body !== undefined) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    const r = await fetch(url, opts);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) { const e = new Error(data.error || 'http_' + r.status); e.status = r.status; e.data = data; throw e; }
+    return data;
+  }
+
+  function show(id) {
+    for (const s of ['login', 'denied', 'panel']) $('#' + s).hidden = s !== id;
+    $('#logout').hidden = id === 'login';
+  }
+
+  async function start() {
+    try {
+      const me = await api('GET', '/api/me');
+      if (!me.admin) return show('denied');
+      show('panel');
+      await refresh();
+    } catch (e) {
+      if (e.status === 401) return show('login');
+      $('#view').innerHTML = `<div class="card empty">Сервер недоступен (${esc(e.message)}).</div>`;
+      show('panel');
+    }
+  }
+
+  // ---------- Вход ----------
+  $('#emailForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('#loginErr').textContent = '';
+    email = $('#email').value.trim();
+    try {
+      const r = await api('POST', '/api/auth/start', { email, lang: 'ru' });
+      $('#emailForm').hidden = true; $('#codeForm').hidden = false;
+      if (r.devCode) $('#code').value = r.devCode;
+      $('#code').focus();
+    } catch (err) { $('#loginErr').textContent = ERRORS[err.message] || 'Ошибка: ' + err.message; }
+  });
+  $('#codeForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('#loginErr').textContent = '';
+    try {
+      await api('POST', '/api/auth/verify', { email, code: $('#code').value.trim() });
+      await start();
+    } catch (err) { $('#loginErr').textContent = ERRORS[err.message] || 'Ошибка: ' + err.message; }
+  });
+  $('#again').addEventListener('click', () => { $('#codeForm').hidden = true; $('#emailForm').hidden = false; $('#code').value = ''; });
+  $('#logout').addEventListener('click', async () => { await api('POST', '/api/auth/logout').catch(() => {}); location.reload(); });
+
+  // ---------- Данные ----------
+  async function refresh() {
+    queue = await api('GET', '/api/admin/queue');
+    const counts = {
+      photos: queue.photos.length, verify: queue.verifications.length, reports: queue.reports.length,
+      support: queue.support.filter(t => t.unread > 0).length,
+    };
+    for (const [k, n] of Object.entries(counts)) {
+      const b = document.querySelector(`[data-count="${k}"]`);
+      b.textContent = n; b.hidden = !n;
+    }
+    render();
+  }
+
+  function setTab(t) {
+    tab = t;
+    for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.tab === t));
+    render();
+  }
+  document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) setTab(b.dataset.tab); });
+
+  const empty = text => `<div class="card empty">${esc(text)}</div>`;
+  const person = u => u ? `<span class="who"><b>${esc(u.name || 'без анкеты')}</b><br><span class="muted">${esc(u.email)}</span></span>` : '<span class="muted">удалён</span>';
+
+  const VIEWS = {
+    photos: () => queue.photos.length ? `<div class="grid">${queue.photos.map(p => `
+      <article class="card">
+        <a href="${esc(p.src)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(p.src)}" alt="Фото на модерации" loading="lazy"></a>
+        <p class="who" style="margin:.6rem 0">${person({ name: p.name, email: p.email })}<br><span class="muted">${when(p.t)}</span></p>
+        <div class="row"><button class="btn ok" data-act="photo" data-id="${p.id}" data-ok="1">Одобрить</button><button class="btn" data-act="photo" data-id="${p.id}" data-ok="0">Отклонить</button></div>
+      </article>`).join('')}</div>` : empty('Новых фото нет.'),
+
+    verify: () => queue.verifications.length ? `<div class="list">${queue.verifications.map(v => `
+      <article class="card">
+        <p class="who" style="margin:0 0 .6rem">${person({ name: v.name, email: v.email })} <span class="muted">· ${when(v.t)}</span></p>
+        <div class="pair">
+          <figure>${v.selfie ? `<a href="${esc(v.selfie)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(v.selfie)}" alt="Селфи с жестом"></a>` : '<div class="thumb"></div>'}<figcaption>Селфи с жестом</figcaption></figure>
+          <figure>${v.photo ? `<a href="${esc(v.photo)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(v.photo)}" alt="Главное фото анкеты"></a>` : '<div class="thumb"></div>'}<figcaption>Главное фото анкеты</figcaption></figure>
+        </div>
+        <p class="gesture">Жест: ${esc(v.gesture)}</p>
+        <div class="row"><button class="btn ok" data-act="verify" data-id="${esc(v.userId)}" data-ok="1">Подтвердить</button><button class="btn" data-act="verify" data-id="${esc(v.userId)}" data-ok="0">Отклонить</button></div>
+      </article>`).join('')}</div>` : empty('Нет заявок на подтверждение.'),
+
+    reports: () => `${queue.reports.length ? `<div class="list">${queue.reports.map(r => `
+      <article class="card report">
+        ${r.target.photo ? `<img class="thumb" src="${esc(r.target.photo)}" alt="Фото анкеты">` : '<div class="thumb"></div>'}
+        <div style="min-width:0">
+          <p style="margin:0"><b>${esc(REASONS[r.reason] || r.reason)}</b> <span class="muted">· ${when(r.t)}${r.count > 1 ? ` · жалоб: ${r.count}` : ''}</span></p>
+          ${r.text ? `<p style="margin:.3rem 0;white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.text)}</p>` : ''}
+          <p class="muted" style="margin:.4rem 0 0">На кого:</p>${person(r.target)}
+          <p class="muted" style="margin:.4rem 0 0">От кого:</p>${person(r.from)}
+          <div class="row" style="margin-top:.7rem"><button class="btn rose" data-act="ban" data-id="${r.id}">Забанить</button><button class="btn" data-act="dismiss" data-id="${r.id}">Отклонить жалобу</button></div>
+        </div>
+      </article>`).join('')}</div>` : empty('Открытых жалоб нет.')}
+      <h2>Забаненные</h2>
+      ${queue.banned.length ? `<div class="list">${queue.banned.map(u => `<div class="card row" style="justify-content:space-between">${person(u)}<button class="btn" data-act="unban" data-id="${esc(u.id)}">Разбанить</button></div>`).join('')}</div>` : empty('Никого.')}`,
+
+    support: () => {
+      if (!queue.support.length) return empty('Обращений пока нет.');
+      return `<div class="support${thread ? ' open' : ''}">
+        <div class="threads">${queue.support.map(t => `
+          <button class="btn thread" data-thread="${esc(t.user.id)}" aria-current="${thread?.user.id === t.user.id}">
+            <b>${esc(t.user.name || t.user.email)}</b>${t.unread ? `<span class="badge">${t.unread}</span>` : ''}<br>
+            <span class="muted">${esc((t.last?.text || '').slice(0, 60))}</span></button>`).join('')}</div>
+        <div class="card chat">${thread ? `
+          <div class="row" style="justify-content:space-between;margin-bottom:.6rem"><span>${person(thread.user)}</span><button class="btn back" data-back>← Все обращения</button></div>
+          <div class="msgs">${thread.messages.map(m => `<div class="msg${m.from === 'support' ? ' mine' : ''}">${esc(m.kind === 'voice' ? '🎤 голосовое сообщение' : m.text)}<span class="t">${when(m.t)}</span></div>`).join('')}</div>
+          <form id="reply"><label class="muted" for="replyText">Ответ от имени поддержки</label><textarea id="replyText" maxlength="4000" required></textarea>
+          <p class="row" style="margin:.6rem 0 0"><button class="btn rose" type="submit">Отправить</button></p></form>`
+        : '<p class="muted">Выберите обращение слева.</p>'}</div></div>`;
+    },
+
+    stats: () => {
+      const s = queue.stats;
+      const tiles = [['Анкет', s.users], ['Новых сегодня', s.today], ['Онлайн сейчас', s.online], ['Сообщений сегодня', s.messagesToday],
+        ['Оплат всего', s.paid], ['Оплат сегодня', s.paidToday], ['Выручка, ₽', Number(s.revenue).toLocaleString('ru-RU')], ['Забанено', s.banned]];
+      return `<div class="stats">${tiles.map(([k, v]) => `<div class="card stat"><span class="muted">${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>`;
+    },
+  };
+
+  function render() {
+    if (!queue) return;
+    $('#view').innerHTML = VIEWS[tab]();
+    const msgs = document.querySelector('.msgs');
+    if (msgs) msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  async function openThread(userId) {
+    thread = await api('GET', '/api/admin/support?userId=' + encodeURIComponent(userId));
+    await refresh();
+  }
+
+  // ---------- Действия ----------
+  $('#view').addEventListener('click', async e => {
+    const t = e.target.closest('[data-thread]');
+    if (t) return openThread(t.dataset.thread);
+    if (e.target.closest('[data-back]')) { thread = null; return render(); }
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const { act, id, ok } = b.dataset;
+    if (act === 'ban' && !confirm('Забанить пользователя? Его анкета исчезнет с сайта.')) return;
+    b.disabled = true;
+    try {
+      if (act === 'photo') await api('POST', '/api/admin/photo', { id: Number(id), approve: ok === '1' });
+      if (act === 'verify') await api('POST', '/api/admin/verify', { userId: id, approve: ok === '1' });
+      if (act === 'ban' || act === 'dismiss') await api('POST', '/api/admin/report', { id: Number(id), action: act });
+      if (act === 'unban') await api('POST', '/api/admin/unban', { userId: id });
+      await refresh();
+    } catch (err) { b.disabled = false; alert('Не получилось: ' + err.message); }
+  });
+
+  $('#view').addEventListener('submit', async e => {
+    if (e.target.id !== 'reply') return;
+    e.preventDefault();
+    const text = $('#replyText').value.trim();
+    if (!text || !thread) return;
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+    try {
+      await api('POST', '/api/admin/support', { userId: thread.user.id, text });
+      await openThread(thread.user.id);
+    } catch (err) { btn.disabled = false; alert('Не отправлено: ' + err.message); }
+  });
+
+  // Обновление раз в 30 секунд, если не набирается ответ.
+  setInterval(() => {
+    if ($('#panel').hidden || document.activeElement?.id === 'replyText') return;
+    (thread ? openThread(thread.user.id) : refresh()).catch(() => {});
+  }, 30000);
+
+  setTab('photos');
+  start();
+})();
+</script>
+</body>
+</html>
