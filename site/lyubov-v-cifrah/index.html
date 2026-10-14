@@ -401,7 +401,7 @@ dialog::backdrop { background: rgb(20 10 35 / .55); }
 
 /* амуры: летают поверх страницы, не перехватывают нажатия */
 .cupids { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
-.cupid { position: absolute; left: 0; top: 0; width: 112px; height: 94px; will-change: transform; filter: drop-shadow(0 6px 10px rgb(80 30 90 / .18)); }
+.cupid { position: absolute; left: 0; top: 0; width: 132px; height: 116px; will-change: transform; filter: drop-shadow(0 6px 10px rgb(80 30 90 / .18)); }
 .cupid .flip { transform-origin: 50% 50%; transition: transform .25s ease; }
 .cupid.left .flip { transform: scaleX(-1); }
 .cupid svg { width: 100%; height: 100%; overflow: visible; display: block; }
@@ -423,7 +423,9 @@ dialog::backdrop { background: rgb(20 10 35 / .55); }
 .cupid-toggle svg { width: 1.6rem; height: 1.6rem; }
 .cupid-toggle[aria-pressed="false"] { opacity: .55; }
 .cupid-toggle[aria-pressed="false"]::after { content: ""; position: absolute; width: 2rem; height: 2px; background: var(--muted); transform: rotate(-45deg); }
-@media (max-width: 560px) { .cupid { width: 78px; height: 66px; } }
+@media (max-width: 560px) { .cupid { width: 90px; height: 79px; } }
+.trail-h { position: fixed; pointer-events: none; z-index: 39; font-size: var(--s, 12px); color: var(--c, #ff8fa8); animation: trail-up 1.6s ease-out forwards; }
+@keyframes trail-up { from { transform: translate(-50%, -50%) scale(.6); opacity: .85; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% - 36px)) scale(1); opacity: 0; } }
 .toast { visibility: hidden; position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 150%); background: var(--ink); color: var(--paper); padding: .8rem 1.2rem; border-radius: 14px; z-index: 50; transition: transform .35s ease; max-width: calc(100vw - 2rem); }
 .toast.show { visibility: visible; transform: translate(-50%, 0); }
 
@@ -1895,32 +1897,54 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   $('#home').addEventListener('click', e => { e.preventDefault(); if (document.body.classList.contains('in-app')) showHome(); else window.scrollTo(0, 0); });
 
   /* ---------- амуры: летают по сайту и стреляют из лука по анкетам ---------- */
-  // Рисунок смотрит вправо; влево его разворачивает класс .left. Лук с натянутой тетивой (.aimed) показываем перед выстрелом.
-  const CUPID_SVG = `<svg viewBox="0 0 120 100"><g class="flip"><g class="bob">
-    <path class="wing back" d="M44 44c-14-4-26-14-30-28 10 2 18 1 26 6 6 4 8 12 4 22z" fill="#f4ecff" stroke="#d9c8f2" stroke-width="1.5"/>
-    <path class="wing" d="M48 46C34 46 20 40 12 28c10 0 17-3 26 0 8 3 12 10 10 18z" fill="#fff" stroke="#d9c8f2" stroke-width="1.5"/>
-    <ellipse cx="44" cy="80" rx="7" ry="6" fill="#ffcfb8"/><ellipse cx="58" cy="82" rx="7" ry="6" fill="#ffcfb8"/>
-    <ellipse cx="52" cy="62" rx="17" ry="19" fill="#ffd9c7"/>
-    <path d="M36 66c6 6 26 7 33-1l-1 8c-8 6-24 6-32 0z" fill="#d93a63"/>
-    <path d="M40 54c-8 2-12 8-10 14" stroke="#ffcfb8" stroke-width="7" stroke-linecap="round" fill="none"/>
-    <circle cx="56" cy="30" r="17" fill="#ffd9c7"/>
-    <circle cx="44" cy="17" r="6" fill="#f2b84a"/><circle cx="52" cy="13" r="6.5" fill="#f2b84a"/><circle cx="61" cy="13" r="6" fill="#f2b84a"/><circle cx="68" cy="18" r="5" fill="#f2b84a"/><circle cx="41" cy="25" r="4.5" fill="#f2b84a"/>
-    <circle cx="64" cy="29" r="2.4" fill="#2a1a3a"/><circle cx="65" cy="28.2" r=".8" fill="#fff"/>
-    <circle cx="66" cy="36" r="3.6" fill="#ff9fb3" opacity=".7"/>
-    <path d="M58 37q4 3 7 0" stroke="#b5465f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  // Амур в стиле присланной картинки: рыжие кудри, бирюзовые перьевые крылья, белая повязка, длинный бордовый лук.
+  // Рисунок смотрит вправо; влево его разворачивает класс .left. Натянутый лук со стрелой (.aimed) показываем перед выстрелом.
+  const CUPID_SVG = `<svg viewBox="0 0 160 140"><g class="flip"><g class="bob">
+    <path class="wing back" d="M58 66C44 48 26 36 8 36c6 6 4 10 10 12-6 4-3 9 5 9-5 5-1 10 7 8-3 6 3 9 11 6 4 5 12 6 17-5z" fill="#2f8196" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <path class="wing" d="M62 62C48 42 30 28 10 26c6 7 4 11 11 13-7 4-4 9 4 9-6 5-2 10 6 9-4 5 2 10 10 7 4 5 13 6 21-2z" fill="#5db4c6" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <path class="wing" d="M24 33c8 2 16 8 24 18M20 42c9 1 17 6 25 13M27 51c7 1 13 4 19 9" stroke="#9bd6e0" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path class="wing" d="M33 58c4 4 10 5 16 2M44 63c4 3 10 3 14-1" stroke="#2f8196" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <path d="M56 100C50 110 40 114 32 106" stroke="#6b3b2e" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M56 100C50 110 40 114 32 106" stroke="#ffd3ba" stroke-width="9.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <ellipse cx="28" cy="102" rx="7" ry="5" transform="rotate(-50 28 102)" fill="#ffd3ba" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M72 104C70 114 68 122 72 130" stroke="#6b3b2e" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M72 104C70 114 68 122 72 130" stroke="#ffd3ba" stroke-width="9.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <ellipse cx="77" cy="132" rx="7" ry="4.6" fill="#ffd3ba" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <ellipse cx="73" cy="84" rx="19" ry="21" transform="rotate(-14 73 84)" fill="#ffd3ba" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M60 90c4 8 14 12 24 9" stroke="#f0b090" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M50 92c12-6 26-6 40 0l-2 12c-3 5-6 1-8 0-3 5-6 3-8 1-3 4-6 4-8 0-3 4-7 3-8-1-3 3-6 1-6-4z" fill="#fbf8f2" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M58 95l-1 9M68 94v10M78 95l1 8" stroke="#d9d0c4" stroke-width="1.2" stroke-linecap="round"/>
     <g class="rest">
-      <path d="M64 56l18-6" stroke="#ffcfb8" stroke-width="7" stroke-linecap="round"/>
-      <path d="M88 28q14 22 0 44" stroke="#8a5a33" stroke-width="3.2" fill="none" stroke-linecap="round"/>
-      <path d="M88 28v44" stroke="#c9b8a6" stroke-width="1.2"/>
+      <path d="M84 72C96 76 108 78 122 76" stroke="#6b3b2e" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M84 72C96 76 108 78 122 76" stroke="#ffd3ba" stroke-width="7.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M116 26C132 40 134 60 126 76c8 18 4 34-10 46" stroke="#6b3b2e" stroke-width="5.6" fill="none" stroke-linecap="round"/>
+      <path d="M116 26C132 40 134 60 126 76c8 18 4 34-10 46" stroke="#8a2f3a" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <path d="M116 26v96" stroke="#5a3a33" stroke-width="1"/>
+      <path d="M82 80C94 86 110 86 124 80" stroke="#6b3b2e" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M82 80C94 86 110 86 124 80" stroke="#ffd3ba" stroke-width="7.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </g>
     <g class="aimed">
-      <path d="M64 54l30-4" stroke="#ffcfb8" stroke-width="7" stroke-linecap="round"/>
-      <path d="M96 26q14 24 0 48" stroke="#8a5a33" stroke-width="3.2" fill="none" stroke-linecap="round"/>
-      <path d="M96 26L72 50l24 24" stroke="#c9b8a6" stroke-width="1.2" fill="none"/>
-      <path d="M70 50h44" stroke="#8a5a33" stroke-width="2.2" stroke-linecap="round"/>
-      <path d="M114 50l-6-4v8z" fill="#d93a63"/>
-      <path d="M70 50l-5-4M70 50l-5 4M74 50l-5-4M74 50l-5 4" stroke="#7a4fd1" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M84 72C90 70 94 68 96 68" stroke="#6b3b2e" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M84 72C90 70 94 68 96 68" stroke="#ffd3ba" stroke-width="7.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M112 20c18 14 20 34 12 52 8 18 6 36-10 52" stroke="#6b3b2e" stroke-width="5.6" fill="none" stroke-linecap="round"/>
+      <path d="M112 20c18 14 20 34 12 52 8 18 6 36-10 52" stroke="#8a2f3a" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <path d="M112 20 94 70l20 54" stroke="#5a3a33" stroke-width="1" fill="none"/>
+      <path d="M90 70h58" stroke="#6b4a2e" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M158 70c-2-4-6-5-8-3-2-2-6-1-8 3 2 3 5 5 8 7 3-2 6-4 8-7z" fill="#e63b5c" stroke="#9e2440" stroke-width="1"/>
+      <path d="M92 70l-5-5M92 70l-5 5M97 70l-5-5M97 70l-5 5" stroke="#5db4c6" stroke-width="2" stroke-linecap="round"/>
+      <path d="M82 80C96 82 110 78 124 72" stroke="#6b3b2e" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M82 80C96 82 110 78 124 72" stroke="#ffd3ba" stroke-width="7.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </g>
+    <ellipse cx="60" cy="46" rx="5" ry="6.5" fill="#ffd3ba" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <circle cx="82" cy="42" r="24" fill="#ffd3ba" stroke="#6b3b2e" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M52 50c-8-14-4-32 12-39 10-5 24-4 34 2 9 6 12 17 7 27-2-5-7-8-12-7 1 4-1 7-4 9-1-6-6-9-11-8 1 4-1 8-5 9-1-5-6-7-10-6 2 5 0 9-4 11-1-4-3-6-6-6 1 3 0 6-1 8z" fill="#f26a1b" stroke="#b8460c" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M64 13c-2-8 4-13 11-11-4 2-6 5-5 9zM80 9c4-8 13-8 16-2-4-1-8 0-11 4zM96 14c8-3 14 3 12 9-2-4-6-6-10-5zM55 22c-6-5-5-12 1-14-1 4 0 8 3 10zM104 30c6 0 9 6 6 11-1-4-4-7-8-7zM50 36c-6 1-7 8-3 12 0-4 1-8 4-10z" fill="#ff8a3d" stroke="#b8460c" stroke-width="1.1" stroke-linejoin="round"/>
+    <path d="M66 20c4-4 10-5 15-3M84 16c5-2 11 0 14 4M60 30c2-4 6-6 10-6" stroke="#ffb06b" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M77 35q5-4 10-1M93 34q5-3 9 1" stroke="#a5481c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="83" cy="44" rx="5.4" ry="6.6" fill="#fff" stroke="#6b3b2e" stroke-width="1"/>
+    <ellipse cx="98" cy="43.5" rx="5" ry="6.3" fill="#fff" stroke="#6b3b2e" stroke-width="1"/>
+    <circle cx="84.5" cy="45" r="4" fill="#2f7fc1"/><circle cx="99.3" cy="44.5" r="3.7" fill="#2f7fc1"/>
+    <circle cx="85" cy="45.4" r="2" fill="#13233a"/><circle cx="99.7" cy="45" r="1.9" fill="#13233a"/>
+    <circle cx="86.3" cy="43.4" r="1.3" fill="#fff"/><circle cx="100.9" cy="43" r="1.2" fill="#fff"/>
+    <circle cx="76" cy="55" r="6.2" fill="#ff6b6b" opacity=".45"/><circle cx="105" cy="54" r="5" fill="#ff6b6b" opacity=".45"/>
+    <path d="M92 50q2 2 4 0" stroke="#c97b62" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M85 56c3 9 13 10 17 0-6 2-11 2-17 0z" fill="#8a1f2b" stroke="#6b3b2e" stroke-width="1" stroke-linejoin="round"/>
+    <ellipse cx="93.5" cy="61" rx="4" ry="2.2" fill="#ff7b8a"/>
+    <path d="M87 56.6h13" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
   </g></g></svg>`;
   const ARROW_SVG = `<svg viewBox="0 0 64 14"><path d="M4 7h52" stroke="#8a5a33" stroke-width="2.4" stroke-linecap="round"/>
     <path d="M64 7c-3-4-7-5-9-3-2-2-6-1-9 3 3 3 6 5 9 7 3-2 6-4 9-7z" fill="#d93a63" transform="translate(-6 0) scale(1 .7) translate(0 3)"/>
@@ -1931,7 +1955,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   let cupidsOn = store.get('cupids', !reduceMotion), cupids = [], cupidRaf = 0, lastT = 0;
   const rnd = (a, b) => a + Math.random() * (b - a);
   const vw = () => innerWidth, vh = () => innerHeight;
-  const size = () => vw() < 560 ? [78, 66] : [112, 94];
+  const size = () => vw() < 560 ? [90, 79] : [132, 116];
   const randomPoint = () => { const [w, h] = size(); return { x: rnd(10, vw() - w - 10), y: rnd(70, vh() - h - 20) }; };
   function visibleTargets() {
     return [...document.querySelectorAll(TARGETS)].filter(el => {
@@ -1962,7 +1986,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const r = card.getBoundingClientRect();
     if (r.bottom < 0 || r.top > vh()) return;
     const [w, h] = size();
-    const sx = c.x + (c.face > 0 ? w * .95 : w * .05), sy = c.y + h * .5;
+    // наконечник натянутой стрелы на рисунке: x≈156/160, y≈70/140
+    const sx = c.x + (c.face > 0 ? w * .97 : w * .03), sy = c.y + h * .5;
     const ex = r.left + r.width * rnd(.3, .7), ey = r.top + r.height * rnd(.25, .6);
     const mx = (sx + ex) / 2, my = Math.min(sy, ey) - rnd(40, 90);
     const a = document.createElement('div'); a.className = 'arrow-fly'; a.innerHTML = ARROW_SVG; document.body.append(a);
@@ -2009,6 +2034,15 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       if (Math.abs(c.vx) > 8) c.face = c.vx > 0 ? 1 : -1;
     }
     c.x += c.vx * dt; c.y += c.vy * dt;
+    // шлейф из сердечек за летящим амуром
+    if (c.state !== 'aim' && now > (c.trail || 0) && Math.hypot(c.vx, c.vy) > 40) {
+      c.trail = now + 380;
+      const t = document.createElement('span'); t.className = 'trail-h'; t.textContent = '♥';
+      t.style.left = (c.x + w * (c.face > 0 ? .25 : .75)) + 'px'; t.style.top = (c.y + h * .62) + 'px';
+      t.style.setProperty('--s', rnd(9, 16) + 'px'); t.style.setProperty('--dx', rnd(-14, 14) + 'px');
+      t.style.setProperty('--c', ['#ff8fa8', '#e63b5c', '#ffb3c4', '#f26a8a'][Math.floor(Math.random() * 4)]);
+      document.body.append(t); setTimeout(() => t.remove(), 1700);
+    }
     c.el.classList.toggle('left', c.face < 0);
     c.el.style.transform = `translate(${c.x}px, ${c.y}px) rotate(${Math.max(-12, Math.min(12, c.vy / 25))}deg)`;
   }
