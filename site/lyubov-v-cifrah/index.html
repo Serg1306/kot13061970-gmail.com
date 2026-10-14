@@ -7,7 +7,7 @@
 <meta name="description" content="Сайт знакомств, который подбирает партнёра по дате рождения: число судьбы, знак зодиака, восточный год и аркан пары.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Golos+Text:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Prata&family=Golos+Text:wght@400;500;600;700&display=swap">
 <style>
 /* Любовь в цифрах: светлая «бумага», баклажановые чернила, кольцо совместимости — главный элемент страницы */
 :root {
@@ -25,6 +25,7 @@
   --plum: #7a4fd1;
   --good: #24857d;
   --font-display: "Prata", Georgia, serif;
+  --font-script: "Great Vibes", "Segoe Script", cursive;
   --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
   --wrap: 72rem;
   color-scheme: light;
@@ -63,7 +64,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* шапка */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.1rem; }
-.logo { font-family: var(--font-display); font-size: 1.5rem; text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
+.logo { font-family: var(--font-script); font-size: 2.3rem; line-height: 1; text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
 .logo { white-space: nowrap; }
 .logo svg { width: 30px; height: 30px; flex: none; }
 .top nav { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
@@ -75,6 +76,9 @@ button, input, select { font: inherit; color: inherit; }
 
 /* герой */
 .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 3rem; align-items: center; padding-block: 2.5rem 4rem; }
+.brand { font-family: var(--font-script); font-weight: 400; font-size: clamp(3.4rem, 6.6vw, 5.8rem); line-height: 1.2; letter-spacing: 0; padding: .08em .1em .1em 0;
+  background: linear-gradient(100deg, var(--rose) 10%, var(--plum) 55%, var(--sea) 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tagline { font-family: var(--font-display); font-size: clamp(1.6rem, 3.4vw, 2.5rem); line-height: 1.15; margin-top: .6rem; max-width: 20ch; }
 .hero p.lead { font-size: 1.15rem; color: var(--muted); margin-top: 1.25rem; }
 .hero .cta { display: flex; gap: .6rem; margin-top: 2rem; flex-wrap: wrap; }
 .calc { background: var(--card); border: 1px solid var(--line); border-radius: 28px; padding: 1.5rem; }
@@ -235,7 +239,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
   .me .btn { grid-column: 1 / -1; justify-self: start; }
   .preview.show { grid-template-columns: 1fr 1fr; }
   .top .btn.ghost { display: none; }
-  .logo { font-size: 1.2rem; gap: .35rem; }
+  .logo { font-size: 1.75rem; gap: .35rem; }
   .logo svg { width: 24px; height: 24px; }
   .top .btn.solid { padding: .5rem .85rem; font-size: .9rem; }
 }
@@ -259,7 +263,8 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 <main id="landing">
   <div class="wrap hero">
     <div>
-      <h1>Знакомства, где дата рождения говорит первой</h1>
+      <h1 class="brand">Любовь в цифрах</h1>
+      <p class="tagline">Знакомства, где дата рождения говорит первой</p>
       <p class="lead">Укажите свой день рождения, и мы покажем людей, с которыми у вас совпадают число судьбы, стихия, восточный знак и аркан пары. Анкеты отсортированы по совместимости, а не по случайности.</p>
       <div class="cta">
         <a class="btn rose" href="#join">Найти свою пару</a>
