@@ -75,6 +75,27 @@ button, input, select { font: inherit; color: inherit; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 
 /* герой */
+/* карусель анкет вверху главной */
+.carousel { padding-top: .5rem; }
+.carousel-head { display: flex; align-items: center; gap: 1rem; margin-bottom: .8rem; }
+.carousel-head h2 { font-size: 1.35rem; }
+.carousel-head p { color: var(--muted); font-size: .92rem; }
+.carousel-nav { margin-left: auto; display: flex; gap: .4rem; flex: none; }
+.carousel-nav button { width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--card); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.carousel-nav button:hover { background: var(--ink); color: var(--paper); }
+.track { display: flex; gap: .9rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: .2rem .1rem 1rem; scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 1.2rem, #000 calc(100% - 2.5rem), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 1.2rem, #000 calc(100% - 2.5rem), transparent 100%); }
+.track::-webkit-scrollbar { display: none; }
+.slide { flex: 0 0 172px; scroll-snap-align: start; position: relative; aspect-ratio: 4 / 5.4; border-radius: 20px; overflow: hidden; border: 0; padding: 0; cursor: pointer; background: var(--line); color: #fff; text-align: left; box-shadow: 0 6px 18px rgb(60 20 70 / .14); }
+.slide:first-child { margin-left: 1.3rem; }
+.slide img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; transition: transform .4s ease; }
+.slide:hover img, .slide:focus-visible img { transform: scale(1.05); }
+.slide .shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgb(25 10 40 / .82) 100%); }
+.slide .info { position: absolute; left: .75rem; right: .75rem; bottom: .7rem; line-height: 1.3; }
+.slide .info b { display: block; font-size: 1.02rem; }
+.slide .info span { font-size: .82rem; opacity: .9; }
+.slide .pct { position: absolute; top: .6rem; left: .6rem; background: var(--card); color: var(--ink); font-weight: 700; font-size: .85rem; padding: .15rem .55rem; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.slide .vid { position: absolute; top: .6rem; right: .6rem; }
 .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 3rem; align-items: center; padding-block: 2.5rem 4rem; }
 .brand { font-family: var(--font-script); font-weight: 400; font-size: clamp(3.4rem, 6.6vw, 5.8rem); line-height: 1.2; letter-spacing: 0; padding: .08em .1em .1em 0;
   background: linear-gradient(100deg, var(--rose) 10%, var(--plum) 55%, var(--sea) 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -123,8 +144,8 @@ section.block { padding-block: 4rem; border-top: 1px solid var(--line); }
 .steps-list li.on::before { color: var(--rose); }
 form.card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 1.6rem; display: grid; gap: 1rem; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
-.seg { display: flex; gap: .4rem; flex-wrap: wrap; }
-.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg { position: relative; display: flex; gap: .4rem; flex-wrap: wrap; }
+.seg input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
 .seg label { border: 1.5px solid var(--line); border-radius: 999px; padding: .45rem .95rem; cursor: pointer; margin: 0; color: var(--ink); }
 .seg input:checked + label { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .seg input:focus-visible + label { outline: 2px solid var(--plum); outline-offset: 2px; }
@@ -239,6 +260,8 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
   .me .btn { grid-column: 1 / -1; justify-self: start; }
   .preview.show { grid-template-columns: 1fr 1fr; }
   .top .btn.ghost { display: none; }
+  .slide { flex-basis: 140px; }
+  .carousel-head p { display: none; }
   .logo { font-size: 1.75rem; gap: .35rem; }
   .logo svg { width: 24px; height: 24px; }
   .top .btn.solid { padding: .5rem .85rem; font-size: .9rem; }
@@ -261,6 +284,17 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 </div>
 
 <main id="landing">
+  <section class="wrap carousel" aria-labelledby="carTitle">
+    <div class="carousel-head">
+      <h2 id="carTitle">Сейчас на сайте</h2>
+      <p>Процент показывает совместимость с вашей датой из калькулятора ниже</p>
+      <div class="carousel-nav">
+        <button type="button" id="carPrev" aria-label="Предыдущие анкеты">‹</button>
+        <button type="button" id="carNext" aria-label="Следующие анкеты">›</button>
+      </div>
+    </div>
+    <div class="track" id="track" tabindex="0" aria-label="Анкеты, листаются стрелками"></div>
+  </section>
   <div class="wrap hero">
     <div>
       <h1 class="brand">Любовь в цифрах</h1>
@@ -541,6 +575,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
   function updateHero() {
     const a = $('#d1').value, b = $('#d2').value;
     if (valid(a) && valid(b)) drawRing(compat(a, b));
+    renderCarousel();
   }
   $('#d1').addEventListener('input', updateHero);
   $('#d2').addEventListener('input', updateHero);
@@ -817,9 +852,10 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
     render();
   }));
 
-  function openPerson(id) {
+  // guestBirth: анкета открыта из карусели до регистрации, совместимость считаем с датой из калькулятора
+  function openPerson(id, guestBirth) {
     const u = store.get('user'), p = PEOPLE.find(x => x.id === id);
-    const res = compat(u.birth, p.birth), f = factsOf(p.birth), age = ageOf(p.birth);
+    const res = compat(guestBirth || u.birth, p.birth), f = factsOf(p.birth), age = ageOf(p.birth);
     const liked = likes.has(id), matched = matches.has(id);
     $('#dlgBody').innerHTML = `
       <div class="head"><div><h3 style="font-size:1.6rem">${p.name}, ${age}</h3>
@@ -832,7 +868,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
       <div class="breakdown">${res.parts.map(x => `<div class="item"><span class="t">${x.t}</span><span class="v">${x.v}</span><span class="meter"><i style="width:${x.v}%;background:${x.c}"></i></span><span class="why">${x.why}</span></div>`).join('')}</div>
       <div class="arcana"><div class="num">${res.pairArcanum}</div><div><b>Аркан вашей пары: ${res.arc[0]}</b><p style="color:var(--muted);font-size:.93rem">${res.arc[1]}</p></div></div>
       <div class="actions">
-        ${matched ? `<button class="btn rose" type="button" data-act="write">Написать сообщение</button>` :
+        ${guestBirth ? `<a class="btn rose" href="#join" data-act="join">Зарегистрироваться, чтобы познакомиться</a>` : matched ? `<button class="btn rose" type="button" data-act="write">Написать сообщение</button>` :
           liked ? `<button class="btn" type="button" disabled>Симпатия отправлена</button>` :
           `<button class="btn" type="button" data-act="pass">Пропустить</button><button class="btn rose" type="button" data-act="like">Нравится</button>`}
       </div>`;
@@ -846,7 +882,49 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
         save(); dlg.close(); render();
       } else if (act === 'pass') { passes.add(id); save(); dlg.close(); render(); }
       else if (act === 'write') { toast('Чат появится в следующей версии.'); }
+      else if (act === 'join') { dlg.close(); }
     });
+  }
+
+  /* ---------- карусель анкет на главной ---------- */
+  const CAROUSEL = PEOPLE.filter((p, i) => i % 9 === 0 && ageOf(p.birth) >= 18).slice(0, 16);
+  function renderCarousel() {
+    const mine = $('#d1').value, track = $('#track');
+    track.innerHTML = CAROUSEL.map(p => {
+      const pct = valid(mine) ? compat(mine, p.birth).total : null, z = zodiac(parse(p.birth));
+      return `<button class="slide" type="button" data-id="${p.id}" aria-label="${p.name}, ${ageOf(p.birth)}, ${p.city}${pct !== null ? `, совместимость ${pct}%` : ''}">
+        <img src="${p.media[0].src}" alt="" loading="lazy"><span class="shade"></span>
+        ${pct !== null ? `<span class="pct">${pct}%</span>` : ''}
+        ${p.media.some(m => m.type === 'video') ? `<span class="badge vid">${ICON_PLAY}видео</span>` : ''}
+        <span class="info"><b>${p.name}, ${ageOf(p.birth)}</b><span>${p.city}</span><br><span>${z.glyph} ${z.name}</span></span>
+      </button>`;
+    }).join('');
+  }
+  const track = $('#track');
+  const slideStep = () => (track.querySelector('.slide')?.offsetWidth || 172) + 14;
+  function carMove(dir) {
+    const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+    if (dir > 0 && atEnd) track.scrollTo({ left: 0 });
+    else if (dir < 0 && track.scrollLeft <= 4) track.scrollTo({ left: track.scrollWidth });
+    else track.scrollBy({ left: dir * slideStep() });
+  }
+  $('#carPrev').addEventListener('click', () => carMove(-1));
+  $('#carNext').addEventListener('click', () => carMove(1));
+  track.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); carMove(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); carMove(-1); }
+  });
+  track.addEventListener('click', e => { const b = e.target.closest('.slide'); if (b) openPerson(b.dataset.id, valid($('#d1').value) ? $('#d1').value : '1990-01-01'); });
+  // автопрокрутка раз в 3 секунды; стоит на паузе, пока на карусель наведён курсор, фокус или палец, и при «уменьшить движение»
+  let carHold = false;
+  const carousel = $('.carousel');
+  ['mouseenter', 'focusin', 'touchstart'].forEach(ev => carousel.addEventListener(ev, () => { carHold = true; }, { passive: true }));
+  ['mouseleave', 'focusout'].forEach(ev => carousel.addEventListener(ev, () => { carHold = false; }));
+  carousel.addEventListener('touchend', () => setTimeout(() => { carHold = false; }, 4000), { passive: true });
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    setInterval(() => {
+      if (!carHold && !document.hidden && !document.body.classList.contains('in-app') && !$('#dlg').open) carMove(1);
+    }, 3000);
   }
 
   /* ---------- галерея: фото и видео анкеты ---------- */
