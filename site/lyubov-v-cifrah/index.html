@@ -249,6 +249,7 @@ dialog::backdrop { background: rgb(20 10 35 / .55); }
 .toast.show { visibility: visible; transform: translate(-50%, 0); }
 
 footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--muted); font-size: .88rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--ink); }
 
 @media (max-width: 900px) {
   .hero, .reg, .block .intro { grid-template-columns: 1fr; gap: 2rem; }
@@ -430,6 +431,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
   <footer>
     <span>Любовь в цифрах. Демо-версия: анкеты и их фото сгенерированы, ваши данные и фото хранятся только в вашем браузере.</span>
     <span>Расчёты носят развлекательный характер.</span>
+    <p class="legal">Разработчик: Жеребцов Сергей Владимирович. ИНН 667807174690. © 2026</p>
   </footer>
 </div>
 
