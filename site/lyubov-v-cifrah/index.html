@@ -398,6 +398,31 @@ dialog::backdrop { background: rgb(20 10 35 / .55); }
 .arcana .num { font-family: var(--font-display); font-size: 2.6rem; color: var(--plum); line-height: 1; min-width: 2ch; text-align: center; }
 .dlg .actions { display: flex; gap: .6rem; justify-content: flex-end; flex-wrap: wrap; }
 
+/* амуры: летают поверх страницы, не перехватывают нажатия */
+.cupids { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
+.cupid { position: absolute; left: 0; top: 0; width: 112px; height: 94px; will-change: transform; filter: drop-shadow(0 6px 10px rgb(80 30 90 / .18)); }
+.cupid .flip { transform-origin: 50% 50%; transition: transform .25s ease; }
+.cupid.left .flip { transform: scaleX(-1); }
+.cupid svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.cupid .bob { animation: cupid-bob 1.6s ease-in-out infinite; }
+.cupid .wing { transform-box: fill-box; transform-origin: 85% 85%; animation: cupid-flap .32s ease-in-out infinite alternate; }
+.cupid .wing.back { animation-delay: -.16s; }
+.cupid .aimed { display: none; }
+.cupid.aim .aimed { display: inline; }
+.cupid.aim .rest { display: none; }
+@keyframes cupid-flap { from { transform: rotate(14deg) scaleY(.9); } to { transform: rotate(-22deg) scaleY(1.05); } }
+@keyframes cupid-bob { 50% { transform: translateY(-5px); } }
+.arrow-fly { position: fixed; left: 0; top: 0; width: 64px; height: 14px; margin: -7px 0 0 -58px; pointer-events: none; z-index: 41; transform-origin: 58px 7px; transition: opacity .5s ease; }
+.arrow-fly svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.heart-p { position: fixed; pointer-events: none; z-index: 42; color: var(--rose); font-size: var(--s, 18px); line-height: 1; animation: heart-up 1.2s ease-out forwards; }
+@keyframes heart-up { from { transform: translate(-50%, -50%) scale(.4); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(1.1); opacity: 0; } }
+.cupid-hit { animation: cupid-hit .7s ease; }
+@keyframes cupid-hit { 0% { box-shadow: 0 0 0 0 rgb(217 58 99 / .55); } 25% { transform: rotate(-1.2deg) scale(1.025); } 55% { transform: rotate(1deg); } 100% { box-shadow: 0 0 0 18px rgb(217 58 99 / 0); transform: none; } }
+.cupid-toggle { position: fixed; left: 1rem; bottom: 1rem; z-index: 45; width: 2.9rem; height: 2.9rem; border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); cursor: pointer; display: grid; place-items: center; box-shadow: 0 4px 14px rgb(60 20 70 / .15); }
+.cupid-toggle svg { width: 1.6rem; height: 1.6rem; }
+.cupid-toggle[aria-pressed="false"] { opacity: .55; }
+.cupid-toggle[aria-pressed="false"]::after { content: ""; position: absolute; width: 2rem; height: 2px; background: var(--muted); transform: rotate(-45deg); }
+@media (max-width: 560px) { .cupid { width: 78px; height: 66px; } }
 .toast { visibility: hidden; position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 150%); background: var(--ink); color: var(--paper); padding: .8rem 1.2rem; border-radius: 14px; z-index: 50; transition: transform .35s ease; max-width: calc(100vw - 2rem); }
 .toast.show { visibility: visible; transform: translate(-50%, 0); }
 
@@ -737,6 +762,10 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 
 <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
 <div class="toast" id="toast" role="status"></div>
+<div class="cupids" id="cupids" aria-hidden="true"></div>
+<button class="cupid-toggle" type="button" id="cupidToggle" aria-pressed="true" aria-label="Амуры: выключить" title="Амуры">
+  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 27 25 7" stroke="#8a5a33" stroke-width="2.2" stroke-linecap="round"/><path d="M25 7l-6 1.2 4.8 4.8z" fill="#d93a63"/><path d="M5 27l1-4.2M5 27l4.2-1M7.5 24.5l1-4.2M7.5 24.5l4.2-1" stroke="#7a4fd1" stroke-width="1.8" stroke-linecap="round"/><path d="M16.2 22.8c-2.6-2-4.6-3.6-4.6-5.6 0-1.4 1-2.4 2.3-2.4.9 0 1.7.5 2.3 1.3.6-.8 1.4-1.3 2.3-1.3 1.3 0 2.3 1 2.3 2.4 0 2-2 3.6-4.6 5.6z" fill="#d93a63"/></svg>
+</button>
 
 <script>
 (() => {
@@ -1851,6 +1880,141 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     document.documentElement.dataset.theme = next; store.set('theme', next);
   });
   $('#home').addEventListener('click', e => { e.preventDefault(); if (document.body.classList.contains('in-app')) showHome(); else window.scrollTo(0, 0); });
+
+  /* ---------- амуры: летают по сайту и стреляют из лука по анкетам ---------- */
+  // Рисунок смотрит вправо; влево его разворачивает класс .left. Лук с натянутой тетивой (.aimed) показываем перед выстрелом.
+  const CUPID_SVG = `<svg viewBox="0 0 120 100"><g class="flip"><g class="bob">
+    <path class="wing back" d="M44 44c-14-4-26-14-30-28 10 2 18 1 26 6 6 4 8 12 4 22z" fill="#f4ecff" stroke="#d9c8f2" stroke-width="1.5"/>
+    <path class="wing" d="M48 46C34 46 20 40 12 28c10 0 17-3 26 0 8 3 12 10 10 18z" fill="#fff" stroke="#d9c8f2" stroke-width="1.5"/>
+    <ellipse cx="44" cy="80" rx="7" ry="6" fill="#ffcfb8"/><ellipse cx="58" cy="82" rx="7" ry="6" fill="#ffcfb8"/>
+    <ellipse cx="52" cy="62" rx="17" ry="19" fill="#ffd9c7"/>
+    <path d="M36 66c6 6 26 7 33-1l-1 8c-8 6-24 6-32 0z" fill="#d93a63"/>
+    <path d="M40 54c-8 2-12 8-10 14" stroke="#ffcfb8" stroke-width="7" stroke-linecap="round" fill="none"/>
+    <circle cx="56" cy="30" r="17" fill="#ffd9c7"/>
+    <circle cx="44" cy="17" r="6" fill="#f2b84a"/><circle cx="52" cy="13" r="6.5" fill="#f2b84a"/><circle cx="61" cy="13" r="6" fill="#f2b84a"/><circle cx="68" cy="18" r="5" fill="#f2b84a"/><circle cx="41" cy="25" r="4.5" fill="#f2b84a"/>
+    <circle cx="64" cy="29" r="2.4" fill="#2a1a3a"/><circle cx="65" cy="28.2" r=".8" fill="#fff"/>
+    <circle cx="66" cy="36" r="3.6" fill="#ff9fb3" opacity=".7"/>
+    <path d="M58 37q4 3 7 0" stroke="#b5465f" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="rest">
+      <path d="M64 56l18-6" stroke="#ffcfb8" stroke-width="7" stroke-linecap="round"/>
+      <path d="M88 28q14 22 0 44" stroke="#8a5a33" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M88 28v44" stroke="#c9b8a6" stroke-width="1.2"/>
+    </g>
+    <g class="aimed">
+      <path d="M64 54l30-4" stroke="#ffcfb8" stroke-width="7" stroke-linecap="round"/>
+      <path d="M96 26q14 24 0 48" stroke="#8a5a33" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <path d="M96 26L72 50l24 24" stroke="#c9b8a6" stroke-width="1.2" fill="none"/>
+      <path d="M70 50h44" stroke="#8a5a33" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M114 50l-6-4v8z" fill="#d93a63"/>
+      <path d="M70 50l-5-4M70 50l-5 4M74 50l-5-4M74 50l-5 4" stroke="#7a4fd1" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+  </g></g></svg>`;
+  const ARROW_SVG = `<svg viewBox="0 0 64 14"><path d="M4 7h52" stroke="#8a5a33" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M64 7c-3-4-7-5-9-3-2-2-6-1-9 3 3 3 6 5 9 7 3-2 6-4 9-7z" fill="#d93a63" transform="translate(-6 0) scale(1 .7) translate(0 3)"/>
+    <path d="M4 7 0 2M4 7 0 12M9 7 5 2M9 7 5 12" stroke="#7a4fd1" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+  const TARGETS = '.slide, .person, .game-card, .mini, .post';
+  const cupidLayer = $('#cupids');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let cupidsOn = store.get('cupids', !reduceMotion), cupids = [], cupidRaf = 0, lastT = 0;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const vw = () => innerWidth, vh = () => innerHeight;
+  const size = () => vw() < 560 ? [78, 66] : [112, 94];
+  const randomPoint = () => { const [w, h] = size(); return { x: rnd(10, vw() - w - 10), y: rnd(70, vh() - h - 20) }; };
+  function visibleTargets() {
+    return [...document.querySelectorAll(TARGETS)].filter(el => {
+      if (el.closest('[hidden], dialog') || !el.offsetParent) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 60 && r.top > 60 && r.bottom < vh() - 10 && r.left >= 0 && r.right <= vw();
+    });
+  }
+  function makeCupid(i) {
+    const el = document.createElement('div');
+    el.className = 'cupid'; el.innerHTML = CUPID_SVG; cupidLayer.append(el);
+    const start = randomPoint();
+    return { el, x: i % 2 ? vw() + 40 : -150, y: start.y, vx: 0, vy: 0, wp: randomPoint(), state: 'fly', next: performance.now() + 2500 + i * 2600, face: 1 };
+  }
+  function burst(x, y) {
+    for (let k = 0; k < 9; k++) {
+      const h = document.createElement('span');
+      h.className = 'heart-p'; h.textContent = k % 3 ? '♥' : '❤';
+      h.style.left = x + 'px'; h.style.top = y + 'px';
+      h.style.setProperty('--dx', rnd(-70, 70) + 'px'); h.style.setProperty('--dy', rnd(40, 120) + 'px'); h.style.setProperty('--s', rnd(12, 26) + 'px');
+      h.style.animationDelay = rnd(0, .15) + 's';
+      document.body.append(h); setTimeout(() => h.remove(), 1500);
+    }
+  }
+  function shoot(c) {
+    const card = c.target; c.target = null;
+    if (!card || !card.isConnected || $('#dlg').open) return;
+    const r = card.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > vh()) return;
+    const [w, h] = size();
+    const sx = c.x + (c.face > 0 ? w * .95 : w * .05), sy = c.y + h * .5;
+    const ex = r.left + r.width * rnd(.3, .7), ey = r.top + r.height * rnd(.25, .6);
+    const mx = (sx + ex) / 2, my = Math.min(sy, ey) - rnd(40, 90);
+    const a = document.createElement('div'); a.className = 'arrow-fly'; a.innerHTML = ARROW_SVG; document.body.append(a);
+    const t0 = performance.now(), dur = 520;
+    const fly = now => {
+      const t = Math.min(1, (now - t0) / dur), u = 1 - t;
+      const x = u * u * sx + 2 * u * t * mx + t * t * ex, y = u * u * sy + 2 * u * t * my + t * t * ey;
+      const dx = 2 * u * (mx - sx) + 2 * t * (ex - mx), dy = 2 * u * (my - sy) + 2 * t * (ey - my);
+      a.style.transform = `translate(${x}px, ${y}px) rotate(${Math.atan2(dy, dx)}rad)`;
+      if (t < 1) return requestAnimationFrame(fly);
+      // попадание: карточка вздрагивает, вылетают сердечки, стрела торчит и исчезает
+      card.classList.remove('cupid-hit'); void card.offsetWidth; card.classList.add('cupid-hit');
+      setTimeout(() => card.classList.remove('cupid-hit'), 800);
+      burst(ex, ey);
+      setTimeout(() => { a.style.opacity = '0'; }, 500); setTimeout(() => a.remove(), 1100);
+    };
+    requestAnimationFrame(fly);
+  }
+  function stepCupid(c, dt, now) {
+    const [w, h] = size();
+    if (c.state === 'fly' && now > c.next && !$('#dlg').open) {
+      const list = visibleTargets();
+      if (list.length) {
+        c.target = list[Math.floor(Math.random() * list.length)];
+        const r = c.target.getBoundingClientRect(), fromLeft = r.left + r.width / 2 > vw() / 2 ? true : r.left > w + 40 && Math.random() < .5;
+        c.wp = { x: Math.max(6, Math.min(vw() - w - 6, fromLeft ? r.left - w - rnd(60, 160) : r.right + rnd(60, 160))), y: Math.max(64, Math.min(vh() - h - 10, r.top + r.height / 2 - h / 2 - rnd(40, 120))) };
+        c.state = 'approach'; c.until = now + 5000;
+      } else c.next = now + 2500;
+    }
+    if (c.state === 'aim') {
+      c.vx *= .85; c.vy *= .85;
+      if (c.target) { const r = c.target.getBoundingClientRect(); c.face = r.left + r.width / 2 > c.x + w / 2 ? 1 : -1; }
+      if (now > c.aimUntil) { shoot(c); c.el.classList.remove('aim'); c.state = 'fly'; c.next = now + rnd(3500, 7500); c.wp = randomPoint(); }
+    } else {
+      const dx = c.wp.x - c.x, dy = c.wp.y - c.y, dist = Math.hypot(dx, dy) || 1;
+      const speed = (c.state === 'approach' ? 230 : 120) * (vw() < 560 ? .75 : 1);
+      const k = Math.min(1, dt * 2.2);
+      c.vx += (dx / dist * speed - c.vx) * k; c.vy += (dy / dist * speed - c.vy) * k;
+      if (dist < 30) {
+        if (c.state === 'approach') { c.state = 'aim'; c.aimUntil = now + 550; c.el.classList.add('aim'); }
+        else c.wp = randomPoint();
+      }
+      if (c.state === 'approach' && now > c.until) { c.state = 'fly'; c.target = null; c.next = now + 3000; }
+      if (Math.abs(c.vx) > 8) c.face = c.vx > 0 ? 1 : -1;
+    }
+    c.x += c.vx * dt; c.y += c.vy * dt;
+    c.el.classList.toggle('left', c.face < 0);
+    c.el.style.transform = `translate(${c.x}px, ${c.y}px) rotate(${Math.max(-12, Math.min(12, c.vy / 25))}deg)`;
+  }
+  function cupidLoop(now) {
+    const dt = Math.min(.05, (now - (lastT || now)) / 1000); lastT = now;
+    cupids.forEach(c => stepCupid(c, dt, now));
+    cupidRaf = requestAnimationFrame(cupidLoop);
+  }
+  function setCupids(on, remember) {
+    cupidsOn = on; if (remember) store.set('cupids', on);
+    $('#cupidToggle').setAttribute('aria-pressed', on);
+    $('#cupidToggle').setAttribute('aria-label', on ? 'Амуры: выключить' : 'Амуры: включить');
+    cancelAnimationFrame(cupidRaf); cupidLayer.innerHTML = ''; cupids = []; lastT = 0;
+    if (!on) return;
+    cupids = Array.from({ length: vw() < 560 ? 1 : 2 }, (_, i) => makeCupid(i));
+    cupidRaf = requestAnimationFrame(cupidLoop);
+  }
+  $('#cupidToggle').addEventListener('click', () => { setCupids(!cupidsOn, true); toast(cupidsOn ? 'Амуры снова летают.' : 'Амуры отдыхают. Включить можно той же кнопкой.'); });
+  setCupids(cupidsOn);
 
   updateHero();
   renderPricing();
