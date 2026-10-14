@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Совпало — знакомства по дате рождения</title>
+<meta name="description" content="Сайт знакомств, который подбирает партнёра по дате рождения: число судьбы, знак зодиака, восточный год и аркан пары.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Golos+Text:wght@400;500;600;700&display=swap">
+<style>
+/* Совпало: светлая «бумага», баклажановые чернила, кольцо совместимости — главный элемент страницы */
+:root {
+  --paper: #f5f3f8;
+  --card: #ffffff;
+  --ink: #23163a;
+  --muted: #6d6380;
+  --line: #ddd6e8;
+  --rose: #d93a63;      /* вы */
+  --sea: #24857d;       /* партнёр */
+  --sun: #e8a21f;       /* числа */
+  --plum: #7a4fd1;
+  --good: #24857d;
+  --font-display: "Prata", Georgia, serif;
+  --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --wrap: 72rem;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #17111f; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
+    --rose: #f0638a; --sea: #4fb8ae; --sun: #f2b84a; --plum: #a283f0; --good: #4fb8ae;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #17111f; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
+  --rose: #f0638a; --sea: #4fb8ae; --sun: #f2b84a; --plum: #a283f0; --good: #4fb8ae;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1rem/1.6 var(--font-body); padding-inline: 1rem; overflow-x: hidden; }
+.wrap { max-width: var(--wrap); margin-inline: auto; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.12; margin: 0; }
+h1 { font-size: clamp(2.3rem, 6vw, 4.4rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.8rem, 4vw, 2.7rem); }
+h3 { font-size: 1.35rem; }
+p { margin: 0; max-width: 62ch; }
+a { color: var(--rose); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--plum); outline-offset: 3px; }
+
+/* шапка */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.1rem; }
+.logo { font-family: var(--font-display); font-size: 1.5rem; text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
+.logo svg { width: 30px; height: 30px; }
+.top nav { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.btn { color: var(--ink); border: 1.5px solid var(--ink); background: transparent; border-radius: 999px; padding: .6rem 1.15rem; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; }
+.btn.solid { background: var(--ink); color: var(--paper); }
+.btn.rose { background: var(--rose); border-color: var(--rose); color: #fff; }
+.btn.ghost { border-color: transparent; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* герой */
+.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 3rem; align-items: center; padding-block: 2.5rem 4rem; }
+.hero p.lead { font-size: 1.15rem; color: var(--muted); margin-top: 1.25rem; }
+.hero .cta { display: flex; gap: .6rem; margin-top: 2rem; flex-wrap: wrap; }
+.calc { background: var(--card); border: 1px solid var(--line); border-radius: 28px; padding: 1.5rem; }
+.calc .dates { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.field label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: .3rem; }
+.field input, .field select { width: 100%; border: 1.5px solid var(--line); background: var(--paper); border-radius: 12px; padding: .65rem .8rem; }
+.field input:focus, .field select:focus { border-color: var(--plum); outline: none; }
+.you label::before, .them label::before { content: ""; display: inline-block; width: .6rem; height: .6rem; border-radius: 50%; margin-right: .4rem; vertical-align: middle; }
+.you label::before { background: var(--rose); }
+.them label::before { background: var(--sea); }
+.ring-wrap { position: relative; width: min(100%, 320px); margin: 1.4rem auto .6rem; aspect-ratio: 1; }
+.ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-wrap .track { fill: none; stroke: var(--line); }
+.ring-wrap .arc { fill: none; stroke-linecap: round; transition: stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1); }
+.ring-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.ring-center .pct { font-family: var(--font-display); font-size: clamp(3.2rem, 9vw, 4.6rem); line-height: 1; }
+.ring-center .pct small { font-size: .45em; }
+.ring-center .verdict { color: var(--muted); font-size: .95rem; margin-top: .3rem; max-width: 14ch; margin-inline: auto; }
+.legend { list-style: none; padding: 0; margin: .4rem 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem .9rem; font-size: .9rem; }
+.legend li { display: flex; justify-content: space-between; gap: .5rem; border-bottom: 1px dashed var(--line); padding-bottom: .3rem; }
+.legend .sw { display: inline-block; width: .7rem; height: .7rem; border-radius: 3px; margin-right: .4rem; vertical-align: -1px; }
+.legend b { font-variant-numeric: tabular-nums; }
+
+/* как считаем */
+section.block { padding-block: 4rem; border-top: 1px solid var(--line); }
+.block .intro { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: end; margin-bottom: 2.5rem; }
+.block .intro p { color: var(--muted); }
+.systems { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.system { border-top: 4px solid var(--c); padding-top: 1rem; }
+.system .w { font-family: var(--font-display); font-size: 2.4rem; color: var(--c); line-height: 1; }
+.system h3 { margin: .6rem 0 .5rem; }
+.system p { color: var(--muted); font-size: .95rem; }
+.system .ex { margin-top: .8rem; font-size: .9rem; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: .55rem .75rem; }
+
+.compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.compare article { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 1.3rem; }
+.compare h3 { margin-bottom: .6rem; }
+.compare ul { margin: 0; padding-left: 1.1rem; color: var(--muted); font-size: .95rem; }
+.compare li + li { margin-top: .3rem; }
+.compare .take { margin-top: .9rem; font-weight: 600; font-size: .95rem; }
+
+/* регистрация */
+.reg { display: grid; grid-template-columns: .9fr 1.1fr; gap: 3rem; align-items: start; }
+.steps-list { list-style: none; padding: 0; margin: 1.5rem 0 0; counter-reset: s; }
+.steps-list li { counter-increment: s; display: grid; grid-template-columns: 2.2rem 1fr; gap: .6rem; padding-block: .6rem; color: var(--muted); }
+.steps-list li::before { content: counter(s); font-family: var(--font-display); font-size: 1.3rem; color: var(--line); }
+.steps-list li.on { color: var(--ink); }
+.steps-list li.on::before { color: var(--rose); }
+form.card { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 1.6rem; display: grid; gap: 1rem; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.seg { display: flex; gap: .4rem; flex-wrap: wrap; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { border: 1.5px solid var(--line); border-radius: 999px; padding: .45rem .95rem; cursor: pointer; margin: 0; color: var(--ink); }
+.seg input:checked + label { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.seg input:focus-visible + label { outline: 2px solid var(--plum); outline-offset: 2px; }
+.preview { display: none; border: 1.5px dashed var(--line); border-radius: 14px; padding: .8rem 1rem; font-size: .92rem; }
+.preview.show { display: grid; grid-template-columns: repeat(4, auto); justify-content: space-between; gap: .5rem; }
+.preview div span { display: block; color: var(--muted); font-size: .8rem; }
+.preview div b { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; }
+.err { color: var(--rose); font-size: .9rem; min-height: 1.2em; }
+.check { display: flex; gap: .55rem; align-items: flex-start; font-size: .9rem; color: var(--muted); }
+.check input { margin-top: .3rem; accent-color: var(--rose); }
+
+/* приложение */
+#app { display: none; padding-bottom: 4rem; }
+body.in-app #landing { display: none; }
+body.in-app #app { display: block; }
+.me { display: grid; grid-template-columns: auto 1fr auto; gap: 1.2rem; align-items: center; padding: 1.2rem 0 1.5rem; border-bottom: 1px solid var(--line); }
+.me .facts { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+.chip { border: 1px solid var(--line); border-radius: 999px; padding: .15rem .65rem; font-size: .85rem; background: var(--card); }
+.tabs { display: flex; gap: .3rem; margin: 1.4rem 0 1rem; flex-wrap: wrap; }
+.tabs button { border: 0; background: none; padding: .5rem .9rem; border-radius: 999px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.tabs .count { font-variant-numeric: tabular-nums; opacity: .75; margin-left: .25rem; }
+.filters { display: flex; flex-wrap: wrap; gap: .8rem; align-items: end; margin-bottom: 1.4rem; }
+.filters .field { min-width: 9rem; }
+.filters input[type=range] { padding: 0; accent-color: var(--rose); border: 0; background: none; }
+.feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+.person { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; display: grid; gap: .7rem; text-align: left; cursor: pointer; position: relative; }
+.person:hover { border-color: var(--ink); }
+.person .head { display: flex; gap: .75rem; align-items: center; }
+.ava { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-size: 1.3rem; flex: none; }
+.ava.big { width: 84px; height: 84px; font-size: 2rem; }
+.person .name { font-weight: 600; font-size: 1.05rem; }
+.person .sub { color: var(--muted); font-size: .88rem; }
+.person .score { display: flex; align-items: center; gap: .7rem; }
+.person .score .n { font-family: var(--font-display); font-size: 2rem; line-height: 1; }
+.bar { flex: 1; height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; }
+.person .tag { font-size: .8rem; font-weight: 600; color: var(--good); }
+.empty { border: 1.5px dashed var(--line); border-radius: 20px; padding: 2rem; text-align: center; color: var(--muted); grid-column: 1 / -1; }
+.empty .btn { margin-top: 1rem; }
+
+dialog { border: 0; border-radius: 26px; padding: 0; width: min(560px, calc(100vw - 2rem)); background: var(--card); color: var(--ink); max-height: calc(100vh - 2rem); }
+dialog::backdrop { background: rgb(20 10 35 / .55); }
+.dlg { padding: 1.5rem; display: grid; gap: 1.1rem; }
+.dlg .head { display: flex; gap: 1rem; align-items: center; }
+.dlg .x { margin-left: auto; align-self: flex-start; border: 0; background: none; font-size: 1.6rem; cursor: pointer; line-height: 1; color: var(--muted); }
+.dlg .about { color: var(--muted); }
+.breakdown { display: grid; gap: .75rem; }
+.breakdown .item { display: grid; grid-template-columns: 1fr auto; gap: .2rem .8rem; }
+.breakdown .item .t { font-weight: 600; }
+.breakdown .item .v { font-variant-numeric: tabular-nums; font-weight: 700; }
+.breakdown .item .why { grid-column: 1 / -1; font-size: .88rem; color: var(--muted); }
+.breakdown .meter { grid-column: 1 / -1; height: 6px; border-radius: 9px; background: var(--line); overflow: hidden; }
+.breakdown .meter i { display: block; height: 100%; }
+.arcana { background: var(--paper); border-radius: 16px; padding: 1rem; display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: center; }
+.arcana .num { font-family: var(--font-display); font-size: 2.6rem; color: var(--plum); line-height: 1; min-width: 2ch; text-align: center; }
+.dlg .actions { display: flex; gap: .6rem; justify-content: flex-end; flex-wrap: wrap; }
+
+.toast { visibility: hidden; position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 150%); background: var(--ink); color: var(--paper); padding: .8rem 1.2rem; border-radius: 14px; z-index: 50; transition: transform .35s ease; max-width: calc(100vw - 2rem); }
+.toast.show { visibility: visible; transform: translate(-50%, 0); }
+
+footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--muted); font-size: .88rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .hero, .reg, .block .intro { grid-template-columns: 1fr; gap: 2rem; }
+  .systems { grid-template-columns: 1fr 1fr; }
+  .compare { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .systems, .calc .dates, .row2, .legend { grid-template-columns: 1fr; }
+  .me { grid-template-columns: auto 1fr; }
+  .me .btn { grid-column: 1 / -1; justify-self: start; }
+  .preview.show { grid-template-columns: 1fr 1fr; }
+  .top .btn.ghost { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#" id="home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="12" cy="16" r="9" fill="none" stroke="var(--rose)" stroke-width="2.5"/><circle cx="20" cy="16" r="9" fill="none" stroke="var(--sea)" stroke-width="2.5"/></svg>
+      Совпало
+    </a>
+    <nav>
+      <button class="btn ghost" id="themeBtn" type="button" aria-label="Сменить тему">Тема</button>
+      <a class="btn ghost" href="#how">Как считаем</a>
+      <a class="btn solid" href="#join" id="navJoin">Зарегистрироваться</a>
+    </nav>
+  </header>
+</div>
+
+<main id="landing">
+  <div class="wrap hero">
+    <div>
+      <h1>Знакомства, где дата рождения говорит первой</h1>
+      <p class="lead">Укажите свой день рождения, и мы покажем людей, с которыми у вас совпадают число судьбы, стихия, восточный знак и аркан пары. Анкеты отсортированы по совместимости, а не по случайности.</p>
+      <div class="cta">
+        <a class="btn rose" href="#join">Найти свою пару</a>
+        <a class="btn" href="#how">Как устроен расчёт</a>
+      </div>
+    </div>
+
+    <div class="calc" aria-labelledby="calcTitle">
+      <h2 id="calcTitle" style="font-size:1.3rem;margin-bottom:1rem">Проверьте совместимость двух дат</h2>
+      <div class="dates">
+        <div class="field you"><label for="d1">Ваша дата рождения</label><input type="date" id="d1" value="1990-06-13"></div>
+        <div class="field them"><label for="d2">Дата партнёра</label><input type="date" id="d2" value="1988-10-27"></div>
+      </div>
+      <div class="ring-wrap">
+        <svg viewBox="0 0 200 200" id="ring" aria-hidden="true"></svg>
+        <div class="ring-center" aria-live="polite">
+          <div class="pct" id="pct">0<small>%</small></div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+      <ul class="legend" id="legend"></ul>
+    </div>
+  </div>
+
+  <section class="block wrap" id="how">
+    <div class="intro">
+      <h2>Четыре системы, одна цифра</h2>
+      <p>Каждая система даёт свою оценку от 0 до 100. Итог складывается по весам: нумерология весит больше всего, потому что в ней учитывается вся дата целиком. В анкете партнёра видно, из чего сложился процент.</p>
+    </div>
+    <div class="systems">
+      <div class="system" style="--c:var(--rose)">
+        <div class="w">30%</div>
+        <h3>Число судьбы</h3>
+        <p>Складываем все цифры даты до одной (11 и 22 оставляем). Числа делятся на три «семьи»: внутри семьи пары понимают друг друга без слов.</p>
+        <div class="ex">13.06.1990 → 1+3+0+6+1+9+9+0 = 29 → 11</div>
+      </div>
+      <div class="system" style="--c:var(--sun)">
+        <div class="w">25%</div>
+        <h3>Знак и стихия</h3>
+        <p>Огонь дружит с воздухом, земля с водой. Одна стихия даёт спокойствие, противоположные знаки дают притяжение.</p>
+        <div class="ex">Близнецы (воздух) + Скорпион (вода)</div>
+      </div>
+      <div class="system" style="--c:var(--sea)">
+        <div class="w">25%</div>
+        <h3>Восточный год</h3>
+        <p>Двенадцать животных образуют четыре треугольника союзников. Знаки, стоящие напротив друг друга в круге, конфликтуют.</p>
+        <div class="ex">Лошадь + Дракон: нейтрально</div>
+      </div>
+      <div class="system" style="--c:var(--plum)">
+        <div class="w">20%</div>
+        <h3>Аркан пары</h3>
+        <p>День рождения каждого переводим в аркан от 1 до 22, складываем и получаем аркан пары с коротким толкованием, как в матрице судьбы.</p>
+        <div class="ex">13 + 5 = 18, Луна</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block wrap" id="market">
+    <div class="intro">
+      <h2>Что мы взяли у больших сервисов и что сделали иначе</h2>
+      <p>Mamba, Tinder и Badoo решают задачу «показать как можно больше анкет». Мы решаем другую: показать сначала тех, с кем есть основания для разговора.</p>
+    </div>
+    <div class="compare">
+      <article>
+        <h3>Mamba</h3>
+        <ul>
+          <li>Подробные анкеты и поиск по многим фильтрам</li>
+          <li>Сильна в России и СНГ, много взрослой аудитории</li>
+          <li>Ключевые функции за платной подпиской</li>
+        </ul>
+        <p class="take">Берём: подробную анкету и фильтры по возрасту и городу.</p>
+      </article>
+      <article>
+        <h3>Tinder</h3>
+        <ul>
+          <li>Свайпы и взаимная симпатия как условие для чата</li>
+          <li>Быстрый вход, минимум полей</li>
+          <li>Выбор в основном по фото</li>
+        </ul>
+        <p class="take">Берём: взаимность перед перепиской и короткую регистрацию.</p>
+      </article>
+      <article>
+        <h3>Badoo</h3>
+        <ul>
+          <li>Люди рядом и игровая механика «Знакомства»</li>
+          <li>Верификация по фото против фейков</li>
+          <li>Много платных «ускорений» показа</li>
+        </ul>
+        <p class="take">Берём: поиск по городу и проверку профиля.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="block wrap" id="join">
+    <div class="reg">
+      <div>
+        <h2>Регистрация за минуту</h2>
+        <p style="color:var(--muted);margin-top:1rem">Дата рождения нужна для расчёта. В анкете другие видят только возраст, знак и число судьбы, точная дата скрыта.</p>
+        <ol class="steps-list" id="steps">
+          <li class="on">Имя и кого вы ищете</li>
+          <li>Дата рождения: сразу покажем ваши числа</li>
+          <li>Город и пара слов о себе</li>
+          <li>Лента людей, отсортированная по совместимости</li>
+        </ol>
+      </div>
+      <form class="card" id="regForm" novalidate>
+        <div class="row2">
+          <div class="field"><label for="fName">Имя</label><input id="fName" autocomplete="given-name" maxlength="30" required></div>
+          <div class="field"><label for="fCity">Город</label>
+            <select id="fCity"></select>
+          </div>
+        </div>
+        <div class="field"><label>Я</label>
+          <div class="seg">
+            <input type="radio" name="g" id="gM" value="m"><label for="gM">мужчина</label>
+            <input type="radio" name="g" id="gF" value="f" checked><label for="gF">женщина</label>
+          </div>
+        </div>
+        <div class="field"><label>Ищу</label>
+          <div class="seg">
+            <input type="radio" name="s" id="sM" value="m" checked><label for="sM">мужчину</label>
+            <input type="radio" name="s" id="sF" value="f"><label for="sF">женщину</label>
+            <input type="radio" name="s" id="sA" value="a"><label for="sA">не важно</label>
+          </div>
+        </div>
+        <div class="field"><label for="fBirth">Дата рождения</label><input type="date" id="fBirth" required></div>
+        <div class="preview" id="preview" aria-live="polite"></div>
+        <div class="field"><label for="fAbout">О себе <span style="opacity:.7">(необязательно)</span></label><input id="fAbout" maxlength="140" placeholder="Например: люблю походы и старое кино"></div>
+        <label class="check"><input type="checkbox" id="fAge" required> Мне исполнилось 18 лет, я согласен(на) с правилами сервиса</label>
+        <div class="err" id="err" role="alert"></div>
+        <button class="btn rose" type="submit" style="justify-self:start">Показать мои совпадения</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<main id="app" class="wrap">
+  <div class="me" id="me"></div>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="feed">Подобрано для вас</button>
+    <button role="tab" aria-selected="false" data-tab="likes">Мне понравились<span class="count" id="cLikes"></span></button>
+    <button role="tab" aria-selected="false" data-tab="matches">Взаимно<span class="count" id="cMatches"></span></button>
+  </div>
+  <div class="filters" id="filters">
+    <div class="field"><label for="fMin">Совместимость от <b id="minOut">60</b>%</label><input type="range" id="fMin" min="0" max="95" step="5" value="60"></div>
+    <div class="field"><label for="fAgeFrom">Возраст от</label><input type="number" id="fAgeFrom" min="18" max="80" value="18"></div>
+    <div class="field"><label for="fAgeTo">до</label><input type="number" id="fAgeTo" min="18" max="80" value="60"></div>
+    <div class="field"><label for="fCityF">Город</label><select id="fCityF"></select></div>
+  </div>
+  <div class="feed" id="feed"></div>
+</main>
+
+<div class="wrap">
+  <footer>
+    <span>Совпало. Демо-версия: анкеты сгенерированы, данные хранятся только в вашем браузере.</span>
+    <span>Расчёты носят развлекательный характер.</span>
+  </footer>
+</div>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('sovpalo.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('sovpalo.' + k, JSON.stringify(v)); } catch {} },
+    del(k) { try { localStorage.removeItem('sovpalo.' + k); } catch {} }
+  };
+
+  /* ---------- расчёты по дате ---------- */
+  const parse = s => { const [y, m, d] = s.split('-').map(Number); return { y, m, d }; };
+  const digitSum = n => String(n).split('').reduce((a, c) => a + +c, 0);
+  function lifePath({ y, m, d }) {
+    let n = digitSum(`${d}${m}${y}`);
+    while (n > 9 && n !== 11 && n !== 22) n = digitSum(n);
+    return n;
+  }
+  const SIGNS = [
+    ['Козерог', 'земля', '♑', 1, 19], ['Водолей', 'воздух', '♒', 2, 18], ['Рыбы', 'вода', '♓', 3, 20],
+    ['Овен', 'огонь', '♈', 4, 19], ['Телец', 'земля', '♉', 5, 20], ['Близнецы', 'воздух', '♊', 6, 20],
+    ['Рак', 'вода', '♋', 7, 22], ['Лев', 'огонь', '♌', 8, 22], ['Дева', 'земля', '♍', 9, 22],
+    ['Весы', 'воздух', '♎', 10, 22], ['Скорпион', 'вода', '♏', 11, 21], ['Стрелец', 'огонь', '♐', 12, 21]
+  ];
+  // индекс знака по кругу: Козерог=0 … Стрелец=11
+  function zodiac({ m, d }) {
+    let i = m - 1;
+    if (d > SIGNS[m - 1][4]) i = m % 12;
+    return { i, name: SIGNS[i][0], el: SIGNS[i][1], glyph: SIGNS[i][2] };
+  }
+  const ANIMALS = ['Крыса', 'Бык', 'Тигр', 'Кролик', 'Дракон', 'Змея', 'Лошадь', 'Коза', 'Обезьяна', 'Петух', 'Собака', 'Свинья'];
+  // упрощение: восточный Новый год считаем 5 февраля
+  function eastern({ y, m, d }) {
+    const yy = (m < 2 || (m === 2 && d < 5)) ? y - 1 : y;
+    const i = ((yy - 1900) % 12 + 12) % 12;
+    return { i, name: ANIMALS[i] };
+  }
+  const arcanum = ({ d }) => d > 22 ? d - 22 : d;
+  const ARCANA = {
+    1: ['Маг', 'Пара инициатив: вместе легко начинать новое.', 80], 2: ['Жрица', 'Глубокое понимание без слов, важно доверие.', 82],
+    3: ['Императрица', 'Тепло, забота, желание строить дом.', 92], 4: ['Император', 'Надёжная пара с ясными ролями и планами.', 78],
+    5: ['Иерофант', 'Общие ценности и традиции, союз «на века».', 85], 6: ['Влюблённые', 'Сильное притяжение и выбор друг друга каждый день.', 96],
+    7: ['Колесница', 'Пара в движении: путешествия, цели, азарт.', 80], 8: ['Справедливость', 'Честность и равноправие, нужно договариваться.', 72],
+    9: ['Отшельник', 'Тихий союз двух глубоких людей.', 65], 10: ['Колесо фортуны', 'Яркие перемены, судьбоносная встреча.', 84],
+    11: ['Сила', 'Страсть и сильные характеры, важно уступать.', 76], 12: ['Повешенный', 'Отношения учат терпению и смене взгляда.', 55],
+    13: ['Перемены', 'Встреча, после которой многое меняется.', 62], 14: ['Умеренность', 'Гармония и спокойный ритм.', 90],
+    15: ['Дьявол', 'Очень сильное влечение, следите за ревностью.', 68], 16: ['Башня', 'Бурный старт, нужно строить фундамент.', 50],
+    17: ['Звезда', 'Вдохновляете друг друга, общие мечты.', 93], 18: ['Луна', 'Романтика и интуиция, нужна открытость.', 64],
+    19: ['Солнце', 'Радость, лёгкость, много общих друзей.', 98], 20: ['Суд', 'Связь с семьёй и прошлым, второй шанс.', 74],
+    21: ['Мир', 'Цельная пара, вам хорошо где угодно вместе.', 95], 22: ['Шут', 'Свобода и спонтанность, без рутины.', 70]
+  };
+
+  function scoreNumerology(a, b) {
+    const fam = n => (n === 11 ? 2 : n === 22 ? 4 : n);
+    const x = fam(a), y = fam(b);
+    const g = n => [1, 5, 7].includes(n) ? 0 : [2, 4, 8].includes(n) ? 1 : 2;
+    if (a === b) return [88, `Одинаковое число ${a}: вы смотрите на мир похоже.`];
+    if (g(x) === g(y)) return [94, `Числа ${a} и ${b} из одной семьи, ритм жизни совпадает.`];
+    const friendly = { 0: 2, 1: 2, 2: 1 }; // 1-5-7 ↔ 3-6-9, 2-4-8 ↔ 3-6-9
+    if (friendly[g(x)] === g(y) || friendly[g(y)] === g(x)) return [72, `Числа ${a} и ${b} дополняют друг друга.`];
+    return [52, `Числа ${a} и ${b} разные по темпу, нужно больше разговаривать.`];
+  }
+  function scoreZodiac(a, b) {
+    const diff = Math.abs(a.i - b.i);
+    if (a.i === b.i) return [80, `Оба ${a.name}: хорошо понимаете друг друга, но можете скучать.`];
+    if (diff === 6) return [78, `${a.name} и ${b.name} напротив друг друга: притяжение противоположностей.`];
+    if (a.el === b.el) return [92, `Одна стихия (${a.el}): общий темперамент.`];
+    const pair = new Set([a.el, b.el]);
+    if ((pair.has('огонь') && pair.has('воздух')) || (pair.has('земля') && pair.has('вода')))
+      return [86, `${cap(a.el)} и ${b.el} усиливают друг друга.`];
+    return [54, `${cap(a.el)} и ${b.el}: разный темперамент, интересно, но непросто.`];
+  }
+  function scoreEastern(a, b) {
+    const d = Math.abs(a.i - b.i);
+    if (d === 6) return [35, `${a.name} и ${b.name} стоят напротив в круге: частые споры.`];
+    if (a.i % 4 === b.i % 4 && a.i !== b.i) return [95, `${a.name} и ${b.name} в одном треугольнике союзников.`];
+    if (a.i === b.i) return [75, `Оба ${a.name}: похожие привычки.`];
+    if ((a.i + b.i) % 12 === 1) return [88, `${a.name} и ${b.name}: тайные друзья по восточному кругу.`];
+    return [64, `${a.name} и ${b.name}: нейтральное сочетание.`];
+  }
+  const cap = s => s[0].toUpperCase() + s.slice(1);
+
+  function compat(s1, s2) {
+    const p1 = parse(s1), p2 = parse(s2);
+    const n = scoreNumerology(lifePath(p1), lifePath(p2));
+    const z = scoreZodiac(zodiac(p1), zodiac(p2));
+    const e = scoreEastern(eastern(p1), eastern(p2));
+    let pa = arcanum(p1) + arcanum(p2); if (pa > 22) pa -= 22;
+    const ar = ARCANA[pa];
+    const parts = [
+      { key: 'num', t: 'Число судьбы', w: .30, v: n[0], why: n[1], c: 'var(--rose)' },
+      { key: 'zod', t: 'Знак и стихия', w: .25, v: z[0], why: z[1], c: 'var(--sun)' },
+      { key: 'east', t: 'Восточный год', w: .25, v: e[0], why: e[1], c: 'var(--sea)' },
+      { key: 'arc', t: 'Аркан пары', w: .20, v: ar[2], why: `${pa}, ${ar[0]}: ${ar[1]}`, c: 'var(--plum)' }
+    ];
+    const total = Math.round(parts.reduce((a, p) => a + p.v * p.w, 0));
+    return { total, parts, pairArcanum: pa, arc: ar };
+  }
+  const verdictOf = t => t >= 85 ? 'Редкое совпадение, пишите первыми' : t >= 72 ? 'Хорошая пара, есть о чём поговорить' : t >= 60 ? 'Можно попробовать' : 'Разные ритмы, но всё решает встреча';
+  function ageOf(s) {
+    const p = parse(s), now = new Date();
+    let a = now.getFullYear() - p.y;
+    if (now.getMonth() + 1 < p.m || (now.getMonth() + 1 === p.m && now.getDate() < p.d)) a--;
+    return a;
+  }
+  const valid = s => /^\d{4}-\d{2}-\d{2}$/.test(s || '') && +s.slice(0, 4) > 1900;
+
+  /* ---------- кольцо в герое ---------- */
+  const R = 84, C = 2 * Math.PI * R;
+  function drawRing(res) {
+    const svg = $('#ring');
+    if (!svg.childElementCount) {
+      svg.innerHTML = `<circle class="track" cx="100" cy="100" r="${R}" stroke-width="14"/>` +
+        res.parts.map((p, i) => `<circle class="arc" data-i="${i}" cx="100" cy="100" r="${R}" stroke-width="14" stroke="${p.c}"/>`).join('');
+    }
+    // каждая система получает свой сектор кольца, заполненный по её оценке
+    let offset = 0; const gap = 4;
+    res.parts.forEach((p, i) => {
+      const seg = C * p.w, len = Math.max(0, seg * p.v / 100 - gap);
+      const arc = svg.querySelector(`[data-i="${i}"]`);
+      arc.setAttribute('stroke-dasharray', `${len} ${C}`);
+      arc.style.strokeDashoffset = -offset;
+      offset += seg;
+    });
+    animateNumber($('#pct'), res.total);
+    $('#verdict').textContent = verdictOf(res.total);
+    $('#legend').innerHTML = res.parts.map(p => `<li><span><span class="sw" style="background:${p.c}"></span>${p.t}</span><b>${p.v}</b></li>`).join('');
+  }
+  function animateNumber(el, to) {
+    const from = parseInt(el.textContent) || 0, t0 = performance.now(), dur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 700;
+    const step = now => {
+      const k = dur ? Math.min(1, (now - t0) / dur) : 1;
+      el.innerHTML = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3))) + '<small>%</small>';
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  function updateHero() {
+    const a = $('#d1').value, b = $('#d2').value;
+    if (valid(a) && valid(b)) drawRing(compat(a, b));
+  }
+  $('#d1').addEventListener('input', updateHero);
+  $('#d2').addEventListener('input', updateHero);
+
+  /* ---------- демо-анкеты ---------- */
+  const CITIES = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Краснодар', 'Самара', 'Ростов-на-Дону', 'Воронеж'];
+  const NAMES = {
+    f: ['Анна', 'Мария', 'Екатерина', 'Ольга', 'Дарья', 'Алина', 'Виктория', 'Полина', 'Ксения', 'Наталья', 'Ирина', 'Елена', 'Светлана', 'Юлия', 'Вера', 'Софья', 'Татьяна', 'Марина', 'Алёна', 'Людмила'],
+    m: ['Алексей', 'Дмитрий', 'Иван', 'Сергей', 'Андрей', 'Михаил', 'Никита', 'Артём', 'Павел', 'Максим', 'Илья', 'Роман', 'Олег', 'Владимир', 'Егор', 'Константин', 'Николай', 'Тимур', 'Глеб', 'Виктор']
+  };
+  const ABOUT = ['Люблю горы и утренний кофе', 'Читаю, бегаю, готовлю по выходным', 'Ищу человека для долгих прогулок', 'Работаю в IT, по вечерам играю на гитаре', 'Путешествую при любой возможности', 'Врач, люблю театр и тишину', 'Танцую сальсу, ищу партнёра не только по танцам', 'Собака, дача, старое кино', 'Фотографирую города и людей', 'Учусь рисовать акварелью', 'Хочу семью и уютный дом', 'Велосипед, книги, настолки'];
+  function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }; }
+  const PEOPLE = (() => {
+    const r = rng(1306), list = [];
+    for (let i = 0; i < 160; i++) {
+      const g = i % 2 ? 'm' : 'f';
+      const y = 1966 + Math.floor(r() * 40), m = 1 + Math.floor(r() * 12), d = 1 + Math.floor(r() * 28);
+      list.push({
+        id: 'p' + i, g, name: NAMES[g][Math.floor(r() * 20)],
+        birth: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+        city: CITIES[Math.floor(r() * (r() < .45 ? 2 : CITIES.length))],
+        about: ABOUT[Math.floor(r() * ABOUT.length)],
+        verified: r() < .6, likesYou: r()
+      });
+    }
+    return list;
+  })();
+  const EL_COLOR = { 'огонь': '#d9534a', 'воздух': '#7a4fd1', 'вода': '#24857d', 'земля': '#a8741a' };
+  const avatar = (p, big) => `<div class="ava${big ? ' big' : ''}" style="background:${EL_COLOR[zodiac(parse(p.birth)).el]}" aria-hidden="true">${p.name[0]}</div>`;
+
+  /* ---------- регистрация ---------- */
+  const opt = (list, all) => (all ? `<option value="">Любой</option>` : '') + list.map(c => `<option>${c}</option>`).join('');
+  $('#fCity').innerHTML = opt(CITIES);
+  $('#fCityF').innerHTML = opt(CITIES, true);
+
+  function factsOf(birth) {
+    const p = parse(birth), z = zodiac(p), e = eastern(p);
+    return { life: lifePath(p), z, e, arc: arcanum(p) };
+  }
+  $('#fBirth').addEventListener('input', () => {
+    const v = $('#fBirth').value, box = $('#preview');
+    if (!valid(v)) { box.classList.remove('show'); return; }
+    const f = factsOf(v);
+    box.innerHTML = `<div><span>Число судьбы</span><b>${f.life}</b></div><div><span>Знак</span><b>${f.z.glyph} ${f.z.name}</b></div><div><span>Восточный год</span><b>${f.e.name}</b></div><div><span>Аркан</span><b>${f.arc}, ${ARCANA[f.arc][0]}</b></div>`;
+    box.classList.add('show');
+    markStep(2);
+  });
+  $('#fName').addEventListener('input', () => markStep(1));
+  $('#fAbout').addEventListener('input', () => markStep(3));
+  function markStep(n) { [...$('#steps').children].forEach((li, i) => li.classList.toggle('on', i <= n)); }
+
+  $('#regForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#fName').value.trim(), birth = $('#fBirth').value;
+    const err = $('#err');
+    if (!name) { err.textContent = 'Введите имя, чтобы другие знали, как к вам обращаться.'; $('#fName').focus(); return; }
+    if (!valid(birth)) { err.textContent = 'Укажите дату рождения: по ней считается совместимость.'; $('#fBirth').focus(); return; }
+    if (ageOf(birth) < 18) { err.textContent = 'Регистрация доступна с 18 лет.'; $('#fBirth').focus(); return; }
+    if (!$('#fAge').checked) { err.textContent = 'Подтвердите, что вам есть 18 лет и вы согласны с правилами.'; return; }
+    err.textContent = '';
+    const user = {
+      name, birth, city: $('#fCity').value, about: $('#fAbout').value.trim(),
+      g: document.querySelector('[name=g]:checked').value, seek: document.querySelector('[name=s]:checked').value
+    };
+    store.set('user', user);
+    const a = ageOf(birth);
+    $('#fAgeFrom').value = Math.max(18, a - 8); $('#fAgeTo').value = a + 8;
+    $('#fCityF').value = user.city;
+    enterApp();
+  });
+
+  /* ---------- приложение ---------- */
+  let tab = 'feed';
+  const likes = new Set(store.get('likes', []));
+  const passes = new Set(store.get('passes', []));
+  const matches = new Set(store.get('matches', []));
+  const save = () => { store.set('likes', [...likes]); store.set('passes', [...passes]); store.set('matches', [...matches]); };
+
+  function enterApp() {
+    const u = store.get('user');
+    if (!u) return;
+    document.body.classList.add('in-app');
+    $('#navJoin').textContent = 'Выйти'; $('#navJoin').href = '#';
+    const f = factsOf(u.birth);
+    $('#me').innerHTML = `${avatar(u, true)}
+      <div><h2 style="font-size:1.8rem">${esc(u.name)}, ${ageOf(u.birth)}</h2>
+        <div class="facts"><span class="chip">${esc(u.city)}</span><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}, ${ARCANA[f.arc][0]}</span></div></div>
+      <button class="btn" id="editBtn" type="button">Изменить анкету</button>`;
+    $('#editBtn').onclick = () => { fillForm(u); leaveApp(); location.hash = 'join'; };
+    window.scrollTo(0, 0);
+    render();
+  }
+  function leaveApp() { document.body.classList.remove('in-app'); $('#navJoin').textContent = 'Зарегистрироваться'; $('#navJoin').href = '#join'; }
+  function fillForm(u) {
+    $('#fName').value = u.name; $('#fBirth').value = u.birth; $('#fCity').value = u.city; $('#fAbout').value = u.about || '';
+    document.querySelector(`[name=g][value=${u.g}]`).checked = true;
+    document.querySelector(`[name=s][value=${u.seek}]`).checked = true;
+    $('#fBirth').dispatchEvent(new Event('input'));
+  }
+  $('#navJoin').addEventListener('click', e => {
+    if (!document.body.classList.contains('in-app')) return;
+    e.preventDefault();
+    ['user', 'likes', 'passes', 'matches'].forEach(store.del);
+    likes.clear(); passes.clear(); matches.clear();
+    leaveApp(); window.scrollTo(0, 0);
+  });
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function candidates() {
+    const u = store.get('user');
+    return PEOPLE
+      .filter(p => u.seek === 'a' || p.g === u.seek)
+      .map(p => ({ ...p, age: ageOf(p.birth), res: compat(u.birth, p.birth) }))
+      .filter(p => p.age >= 18)
+      .sort((a, b) => b.res.total - a.res.total);
+  }
+
+  function render() {
+    const all = candidates();
+    $('#cLikes').textContent = likes.size || '';
+    $('#cMatches').textContent = matches.size || '';
+    $('#filters').style.display = tab === 'feed' ? '' : 'none';
+    let list;
+    if (tab === 'feed') {
+      const min = +$('#fMin').value, from = +$('#fAgeFrom').value || 18, to = +$('#fAgeTo').value || 99, city = $('#fCityF').value;
+      list = all.filter(p => !likes.has(p.id) && !passes.has(p.id) && p.res.total >= min && p.age >= from && p.age <= to && (!city || p.city === city));
+    } else if (tab === 'likes') list = all.filter(p => likes.has(p.id) && !matches.has(p.id));
+    else list = all.filter(p => matches.has(p.id));
+
+    const feed = $('#feed');
+    if (!list.length) {
+      const msg = {
+        feed: ['Под эти фильтры никто не подходит.', 'Снизьте порог совместимости или выберите «Любой» город.', '<button class="btn" type="button" id="relax">Сбросить фильтры</button>'],
+        likes: ['Вы ещё никого не отметили.', 'Откройте анкету в подборке и нажмите «Нравится».', ''],
+        matches: ['Взаимных симпатий пока нет.', 'Когда человек ответит на ваш лайк, он появится здесь и можно будет написать.', '']
+      }[tab];
+      feed.innerHTML = `<div class="empty"><p style="margin-inline:auto;color:var(--ink);font-weight:600">${msg[0]}</p><p style="margin-inline:auto">${msg[1]}</p>${msg[2]}</div>`;
+      const r = $('#relax'); if (r) r.onclick = () => { $('#fMin').value = 0; $('#minOut').textContent = 0; $('#fAgeFrom').value = 18; $('#fAgeTo').value = 80; $('#fCityF').value = ''; render(); };
+      return;
+    }
+    feed.innerHTML = list.slice(0, 60).map(p => {
+      const f = factsOf(p.birth);
+      return `<button class="person" type="button" data-id="${p.id}" aria-label="${p.name}, ${p.age}, совместимость ${p.res.total}%">
+        <div class="head">${avatar(p)}<div><div class="name">${p.name}, ${p.age}</div><div class="sub">${p.city}${matches.has(p.id) ? ', <span class="tag">взаимно</span>' : p.verified ? ', фото проверено' : ''}</div><div class="sub">${f.z.glyph} ${f.z.name}, число ${f.life}</div></div></div>
+        <div class="score"><span class="n">${p.res.total}%</span><span class="bar">${p.res.parts.map(x => `<i style="width:${x.w * x.v}%;background:${x.c}"></i>`).join('')}</span></div>
+      </button>`;
+    }).join('');
+  }
+  $('#feed').addEventListener('click', e => { const b = e.target.closest('.person'); if (b) openPerson(b.dataset.id); });
+  ['#fMin', '#fAgeFrom', '#fAgeTo', '#fCityF'].forEach(s => $(s).addEventListener('input', () => { $('#minOut').textContent = $('#fMin').value; render(); }));
+  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+    render();
+  }));
+
+  function openPerson(id) {
+    const u = store.get('user'), p = PEOPLE.find(x => x.id === id);
+    const res = compat(u.birth, p.birth), f = factsOf(p.birth), age = ageOf(p.birth);
+    const liked = likes.has(id), matched = matches.has(id);
+    $('#dlgBody').innerHTML = `
+      <div class="head">${avatar(p, true)}<div><h3 style="font-size:1.6rem">${p.name}, ${age}</h3>
+        <div class="sub" style="color:var(--muted)">${p.city}${p.verified ? ', фото проверено' : ''}</div></div>
+        <button class="x" type="button" aria-label="Закрыть" data-close>×</button></div>
+      <p class="about">${p.about}</p>
+      <div class="facts" style="display:flex;flex-wrap:wrap;gap:.4rem"><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}</span></div>
+      <div style="display:flex;align-items:baseline;gap:.6rem"><span style="font-family:var(--font-display);font-size:3rem;line-height:1">${res.total}%</span><span style="color:var(--muted)">${verdictOf(res.total)}</span></div>
+      <div class="breakdown">${res.parts.map(x => `<div class="item"><span class="t">${x.t}</span><span class="v">${x.v}</span><span class="meter"><i style="width:${x.v}%;background:${x.c}"></i></span><span class="why">${x.why}</span></div>`).join('')}</div>
+      <div class="arcana"><div class="num">${res.pairArcanum}</div><div><b>Аркан вашей пары: ${res.arc[0]}</b><p style="color:var(--muted);font-size:.93rem">${res.arc[1]}</p></div></div>
+      <div class="actions">
+        ${matched ? `<button class="btn rose" type="button" data-act="write">Написать сообщение</button>` :
+          liked ? `<button class="btn" type="button" disabled>Симпатия отправлена</button>` :
+          `<button class="btn" type="button" data-act="pass">Пропустить</button><button class="btn rose" type="button" data-act="like">Нравится</button>`}
+      </div>`;
+    const dlg = $('#dlg');
+    dlg.onclick = e => {
+      if (e.target === dlg || e.target.closest('[data-close]')) return dlg.close();
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if (act === 'like') {
+        likes.add(id);
+        // демо: человек отвечает взаимностью с вероятностью, растущей с совместимостью
+        if (p.likesYou < res.total / 100 - .15) { matches.add(id); toast(`Взаимно! ${p.name} тоже отметил(а) вас. Можно написать первым.`); }
+        else toast(`Симпатия отправлена. Сообщим, когда ${p.name} ответит.`);
+        save(); dlg.close(); render();
+      } else if (act === 'pass') { passes.add(id); save(); dlg.close(); render(); }
+      else if (act === 'write') { toast('Чат появится в следующей версии.'); }
+    };
+    dlg.showModal();
+  }
+
+  let tt;
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 3400); }
+
+  /* ---------- тема ---------- */
+  const saved = store.get('theme'); if (saved) document.documentElement.dataset.theme = saved;
+  $('#themeBtn').addEventListener('click', () => {
+    const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next; store.set('theme', next);
+  });
+  $('#home').addEventListener('click', e => { e.preventDefault(); window.scrollTo(0, 0); });
+
+  updateHero();
+  if (store.get('user')) enterApp();
+})();
+</script>
+</body>
+</html>
