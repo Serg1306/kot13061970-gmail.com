@@ -144,11 +144,52 @@ body.in-app #app { display: block; }
 .filters .field { min-width: 9rem; }
 .filters input[type=range] { padding: 0; accent-color: var(--rose); border: 0; background: none; }
 .feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
-.person { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; display: grid; gap: .7rem; text-align: left; cursor: pointer; position: relative; }
+.person { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 0; overflow: hidden; display: grid; text-align: left; cursor: pointer; position: relative; }
+.person .cover { position: relative; aspect-ratio: 5 / 4; background: var(--line); }
+.person .cover img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
+.badges { position: absolute; left: .6rem; bottom: .6rem; display: flex; gap: .3rem; }
+.badge { background: rgb(20 10 35 / .72); color: #fff; font-size: .78rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .3rem; }
+.badge svg { width: .8rem; height: .8rem; fill: currentColor; }
+.person .body { padding: .85rem 1rem 1rem; display: grid; gap: .55rem; }
 .person:hover { border-color: var(--ink); }
 .person .head { display: flex; gap: .75rem; align-items: center; }
 .ava { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-size: 1.3rem; flex: none; }
 .ava.big { width: 84px; height: 84px; font-size: 2rem; }
+img.ava { object-fit: cover; }
+
+/* мои фото */
+.myphotos { padding: 1.4rem 0 1.6rem; border-bottom: 1px solid var(--line); }
+.mp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1rem; }
+.mp-head .count { color: var(--muted); font-variant-numeric: tabular-nums; }
+.mp-head .btn { margin-left: auto; }
+.myphotos .hint { color: var(--muted); font-size: .92rem; margin-top: .3rem; }
+.mp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: .7rem; margin-top: 1rem; }
+.mp-grid.drag { outline: 2px dashed var(--plum); outline-offset: 6px; border-radius: 12px; }
+.tile { position: relative; aspect-ratio: 3 / 4; border-radius: 14px; overflow: hidden; background: var(--line); }
+.tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tile .main { position: absolute; left: .4rem; top: .4rem; }
+.tile .tools { position: absolute; right: .35rem; top: .35rem; display: flex; gap: .3rem; }
+.tile .tools button { width: 2rem; height: 2rem; border-radius: 50%; border: 0; background: rgb(20 10 35 / .72); color: #fff; cursor: pointer; display: grid; place-items: center; font-size: 1rem; line-height: 1; }
+.tile .tools button:hover { background: var(--rose); }
+.add-tile { aspect-ratio: 3 / 4; border-radius: 14px; border: 1.5px dashed var(--muted); background: none; cursor: pointer; display: grid; place-content: center; gap: .3rem; color: var(--muted); font-weight: 600; text-align: center; padding: .5rem; }
+.add-tile b { font-family: var(--font-display); font-weight: 400; font-size: 2.2rem; line-height: 1; color: var(--rose); }
+.add-tile:hover { border-color: var(--rose); color: var(--ink); }
+.add-tile:disabled { opacity: .5; cursor: progress; }
+
+/* галерея анкеты */
+.gallery { display: grid; gap: .6rem; }
+.stage { position: relative; aspect-ratio: 3 / 4; max-height: 62vh; width: 100%; margin-inline: auto; border-radius: 18px; overflow: hidden; background: #1c1428; touch-action: pan-y; }
+.stage img, .stage video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.stage .nav { position: absolute; top: 50%; transform: translateY(-50%); width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 0; background: rgb(255 255 255 / .85); color: #23163a; font-size: 1.5rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
+.stage .prev { left: .6rem; }
+.stage .next { right: .6rem; }
+.stage .counter { position: absolute; right: .7rem; top: .7rem; }
+.stage .nav[hidden] { display: none; }
+.thumbs { display: flex; gap: .45rem; overflow-x: auto; padding-bottom: .2rem; }
+.thumbs button { flex: none; width: 56px; height: 72px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; padding: 0; cursor: pointer; position: relative; background: var(--line); }
+.thumbs button[aria-current="true"] { border-color: var(--rose); }
+.thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumbs .play { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; background: rgb(20 10 35 / .35); font-size: 1.1rem; }
 .person .name { font-weight: 600; font-size: 1.05rem; }
 .person .sub { color: var(--muted); font-size: .88rem; }
 .person .score { display: flex; align-items: center; gap: .7rem; }
@@ -319,7 +360,8 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
           <li class="on">Имя и кого вы ищете</li>
           <li>Дата рождения: сразу покажем ваши числа</li>
           <li>Город и пара слов о себе</li>
-          <li>Лента людей, отсортированная по совместимости</li>
+          <li>До 10 фото в анкету</li>
+          <li>Лента людей с фото и видео, отсортированная по совместимости</li>
         </ol>
       </div>
       <form class="card" id="regForm" novalidate>
@@ -355,6 +397,16 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 
 <main id="app" class="wrap">
   <div class="me" id="me"></div>
+  <section class="myphotos" aria-labelledby="mpTitle">
+    <div class="mp-head">
+      <h3 id="mpTitle">Мои фото</h3><span class="count" id="mpCount"></span>
+      <button class="btn" type="button" id="previewMe">Моя анкета глазами других</button>
+    </div>
+    <p class="hint">До 10 фото. Первое фото главное: его видят в ленте. Можно перетащить файлы сюда.</p>
+    <div class="mp-grid" id="mpGrid"></div>
+    <input type="file" id="mpInput" accept="image/*" multiple hidden>
+    <div class="err" id="mpErr" role="alert"></div>
+  </section>
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="feed">Подобрано для вас</button>
     <button role="tab" aria-selected="false" data-tab="likes">Мне понравились<span class="count" id="cLikes"></span></button>
@@ -371,7 +423,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 
 <div class="wrap">
   <footer>
-    <span>Любовь в цифрах. Демо-версия: анкеты сгенерированы, данные хранятся только в вашем браузере.</span>
+    <span>Любовь в цифрах. Демо-версия: анкеты и их фото сгенерированы, ваши данные и фото хранятся только в вашем браузере.</span>
     <span>Расчёты носят развлекательный характер.</span>
   </footer>
 </div>
@@ -529,6 +581,8 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
     m: ['Алексей', 'Дмитрий', 'Иван', 'Сергей', 'Андрей', 'Михаил', 'Никита', 'Артём', 'Павел', 'Максим', 'Илья', 'Роман', 'Олег', 'Владимир', 'Егор', 'Константин', 'Николай', 'Тимур', 'Глеб', 'Виктор']
   };
   const ABOUT = ['Люблю горы и утренний кофе', 'Читаю, бегаю, готовлю по выходным', 'Ищу человека для долгих прогулок', 'Работаю в IT, по вечерам играю на гитаре', 'Путешествую при любой возможности', 'Врач, люблю театр и тишину', 'Танцую сальсу, ищу партнёра не только по танцам', 'Собака, дача, старое кино', 'Фотографирую города и людей', 'Учусь рисовать акварелью', 'Хочу семью и уютный дом', 'Велосипед, книги, настолки'];
+  const SCENES = ['sea-1', 'sea-2', 'mountains-1', 'mountains-2', 'city-1', 'city-2', 'forest-1', 'forest-2', 'cafe-1', 'cafe-2', 'balloons-1', 'balloons-2', 'flowers-1', 'flowers-2', 'books-1', 'books-2'];
+  const VIDEOS = ['sea', 'snow', 'balloon', 'fire'];
   function rng(seed) { return () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }; }
   const PEOPLE = (() => {
     const r = rng(1306), list = [];
@@ -543,10 +597,25 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
         verified: r() < .6, likesYou: r()
       });
     }
+    // фото и видео: главное фото-портрет, 2–6 сюжетных снимков, у части анкет короткое видео
+    list.forEach((p, i) => {
+      const q = rng(7000 + i), scenes = [...SCENES].sort(() => q() - .5);
+      const media = [{ type: 'photo', src: `media/portrait-${p.g}-${1 + Math.floor(q() * 6)}.jpg` }];
+      scenes.slice(0, 2 + Math.floor(q() * 5)).forEach(n => media.push({ type: 'photo', src: `media/${n}.jpg` }));
+      if (q() < .45) {
+        const v = VIDEOS[Math.floor(q() * VIDEOS.length)];
+        media.splice(1 + Math.floor(q() * (media.length - 1)), 0, { type: 'video', src: `media/video-${v}.mp4`, poster: `media/video-${v}.jpg` });
+      }
+      p.media = media;
+    });
     return list;
   })();
   const EL_COLOR = { 'огонь': '#d9534a', 'воздух': '#7a4fd1', 'вода': '#24857d', 'земля': '#a8741a' };
-  const avatar = (p, big) => `<div class="ava${big ? ' big' : ''}" style="background:${EL_COLOR[zodiac(parse(p.birth)).el]}" aria-hidden="true">${p.name[0]}</div>`;
+  const avatar = (p, big, photo) => photo
+    ? `<img class="ava${big ? ' big' : ''}" src="${photo}" alt="">`
+    : `<div class="ava${big ? ' big' : ''}" style="background:${EL_COLOR[zodiac(parse(p.birth)).el]}" aria-hidden="true">${esc(p.name[0])}</div>`;
+  const ICON_CAM = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 2 4.3 3.5H2.5A1.5 1.5 0 0 0 1 5v7.5A1.5 1.5 0 0 0 2.5 14h11a1.5 1.5 0 0 0 1.5-1.5V5a1.5 1.5 0 0 0-1.5-1.5h-1.8L10.5 2zM8 5.5a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>';
+  const ICON_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg>';
 
   /* ---------- регистрация ---------- */
   const opt = (list, all) => (all ? `<option value="">Любой</option>` : '') + list.map(c => `<option>${c}</option>`).join('');
@@ -601,15 +670,111 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
     if (!u) return;
     document.body.classList.add('in-app');
     $('#navJoin').textContent = 'Выйти'; $('#navJoin').href = '#';
-    const f = factsOf(u.birth);
-    $('#me').innerHTML = `${avatar(u, true)}
+    renderMe();
+    renderPhotos();
+    window.scrollTo(0, 0);
+    render();
+  }
+  function renderMe() {
+    const u = store.get('user'), f = factsOf(u.birth);
+    $('#me').innerHTML = `${avatar(u, true, myPhotos[0]?.src)}
       <div><h2 style="font-size:1.8rem">${esc(u.name)}, ${ageOf(u.birth)}</h2>
         <div class="facts"><span class="chip">${esc(u.city)}</span><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}, ${ARCANA[f.arc][0]}</span></div></div>
       <button class="btn" id="editBtn" type="button">Изменить анкету</button>`;
     $('#editBtn').onclick = () => { fillForm(u); leaveApp(); location.hash = 'join'; };
-    window.scrollTo(0, 0);
-    render();
   }
+
+  /* ---------- мои фото: до 10 штук, хранятся в IndexedDB этого браузера ---------- */
+  const MAX_PHOTOS = 10;
+  let myPhotos = [];
+  const idb = (() => {
+    let dbp; const mem = {};
+    const open = () => dbp || (dbp = new Promise((res, rej) => {
+      const r = indexedDB.open('lvc', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    }));
+    const run = (mode, fn) => open().then(db => new Promise((res, rej) => {
+      const tx = db.transaction('kv', mode), q = fn(tx.objectStore('kv'));
+      tx.oncomplete = () => res(q.result); tx.onerror = () => rej(tx.error);
+    }));
+    return {
+      async get(k) { try { return await run('readonly', s => s.get(k)); } catch { return mem[k]; } },
+      async set(k, v) { mem[k] = v; try { await run('readwrite', s => s.put(v, k)); return true; } catch { return false; } },
+      async del(k) { delete mem[k]; try { await run('readwrite', s => s.delete(k)); } catch {} }
+    };
+  })();
+  async function savePhotos() {
+    if (!await idb.set('photos', myPhotos)) $('#mpErr').textContent = 'Браузер не дал сохранить фото: они пропадут после перезагрузки страницы. Проверьте, что сайт не открыт в приватном режиме.';
+  }
+  function renderPhotos() {
+    const n = myPhotos.length;
+    $('#mpCount').textContent = `${n} из ${MAX_PHOTOS}`;
+    $('#mpGrid').innerHTML = myPhotos.map((ph, i) => `
+      <div class="tile">
+        <img src="${ph.src}" alt="Моё фото ${i + 1}">
+        ${i === 0 ? '<span class="badge main">Главное</span>' : ''}
+        <div class="tools">
+          ${i ? `<button type="button" data-main="${i}" aria-label="Сделать фото ${i + 1} главным" title="Сделать главным">★</button>` : ''}
+          <button type="button" data-del="${i}" aria-label="Удалить фото ${i + 1}" title="Удалить">×</button>
+        </div>
+      </div>`).join('') +
+      (n < MAX_PHOTOS ? `<button type="button" class="add-tile" id="mpAdd"><b>+</b>${n ? 'Добавить ещё' : 'Добавить фото'}<span style="font-weight:400;font-size:.82rem">осталось ${MAX_PHOTOS - n}</span></button>` : '');
+    renderMe();
+  }
+  async function toJpeg(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+      const k = Math.min(1, 1280 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      return c.toDataURL('image/jpeg', .85);
+    } finally { URL.revokeObjectURL(url); }
+  }
+  async function addPhotos(files) {
+    const err = $('#mpErr'); err.textContent = '';
+    const free = MAX_PHOTOS - myPhotos.length;
+    const images = [...files].filter(f => f.type.startsWith('image/'));
+    const notes = [];
+    if (images.length < files.length) notes.push('Файлы, которые не являются фото, пропущены.');
+    if (!free) { err.textContent = `В анкете уже ${MAX_PHOTOS} фото. Удалите какое-нибудь, чтобы добавить новое.`; return; }
+    if (images.length > free) notes.push(`Добавлено ${free} из ${images.length}: в анкете может быть не больше ${MAX_PHOTOS} фото.`);
+    const add = $('#mpAdd'); if (add) add.disabled = true;
+    let broken = 0;
+    for (const f of images.slice(0, free)) {
+      if (f.size > 25 * 1024 * 1024) { broken++; continue; }
+      try { myPhotos.push({ id: Date.now() + Math.random(), src: await toJpeg(f) }); } catch { broken++; }
+    }
+    if (broken) notes.push(`Не удалось открыть ${broken} фото: файл повреждён или больше 25 МБ.`);
+    err.textContent = notes.join(' ');
+    renderPhotos(); await savePhotos();
+    if (images.length && images.length > broken) toast('Фото добавлены в анкету.');
+  }
+  $('#mpGrid').addEventListener('click', async e => {
+    if (e.target.closest('#mpAdd')) return $('#mpInput').click();
+    const del = e.target.closest('[data-del]'), main = e.target.closest('[data-main]');
+    if (del) { myPhotos.splice(+del.dataset.del, 1); $('#mpErr').textContent = ''; }
+    else if (main) { const [ph] = myPhotos.splice(+main.dataset.main, 1); myPhotos.unshift(ph); }
+    else return;
+    renderPhotos(); await savePhotos();
+  });
+  $('#mpInput').addEventListener('change', e => { addPhotos(e.target.files); e.target.value = ''; });
+  const grid = $('#mpGrid');
+  grid.addEventListener('dragover', e => { e.preventDefault(); grid.classList.add('drag'); });
+  grid.addEventListener('dragleave', () => grid.classList.remove('drag'));
+  grid.addEventListener('drop', e => { e.preventDefault(); grid.classList.remove('drag'); addPhotos(e.dataTransfer.files); });
+  $('#previewMe').addEventListener('click', () => {
+    const u = store.get('user'), f = factsOf(u.birth);
+    $('#dlgBody').innerHTML = `
+      <div class="head"><div><h3 style="font-size:1.6rem">${esc(u.name)}, ${ageOf(u.birth)}</h3><div style="color:var(--muted)">${esc(u.city)}</div></div>
+        <button class="x" type="button" aria-label="Закрыть" data-close>×</button></div>
+      ${myPhotos.length ? galleryHtml(myPhotos.map(ph => ({ type: 'photo', src: ph.src }))) : '<div class="empty">Фото пока нет. Анкеты с фото чаще получают симпатии.</div>'}
+      ${u.about ? `<p class="about">${esc(u.about)}</p>` : ''}
+      <div class="facts" style="display:flex;flex-wrap:wrap;gap:.4rem"><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}</span></div>`;
+    showDialog(null);
+  });
   function leaveApp() { document.body.classList.remove('in-app'); $('#navJoin').textContent = 'Регистрация'; $('#navJoin').href = '#join'; }
   function fillForm(u) {
     $('#fName').value = u.name; $('#fBirth').value = u.birth; $('#fCity').value = u.city; $('#fAbout').value = u.about || '';
@@ -622,6 +787,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
     e.preventDefault();
     ['user', 'likes', 'passes', 'matches'].forEach(store.del);
     likes.clear(); passes.clear(); matches.clear();
+    myPhotos = []; idb.del('photos');
     leaveApp(); window.scrollTo(0, 0);
   });
 
@@ -661,9 +827,14 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
     }
     feed.innerHTML = list.slice(0, 60).map(p => {
       const f = factsOf(p.birth);
-      return `<button class="person" type="button" data-id="${p.id}" aria-label="${p.name}, ${p.age}, совместимость ${p.res.total}%">
-        <div class="head">${avatar(p)}<div><div class="name">${p.name}, ${p.age}</div><div class="sub">${p.city}${matches.has(p.id) ? ', <span class="tag">взаимно</span>' : p.verified ? ', фото проверено' : ''}</div><div class="sub">${f.z.glyph} ${f.z.name}, число ${f.life}</div></div></div>
-        <div class="score"><span class="n">${p.res.total}%</span><span class="bar">${p.res.parts.map(x => `<i style="width:${x.w * x.v}%;background:${x.c}"></i>`).join('')}</span></div>
+      const photos = p.media.filter(m => m.type === 'photo').length, hasVideo = p.media.some(m => m.type === 'video');
+      return `<button class="person" type="button" data-id="${p.id}" aria-label="${p.name}, ${p.age}, совместимость ${p.res.total}%, ${photos} фото${hasVideo ? ' и видео' : ''}">
+        <div class="cover"><img src="${p.media[0].src}" alt="" loading="lazy">
+          <span class="badges"><span class="badge">${ICON_CAM}${photos}</span>${hasVideo ? `<span class="badge">${ICON_PLAY}видео</span>` : ''}</span></div>
+        <div class="body">
+          <div><div class="name">${p.name}, ${p.age}</div><div class="sub">${p.city}${matches.has(p.id) ? ', <span class="tag">взаимно</span>' : p.verified ? ', фото проверено' : ''}</div><div class="sub">${f.z.glyph} ${f.z.name}, число ${f.life}</div></div>
+          <div class="score"><span class="n">${p.res.total}%</span><span class="bar">${p.res.parts.map(x => `<i style="width:${x.w * x.v}%;background:${x.c}"></i>`).join('')}</span></div>
+        </div>
       </button>`;
     }).join('');
   }
@@ -680,9 +851,10 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
     const res = compat(u.birth, p.birth), f = factsOf(p.birth), age = ageOf(p.birth);
     const liked = likes.has(id), matched = matches.has(id);
     $('#dlgBody').innerHTML = `
-      <div class="head">${avatar(p, true)}<div><h3 style="font-size:1.6rem">${p.name}, ${age}</h3>
+      <div class="head"><div><h3 style="font-size:1.6rem">${p.name}, ${age}</h3>
         <div class="sub" style="color:var(--muted)">${p.city}${p.verified ? ', фото проверено' : ''}</div></div>
         <button class="x" type="button" aria-label="Закрыть" data-close>×</button></div>
+      ${galleryHtml(p.media)}
       <p class="about">${p.about}</p>
       <div class="facts" style="display:flex;flex-wrap:wrap;gap:.4rem"><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}</span></div>
       <div style="display:flex;align-items:baseline;gap:.6rem"><span style="font-family:var(--font-display);font-size:3rem;line-height:1">${res.total}%</span><span style="color:var(--muted)">${verdictOf(res.total)}</span></div>
@@ -694,9 +866,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
           `<button class="btn" type="button" data-act="pass">Пропустить</button><button class="btn rose" type="button" data-act="like">Нравится</button>`}
       </div>`;
     const dlg = $('#dlg');
-    dlg.onclick = e => {
-      if (e.target === dlg || e.target.closest('[data-close]')) return dlg.close();
-      const act = e.target.closest('[data-act]')?.dataset.act;
+    showDialog(act => {
       if (act === 'like') {
         likes.add(id);
         // демо: человек отвечает взаимностью с вероятностью, растущей с совместимостью
@@ -705,9 +875,56 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
         save(); dlg.close(); render();
       } else if (act === 'pass') { passes.add(id); save(); dlg.close(); render(); }
       else if (act === 'write') { toast('Чат появится в следующей версии.'); }
-    };
-    dlg.showModal();
+    });
   }
+
+  /* ---------- галерея: фото и видео анкеты ---------- */
+  let gItems = [], gIndex = 0;
+  function galleryHtml(items) {
+    gItems = items; gIndex = 0;
+    return `<div class="gallery">
+      <div class="stage" id="gStage" aria-roledescription="галерея" aria-live="polite"></div>
+      ${items.length > 1 ? `<div class="thumbs">${items.map((m, i) => `<button type="button" data-g="${i}" aria-label="${m.type === 'video' ? 'Видео' : 'Фото'} ${i + 1} из ${items.length}"><img src="${m.poster || m.src}" alt="" loading="lazy">${m.type === 'video' ? `<span class="play">${ICON_PLAY.replace('<svg', '<svg width="18" height="18" fill="currentColor"')}</span>` : ''}</button>`).join('')}</div>` : ''}
+    </div>`;
+  }
+  function showMedia(i) {
+    const st = $('#gStage'); if (!st || !gItems.length) return;
+    gIndex = (i + gItems.length) % gItems.length;
+    const m = gItems[gIndex], n = gItems.length;
+    st.innerHTML = (m.type === 'video'
+      ? `<video poster="${m.poster || ''}" controls playsinline loop preload="metadata" aria-label="Видео ${gIndex + 1} из ${n}"><source src="${m.src.replace('.mp4', '.webm')}" type="video/webm"><source src="${m.src}" type="video/mp4"></video>`
+      : `<img src="${m.src}" alt="Фото ${gIndex + 1} из ${n}">`) +
+      (n > 1 ? `<button class="nav prev" type="button" data-step="-1" aria-label="Предыдущее">‹</button><button class="nav next" type="button" data-step="1" aria-label="Следующее">›</button>` : '') +
+      `<span class="badge counter">${gIndex + 1} из ${n}</span>`;
+    document.querySelectorAll('.thumbs [data-g]').forEach(b => b.setAttribute('aria-current', +b.dataset.g === gIndex));
+  }
+  function showDialog(onAct) {
+    const dlg = $('#dlg');
+    dlg.onclick = e => {
+      if (e.target === dlg || e.target.closest('[data-close]')) return dlg.close();
+      const step = e.target.closest('[data-step]'), th = e.target.closest('[data-g]');
+      if (step) return showMedia(gIndex + +step.dataset.step);
+      if (th) return showMedia(+th.dataset.g);
+      const act = e.target.closest('[data-act]')?.dataset.act;
+      if (act && onAct) onAct(act);
+    };
+    if ($('#gStage')) showMedia(0);
+    dlg.showModal();
+    dlg.scrollTop = 0;
+  }
+  $('#dlg').addEventListener('keydown', e => {
+    if (!$('#gStage') || e.target.closest('input, video')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); showMedia(gIndex + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); showMedia(gIndex - 1); }
+  });
+  let touchX = null;
+  $('#dlg').addEventListener('touchstart', e => { touchX = e.target.closest('#gStage') ? e.touches[0].clientX : null; }, { passive: true });
+  $('#dlg').addEventListener('touchend', e => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX; touchX = null;
+    if (Math.abs(dx) > 40) showMedia(gIndex + (dx < 0 ? 1 : -1));
+  });
+  $('#dlg').addEventListener('close', () => { const st = $('#gStage'); if (st) st.innerHTML = ''; });
 
   let tt;
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 3400); }
@@ -722,7 +939,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
   $('#home').addEventListener('click', e => { e.preventDefault(); window.scrollTo(0, 0); });
 
   updateHero();
-  if (store.get('user')) enterApp();
+  if (store.get('user')) idb.get('photos').then(ph => { myPhotos = Array.isArray(ph) ? ph : []; enterApp(); });
 })();
 </script>
 </body>
