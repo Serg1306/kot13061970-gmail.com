@@ -11,7 +11,10 @@
 <style>
 /* Любовь в цифрах: светлая «бумага», баклажановые чернила, кольцо совместимости — главный элемент страницы */
 :root {
-  --paper: #f5f3f8;
+  --paper: #fbf6fb;
+  --bg-pink: #ffd3e3;
+  --bg-mid: #f1e1f6;
+  --bg-blue: #cde5ff;
   --card: #ffffff;
   --ink: #23163a;
   --muted: #6d6380;
@@ -28,25 +31,31 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #17111f; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
+    --paper: #17111f; --bg-pink: #3b1631; --bg-mid: #24183a; --bg-blue: #122a4c; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
     --rose: #f0638a; --sea: #4fb8ae; --sun: #f2b84a; --plum: #a283f0; --good: #4fb8ae;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #17111f; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
+  --paper: #17111f; --bg-pink: #3b1631; --bg-mid: #24183a; --bg-blue: #122a4c; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
   --rose: #f0638a; --sea: #4fb8ae; --sun: #f2b84a; --plum: #a283f0; --good: #4fb8ae;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1rem/1.6 var(--font-body); padding-inline: 1rem; overflow-x: hidden; }
+body { margin: 0; background: var(--bg-mid); color: var(--ink); font: 400 1rem/1.6 var(--font-body); padding-inline: 1rem; overflow-x: hidden; }
 .wrap { max-width: var(--wrap); margin-inline: auto; }
 h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.12; margin: 0; }
 h1 { font-size: clamp(2.3rem, 6vw, 4.4rem); letter-spacing: -0.01em; }
 h2 { font-size: clamp(1.8rem, 4vw, 2.7rem); }
 h3 { font-size: 1.35rem; }
+/* фон: розовый сверху слева переходит в голубой снизу справа; слой зафиксирован, чтобы градиент не растягивался на всю длину страницы */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 8% 6%, var(--bg-pink), transparent 70%),
+    radial-gradient(60% 55% at 95% 95%, var(--bg-blue), transparent 70%),
+    linear-gradient(135deg, var(--bg-pink) 0%, var(--bg-mid) 50%, var(--bg-blue) 100%); }
 p { margin: 0; max-width: 62ch; }
 a { color: var(--rose); }
 button, input, select { font: inherit; color: inherit; }
