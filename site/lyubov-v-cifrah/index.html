@@ -69,6 +69,7 @@ button, input, select { font: inherit; color: inherit; }
 .logo svg { width: 30px; height: 30px; flex: none; }
 .top nav { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .btn { color: var(--ink); border: 1.5px solid var(--ink); background: transparent; border-radius: 999px; padding: .6rem 1.15rem; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; }
+.btn[hidden] { display: none; }
 .btn.solid { background: var(--ink); color: var(--paper); }
 .btn.rose { background: var(--rose); border-color: var(--rose); color: #fff; }
 .btn.ghost { border-color: transparent; }
@@ -306,7 +307,10 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   .carousel-head p { display: none; }
   .logo { font-size: 1.75rem; gap: .35rem; }
   .logo svg { width: 24px; height: 24px; }
-  .top .btn.solid { padding: .5rem .85rem; font-size: .9rem; }
+  .top nav { flex-wrap: nowrap; gap: .3rem; }
+  .top nav .btn { padding: .45rem .7rem; font-size: .85rem; white-space: nowrap; }
+  .logo { font-size: 1.45rem; }
+  .logo svg { width: 20px; height: 20px; }
 }
 </style>
 </head>
@@ -320,6 +324,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     <nav>
       <button class="btn ghost" id="themeBtn" type="button" aria-label="Сменить тему">Тема</button>
       <a class="btn ghost" href="#how">Как считаем</a>
+      <button class="btn" type="button" id="navView" hidden>Моя анкета</button>
       <a class="btn solid" href="#join" id="navJoin">Регистрация</a>
     </nav>
   </header>
@@ -343,7 +348,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <p class="tagline">Знакомства, где дата рождения говорит первой</p>
       <p class="lead">Укажите свой день рождения, и мы покажем людей, с которыми у вас совпадают число судьбы, стихия, восточный знак и аркан пары. Анкеты отсортированы по совместимости, а не по случайности.</p>
       <div class="cta">
-        <a class="btn rose" href="#join">Найти свою пару</a>
+        <a class="btn rose" href="#join" id="heroCta">Найти свою пару</a>
         <a class="btn" href="#how">Как устроен расчёт</a>
       </div>
     </div>
@@ -731,7 +736,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const u = store.get('user');
     if (!u) return;
     document.body.classList.add('in-app');
-    $('#navJoin').textContent = 'Выйти'; $('#navJoin').href = '#';
+    setNav();
     renderMe();
     renderPhotos();
     renderWallet();
@@ -978,7 +983,25 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <div class="facts" style="display:flex;flex-wrap:wrap;gap:.4rem"><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}</span></div>`;
     showDialog(null);
   });
-  function leaveApp() { document.body.classList.remove('in-app'); $('#navJoin').textContent = 'Регистрация'; $('#navJoin').href = '#join'; }
+  function leaveApp() { document.body.classList.remove('in-app'); setNav(); }
+  // Шапка: зарегистрированный человек переходит между главной страницей и своей анкетой, не выходя из аккаунта.
+  function setNav() {
+    const u = store.get('user'), inApp = document.body.classList.contains('in-app');
+    $('#navJoin').textContent = u ? 'Выйти' : 'Регистрация';
+    $('#navJoin').href = u ? '#' : '#join';
+    $('#navView').hidden = !u;
+    $('#navView').textContent = inApp ? 'Главная' : 'Моя анкета';
+    $('#heroCta').textContent = u ? 'Мои совпадения' : 'Найти свою пару';
+    $('#regForm button[type=submit]').textContent = u ? 'Сохранить анкету' : 'Показать мои совпадения';
+  }
+  function showHome() {
+    const u = store.get('user');
+    leaveApp();
+    if (u && $('#d1').value !== u.birth) { $('#d1').value = u.birth; updateHero(); }
+    window.scrollTo(0, 0);
+  }
+  $('#navView').addEventListener('click', () => document.body.classList.contains('in-app') ? showHome() : enterApp());
+  $('#heroCta').addEventListener('click', e => { if (store.get('user')) { e.preventDefault(); enterApp(); } });
   function fillForm(u) {
     $('#fName').value = u.name; $('#fBirth').value = u.birth; $('#fCity').value = u.city; $('#fAbout').value = u.about || '';
     document.querySelector(`[name=g][value=${u.g}]`).checked = true;
@@ -986,8 +1009,9 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     $('#fBirth').dispatchEvent(new Event('input'));
   }
   $('#navJoin').addEventListener('click', e => {
-    if (!document.body.classList.contains('in-app')) return;
+    if (!store.get('user')) return;
     e.preventDefault();
+    if (!confirm('Выйти и удалить анкету, фото и симпатии из этого браузера? Купленные VIP и монеты сохранятся.')) return;
     ['user', 'likes', 'passes', 'matches'].forEach(store.del);
     likes.clear(); passes.clear(); matches.clear();
     myPhotos = []; idb.del('photos');
@@ -1147,7 +1171,12 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     if (e.key === 'ArrowRight') { e.preventDefault(); carMove(1); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); carMove(-1); }
   });
-  track.addEventListener('click', e => { const b = e.target.closest('.slide'); if (b) openPerson(b.dataset.id, valid($('#d1').value) ? $('#d1').value : '1990-01-01'); });
+  track.addEventListener('click', e => {
+    const b = e.target.closest('.slide'); if (!b) return;
+    // зарегистрированным — обычная анкета с симпатиями и подарками, гостям — с предложением зарегистрироваться
+    if (store.get('user')) openPerson(b.dataset.id);
+    else openPerson(b.dataset.id, valid($('#d1').value) ? $('#d1').value : '1990-01-01');
+  });
   // автопрокрутка раз в 3 секунды; стоит на паузе, пока на карусель наведён курсор, фокус или палец, и при «уменьшить движение»
   let carHold = false;
   const carousel = $('.carousel');
@@ -1218,7 +1247,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const next = cur === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next; store.set('theme', next);
   });
-  $('#home').addEventListener('click', e => { e.preventDefault(); window.scrollTo(0, 0); });
+  $('#home').addEventListener('click', e => { e.preventDefault(); if (document.body.classList.contains('in-app')) showHome(); else window.scrollTo(0, 0); });
 
   updateHero();
   renderPricing();
