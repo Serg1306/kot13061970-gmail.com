@@ -172,6 +172,106 @@ form.card { background: var(--card); border: 1px solid var(--line); border-radiu
 
 /* приложение */
 #app { display: none; padding-bottom: 4rem; }
+/* кабинет: меню разделов слева, содержимое справа */
+.cab { display: grid; grid-template-columns: 230px 1fr; gap: 2rem; align-items: start; padding-top: .5rem; }
+.cab > * { min-width: 0; }
+.side { position: sticky; top: 1rem; display: grid; gap: .8rem; }
+.side-me { display: flex; gap: .7rem; align-items: center; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: .7rem; cursor: pointer; color: var(--ink); }
+.side-me .ava { width: 46px; height: 46px; font-size: 1.1rem; }
+.side-me b { display: block; font-size: 1rem; }
+.side-me span { color: var(--muted); font-size: .82rem; }
+.side-me[aria-current="page"] { border-color: var(--ink); }
+.side-nav { display: grid; gap: .15rem; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: .5rem; }
+.side-nav button { display: flex; justify-content: space-between; align-items: center; gap: .5rem; border: 0; background: none; color: var(--ink); text-align: left; font-weight: 600; padding: .6rem .8rem; border-radius: 12px; cursor: pointer; }
+.side-nav button:hover { background: var(--paper); }
+.side-nav button[aria-current="page"] { background: var(--ink); color: var(--paper); }
+.side-nav .n { font-variant-numeric: tabular-nums; font-size: .8rem; color: var(--muted); }
+.side-nav .n.hot:not(:empty) { background: var(--rose); color: #fff; border-radius: 999px; padding: .05rem .5rem; }
+.side-nav button[aria-current="page"] .n { color: inherit; }
+.view-title { font-size: clamp(1.6rem, 3vw, 2.1rem); margin-bottom: 1rem; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* «Знакомства»: анкеты по одной */
+.game-card { max-width: 360px; background: var(--card); border: 1px solid var(--line); border-radius: 26px; overflow: hidden; }
+.game-card .gc-photo { display: block; width: 100%; aspect-ratio: 1 / 1; border: 0; padding: 0; cursor: pointer; position: relative; background: var(--line); }
+.game-card .gc-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; }
+.game-card .gc-photo .pct { position: absolute; top: .8rem; left: .8rem; background: var(--card); color: var(--ink); font-weight: 700; padding: .2rem .7rem; border-radius: 999px; }
+.game-card .gc-info { padding: 1rem 1.2rem .4rem; }
+.game-card .gc-info b { font-size: 1.25rem; }
+.game-card .gc-info p { color: var(--muted); font-size: .92rem; }
+.gc-actions { display: flex; justify-content: center; gap: 1rem; padding: .8rem 1rem 1.2rem; }
+.round { width: 3.6rem; height: 3.6rem; border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); font-size: 1.5rem; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+.round.yes { background: var(--rose); border-color: var(--rose); color: #fff; }
+.round.info { width: 2.8rem; height: 2.8rem; font-size: 1.1rem; align-self: center; font-weight: 700; }
+#gameMsg { padding: 0 1.2rem 1.2rem; }
+/* сообщения */
+.chat { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 460px; background: var(--card); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; }
+.dialogs { border-right: 1px solid var(--line); overflow-y: auto; max-height: 620px; }
+.dialog-item { display: flex; gap: .6rem; align-items: center; width: 100%; border: 0; background: none; color: var(--ink); text-align: left; padding: .7rem .8rem; cursor: pointer; border-bottom: 1px solid var(--line); }
+.dialog-item[aria-current="true"] { background: var(--paper); }
+.dialog-item .ava { width: 44px; height: 44px; font-size: 1rem; }
+.dialog-item .di { flex: 1; min-width: 0; }
+.dialog-item .di b { display: block; font-size: .95rem; }
+.dialog-item .di span { display: block; color: var(--muted); font-size: .84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dialog-item .un { background: var(--rose); color: #fff; border-radius: 999px; font-size: .75rem; font-weight: 700; padding: .05rem .45rem; }
+.thread { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; min-height: 460px; max-height: 620px; }
+.thread-head { display: flex; gap: .6rem; align-items: center; padding: .7rem 1rem; border-bottom: 1px solid var(--line); }
+.thread-head b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thread-head .ava { width: 40px; height: 40px; font-size: 1rem; }
+.thread-head .back { display: none; }
+.msgs { overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .45rem; }
+.msg { max-width: 75%; padding: .5rem .8rem; border-radius: 16px; background: var(--paper); align-self: flex-start; line-height: 1.45; }
+.msg.mine { align-self: flex-end; background: var(--ink); color: var(--paper); }
+.msg time { display: block; font-size: .7rem; opacity: .6; margin-top: .15rem; }
+.typing { color: var(--muted); font-size: .85rem; padding: 0 1rem .4rem; min-height: 1.2rem; }
+.send { display: flex; gap: .5rem; padding: .7rem; border-top: 1px solid var(--line); }
+.send input { flex: 1; min-width: 0; border: 1.5px solid var(--line); background: var(--paper); border-radius: 999px; padding: .6rem 1rem; }
+.thread-empty { display: grid; place-content: center; text-align: center; color: var(--muted); padding: 2rem; }
+.sup-ava { background: linear-gradient(135deg, var(--rose), var(--plum)); }
+/* друзья, события, лента, настройки */
+.mini-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: .7rem; margin: .6rem 0 1.6rem; }
+.mini { display: flex; gap: .7rem; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: .7rem; }
+.mini .ava { width: 52px; height: 52px; font-size: 1.1rem; cursor: pointer; }
+.mini .mi { flex: 1; min-width: 0; }
+.mini .mi b { display: block; }
+.mini .mi span { color: var(--muted); font-size: .85rem; }
+.mini .ma { display: flex; gap: .3rem; flex-wrap: wrap; }
+.mini .btn { padding: .35rem .7rem; font-size: .84rem; }
+.block-h { font-family: var(--font-display); font-weight: 400; font-size: 1.25rem; margin: 0; }
+.events { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.events li { display: flex; gap: .8rem; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: .75rem .9rem; }
+.events li.new { border-color: var(--rose); }
+.events .ic { width: 2.4rem; height: 2.4rem; border-radius: 50%; background: var(--paper); display: grid; place-items: center; flex: none; font-size: 1.1rem; }
+.events .et { flex: 1; }
+.events .et time { display: block; color: var(--muted); font-size: .8rem; }
+.events .btn { padding: .35rem .75rem; font-size: .84rem; }
+.composer { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1rem; display: grid; gap: .6rem; margin-bottom: 1.2rem; }
+.composer textarea { width: 100%; border: 1.5px solid var(--line); background: var(--paper); border-radius: 14px; padding: .7rem .9rem; font: inherit; color: inherit; resize: vertical; }
+.composer-row { display: flex; gap: .5rem; justify-content: space-between; flex-wrap: wrap; }
+.composer-img img { max-height: 180px; border-radius: 12px; display: block; }
+.posts { display: grid; gap: 1rem; max-width: 640px; }
+.post { background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.post-head { display: flex; gap: .6rem; align-items: center; padding: .8rem 1rem; }
+.post-head .ava { width: 42px; height: 42px; font-size: 1rem; }
+.post-head button.who { border: 0; background: none; padding: 0; cursor: pointer; color: var(--ink); text-align: left; }
+.post-head b { display: block; }
+.post-head span { color: var(--muted); font-size: .82rem; }
+.post p { padding: 0 1rem .8rem; max-width: none; }
+.post img.pi { width: 100%; max-height: 380px; object-fit: cover; display: block; }
+.post-foot { display: flex; gap: .5rem; padding: .6rem 1rem; border-top: 1px solid var(--line); }
+.post-foot button { border: 0; background: none; color: var(--muted); font-weight: 600; cursor: pointer; padding: .3rem .5rem; border-radius: 8px; }
+.post-foot button[aria-pressed="true"] { color: var(--rose); }
+.settings { display: grid; gap: 1rem; max-width: 640px; }
+.settings section { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 1.1rem 1.2rem; display: grid; gap: .6rem; }
+.settings h3 { font-size: 1.2rem; }
+.settings .row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.settings label.opt { display: flex; gap: .55rem; align-items: center; }
+.settings label.opt input { accent-color: var(--rose); }
+.settings .note { color: var(--muted); font-size: .88rem; }
+.faq { display: grid; gap: .5rem; max-width: 720px; }
+.faq details { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: .8rem 1rem; }
+.faq summary { cursor: pointer; font-weight: 600; }
+.faq p { color: var(--muted); margin-top: .5rem; }
+.help-contact { margin-top: 1.4rem; display: grid; gap: .7rem; justify-items: start; max-width: 720px; }
 body.in-app #landing { display: none; }
 body.in-app #app { display: block; }
 .me { display: grid; grid-template-columns: auto 1fr auto; gap: 1.2rem; align-items: center; padding: 1.2rem 0 1.5rem; border-bottom: 1px solid var(--line); }
@@ -305,6 +405,17 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--ink); }
 
 @media (max-width: 900px) {
+  .cab { grid-template-columns: 1fr; gap: 1rem; }
+  .side { position: static; }
+  .side-nav { display: flex; overflow-x: auto; scrollbar-width: none; padding: .35rem; }
+  .side-nav::-webkit-scrollbar { display: none; }
+  .side-nav button { flex: none; padding: .5rem .75rem; }
+  .chat { grid-template-columns: minmax(0, 1fr); }
+  .send .btn { padding-inline: .9rem; }
+  .chat.has-thread .dialogs { display: none; }
+  .chat:not(.has-thread) .thread { display: none; }
+  .dialogs { border-right: 0; max-height: none; }
+  .thread-head .back { display: inline-flex; }
   .pricing { grid-template-columns: 1fr; }
   .hero, .reg, .block .intro { grid-template-columns: 1fr; gap: 2rem; }
   .systems { grid-template-columns: 1fr 1fr; }
@@ -500,34 +611,119 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 </main>
 
 <main id="app" class="wrap">
-  <div class="me" id="me"></div>
-  <div class="wallet" id="wallet"></div>
-  <section class="myphotos" aria-labelledby="mpTitle">
-    <div class="mp-head">
-      <h3 id="mpTitle">Мои фото</h3><span class="count" id="mpCount"></span>
-      <button class="btn" type="button" id="previewMe">Моя анкета глазами других</button>
+  <div class="cab">
+    <aside class="side" aria-label="Разделы кабинета">
+      <button class="side-me" type="button" data-view="me" id="sideMe"></button>
+      <nav class="side-nav">
+        <button type="button" data-view="likes"><span>Симпатии</span><b class="n"></b></button>
+        <button type="button" data-view="messages"><span>Сообщения</span><b class="n hot"></b></button>
+        <button type="button" data-view="guests"><span>Гости</span><b class="n"></b></button>
+        <button type="button" data-view="services"><span>Сервисы</span><b class="n"></b></button>
+        <button type="button" data-view="help"><span>Помощь</span><b class="n"></b></button>
+        <button type="button" data-view="search"><span>Поиск</span><b class="n"></b></button>
+        <button type="button" data-view="friends"><span>Друзья</span><b class="n hot"></b></button>
+        <button type="button" data-view="events"><span>События</span><b class="n hot"></b></button>
+        <button type="button" data-view="feed"><span>Лента</span><b class="n"></b></button>
+        <button type="button" data-view="settings"><span>Настройки</span><b class="n"></b></button>
+      </nav>
+    </aside>
+
+    <div class="views">
+      <section class="view" data-v="me" hidden>
+        <div class="me" id="me"></div>
+        <div class="wallet" id="wallet"></div>
+        <section class="myphotos" aria-labelledby="mpTitle">
+          <div class="mp-head">
+            <h3 id="mpTitle">Мои фото</h3><span class="count" id="mpCount"></span>
+            <button class="btn" type="button" id="previewMe">Моя анкета глазами других</button>
+          </div>
+          <p class="hint">До 10 фото. Первое фото главное: его видят в поиске. Можно перетащить файлы сюда.</p>
+          <div class="mp-grid" id="mpGrid"></div>
+          <input type="file" id="mpInput" accept="image/*" multiple hidden>
+          <div class="err" id="mpErr" role="alert"></div>
+        </section>
+      </section>
+
+      <section class="view" data-v="list" hidden>
+        <h2 class="view-title" id="listTitle">Поиск</h2>
+        <div class="tabs" role="tablist" id="subtabs">
+          <button role="tab" aria-selected="true" data-tab="game">Знакомства</button>
+          <button role="tab" aria-selected="false" data-tab="likes">Мне понравились<span class="count" id="cLikes"></span></button>
+          <button role="tab" aria-selected="false" data-tab="matches">Взаимно<span class="count" id="cMatches"></span></button>
+          <button role="tab" aria-selected="false" data-tab="admirers">Вас лайкнули<span class="count" id="cAdmirers"></span></button>
+        </div>
+        <p class="limit-note" id="limitNote"></p>
+        <div class="city-chips" id="appCities" role="group" aria-label="Город"></div>
+        <div class="filters" id="filters">
+          <div class="field"><label for="fMin">Совместимость от <b id="minOut">60</b>%</label><input type="range" id="fMin" min="0" max="95" step="5" value="60"></div>
+          <div class="field"><label for="fAgeFrom">Возраст от</label><input type="number" id="fAgeFrom" min="18" max="80" value="18"></div>
+          <div class="field"><label for="fAgeTo">до</label><input type="number" id="fAgeTo" min="18" max="80" value="60"></div>
+          <div class="field"><label for="fCityF">Город</label><select id="fCityF"></select></div>
+        </div>
+        <div class="game" id="game"></div>
+        <div class="feed" id="feed"></div>
+      </section>
+
+      <section class="view" data-v="messages" hidden>
+        <h2 class="view-title">Сообщения</h2>
+        <div class="chat" id="chat"></div>
+      </section>
+
+      <section class="view" data-v="friends" hidden>
+        <h2 class="view-title">Друзья</h2>
+        <div id="friendsBox"></div>
+      </section>
+
+      <section class="view" data-v="events" hidden>
+        <h2 class="view-title">События</h2>
+        <ul class="events" id="eventsBox"></ul>
+      </section>
+
+      <section class="view" data-v="feed" hidden>
+        <h2 class="view-title">Лента</h2>
+        <form class="composer" id="composer">
+          <label for="postText" class="sr">Новая запись</label>
+          <textarea id="postText" maxlength="500" rows="3" placeholder="Что у вас нового? Расскажите о себе или поделитесь фото"></textarea>
+          <div class="composer-img" id="postImgPrev" hidden></div>
+          <div class="composer-row">
+            <button class="btn" type="button" id="postPhotoBtn">Добавить фото</button>
+            <input type="file" id="postPhoto" accept="image/*" hidden>
+            <button class="btn rose" type="submit">Опубликовать</button>
+          </div>
+          <div class="err" id="postErr" role="alert"></div>
+        </form>
+        <div class="posts" id="postsBox"></div>
+      </section>
+
+      <section class="view" data-v="services" hidden>
+        <h2 class="view-title">Сервисы</h2>
+        <div id="servicesBox"></div>
+      </section>
+
+      <section class="view" data-v="help" hidden>
+        <h2 class="view-title">Помощь</h2>
+        <div class="faq">
+          <details open><summary>Как считается совместимость?</summary><p>Мы сравниваем ваши даты рождения по четырём системам: число судьбы (30%), знак зодиака и стихия (25%), восточный год (25%) и аркан пары (20%). В анкете человека видно, из чего сложился процент.</p></details>
+          <details><summary>Кто видит мою дату рождения?</summary><p>Никто. В анкете другие видят только возраст, знак и число судьбы. С VIP можно скрыть и возраст.</p></details>
+          <details><summary>Как написать человеку?</summary><p>Поставьте симпатию. Когда она станет взаимной, откроется переписка в разделе «Сообщения». С VIP-статусом можно писать сразу, а друзьям — всегда.</p></details>
+          <details><summary>Что такое «Знакомства» в разделе «Симпатии»?</summary><p>Это быстрый просмотр анкет по одной: нажмите сердце, если человек понравился, или крестик, чтобы пропустить. Бесплатно — 30 симпатий в день.</p></details>
+          <details><summary>Что даёт VIP-статус и монеты?</summary><p>VIP показывает, кто вас лайкнул и кто заходил в анкету, снимает лимит симпатий, включает невидимку и скрытие возраста. Монеты тратятся на поднятие анкеты и подарки. Всё это — в разделе «Сервисы».</p></details>
+          <details><summary>Как оплатить и вернуть деньги?</summary><p>Оплата проходит через Робокассу: карты, СБП, кошельки. VIP не продлевается автоматически. Условия возврата — в <a href="oferta.html">оферте</a>.</p></details>
+          <details><summary>Как удалить анкету?</summary><p>Откройте «Настройки» и нажмите «Выйти и удалить анкету».</p></details>
+          <details><summary>Как не попасть на мошенников?</summary><p>Не переводите деньги людям с сайта, не сообщайте коды из СМС и данные карты. Если кто-то просит деньги, напишите в поддержку.</p></details>
+        </div>
+        <div class="help-contact">
+          <p>Не нашли ответ? Напишите нам в чате или на почту <a href="mailto:kot13061970@gmail.com">kot13061970@gmail.com</a>.</p>
+          <button class="btn rose" type="button" data-goto="messages" data-thread="support">Написать в поддержку</button>
+        </div>
+      </section>
+
+      <section class="view" data-v="settings" hidden>
+        <h2 class="view-title">Настройки</h2>
+        <div id="settingsBox"></div>
+      </section>
     </div>
-    <p class="hint">До 10 фото. Первое фото главное: его видят в ленте. Можно перетащить файлы сюда.</p>
-    <div class="mp-grid" id="mpGrid"></div>
-    <input type="file" id="mpInput" accept="image/*" multiple hidden>
-    <div class="err" id="mpErr" role="alert"></div>
-  </section>
-  <div class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="feed">Подобрано для вас</button>
-    <button role="tab" aria-selected="false" data-tab="likes">Мне понравились<span class="count" id="cLikes"></span></button>
-    <button role="tab" aria-selected="false" data-tab="matches">Взаимно<span class="count" id="cMatches"></span></button>
-    <button role="tab" aria-selected="false" data-tab="admirers">Вас лайкнули<span class="count" id="cAdmirers"></span></button>
-    <button role="tab" aria-selected="false" data-tab="guests">Гости<span class="count" id="cGuests"></span></button>
   </div>
-  <p class="limit-note" id="limitNote"></p>
-  <div class="city-chips" id="appCities" role="group" aria-label="Город"></div>
-  <div class="filters" id="filters">
-    <div class="field"><label for="fMin">Совместимость от <b id="minOut">60</b>%</label><input type="range" id="fMin" min="0" max="95" step="5" value="60"></div>
-    <div class="field"><label for="fAgeFrom">Возраст от</label><input type="number" id="fAgeFrom" min="18" max="80" value="18"></div>
-    <div class="field"><label for="fAgeTo">до</label><input type="number" id="fAgeTo" min="18" max="80" value="60"></div>
-    <div class="field"><label for="fCityF">Город</label><select id="fCityF"></select></div>
-  </div>
-  <div class="feed" id="feed"></div>
 </main>
 
 <div class="wrap">
@@ -779,17 +975,18 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   const matches = new Set(store.get('matches', []));
   const save = () => { store.set('likes', [...likes]); store.set('passes', [...passes]); store.set('matches', [...matches]); };
 
-  function enterApp() {
+  function enterApp(v) {
     const u = store.get('user');
     if (!u) return;
     document.body.classList.add('in-app');
     editing = false;
     setNav();
+    seedDemo();
     renderMe();
     renderPhotos();
     renderWallet();
+    setView(v || view);
     window.scrollTo(0, 0);
-    render();
   }
   function renderMe() {
     const u = store.get('user'), f = factsOf(u.birth);
@@ -798,6 +995,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
         <div class="facts"><span class="chip">${esc(u.city)}</span><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}, ${ARCANA[f.arc][0]}</span></div></div>
       <button class="btn" id="editBtn" type="button">Изменить анкету</button>`;
     $('#editBtn').onclick = startEdit;
+    $('#sideMe').innerHTML = `${avatar(u, false, myPhotos[0]?.src)}<span><b>${esc(u.name)}</b><span>${isVip() ? 'VIP, ' : ''}моя страница</span></span>`;
   }
 
   /* ---------- VIP, монеты, подарки и оплата через Робокассу ---------- */
@@ -831,24 +1029,16 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <button class="btn rose" type="button" data-shop="vip">${vip ? 'Продлить VIP' : 'Подключить VIP'}</button>
       <button class="btn" type="button" data-shop="coins">Купить монеты</button>
       ${boosted ? `<span class="chip">Анкета поднята до ${new Date(w.boostUntil).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>`
-        : `<button class="btn" type="button" id="boostBtn">Поднять анкету за ${BOOST_COST} монет</button>`}
-      ${vip ? `<label class="switch"><input type="checkbox" id="swInvisible" ${w.invisible ? 'checked' : ''}> Невидимка</label>
-        <label class="switch"><input type="checkbox" id="swHideAge" ${w.hideAge ? 'checked' : ''}> Скрыть возраст</label>` : ''}`;
-    const boost = $('#boostBtn');
-    if (boost) boost.onclick = () => {
-      const w2 = wallet();
-      if (w2.coins < BOOST_COST) return openShop('coins', `Для поднятия анкеты нужно ${BOOST_COST} монет, у вас ${w2.coins}.`);
-      w2.coins -= BOOST_COST; w2.boostUntil = Date.now() + DAY; saveWallet(w2);
-      toast('Анкета поднята: сутки она показывается первой в поиске.'); renderWallet();
-    };
-    ['swInvisible', 'swHideAge'].forEach(id => {
-      const el = $('#' + id); if (!el) return;
-      el.onchange = () => {
-        const w2 = wallet(); w2[id === 'swInvisible' ? 'invisible' : 'hideAge'] = el.checked; saveWallet(w2);
-        toast(id === 'swInvisible' ? (el.checked ? 'Режим невидимки включён: вы смотрите анкеты, не попадая в гости.' : 'Режим невидимки выключен.') : (el.checked ? 'Возраст скрыт в вашей анкете.' : 'Возраст снова виден в анкете.'));
-      };
-    });
+        : `<button class="btn" type="button" data-boost>Поднять анкету за ${BOOST_COST} монет</button>`}`;
   }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-boost]')) return;
+    const w2 = wallet();
+    if (w2.coins < BOOST_COST) return openShop('coins', `Для поднятия анкеты нужно ${BOOST_COST} монет, у вас ${w2.coins}.`);
+    w2.coins -= BOOST_COST; w2.boostUntil = Date.now() + DAY; saveWallet(w2);
+    addEvent('boost', null, 'Анкета поднята в поиске на сутки.');
+    toast('Анкета поднята: сутки она показывается первой в поиске.'); afterWalletChange();
+  });
   document.addEventListener('click', e => { const b = e.target.closest('[data-shop]'); if (b && !b.closest('#dlg')) openShop(b.dataset.shop); });
 
   const planCard = (key, perDay) => {
@@ -857,28 +1047,38 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <span class="d">${perDay ? `${Math.round(it.price / it.vipDays)} ₽ в день` : `${(it.price / it.coins).toFixed(2).replace('.', ',')} ₽ за монету`}</span>
       <button class="btn rose" type="button" data-buy="${key}" aria-label="Оплатить ${it.title} за ${rub(it.price)}">Оплатить</button></div>`;
   };
+  const shopHtml = () => `
+      <div class="shop">
+        <section class="shop-vip"><h4>VIP-статус</h4><ul class="perks">${VIP_PERKS.map(x => `<li>${x}</li>`).join('')}</ul></section>
+        <div class="plans">${['vip_3d', 'vip_1m', 'vip_3m'].map(k => planCard(k, true)).join('')}</div>
+        <section class="shop-coins"><h4>Монеты</h4><ul class="perks"><li>Поднять анкету на сутки: ${BOOST_COST} монет</li><li>Подарки: от 10 монет</li></ul></section>
+        <div class="plans">${['coins_100', 'coins_550', 'coins_1200'].map(k => planCard(k)).join('')}</div>
+        <div class="pay-box" aria-live="polite"></div>
+        <p class="fine">Оплата проходит на защищённой странице Робокассы: банковские карты, СБП, электронные кошельки. VIP не продлевается автоматически. Нажимая «Оплатить», вы принимаете <a href="oferta.html" target="_blank">условия оферты</a>.</p>
+      </div>`;
   function openShop(focus, note) {
     const w = wallet();
     $('#dlgBody').innerHTML = `
       <div class="head"><div><h3 style="font-size:1.6rem">VIP и монеты</h3><div style="color:var(--muted)">${isVip() ? `VIP до ${dateRu(w.vipUntil)}, ` : ''}монет: ${w.coins}</div></div>
         <button class="x" type="button" aria-label="Закрыть" data-close>×</button></div>
-      ${note ? `<div class="pay-msg">${note}</div>` : ''}
-      <div class="shop">
-        <section id="shopVip"><h4>VIP-статус</h4><ul class="perks">${VIP_PERKS.map(x => `<li>${x}</li>`).join('')}</ul></section>
-        <div class="plans">${['vip_3d', 'vip_1m', 'vip_3m'].map(k => planCard(k, true)).join('')}</div>
-        <section id="shopCoins"><h4>Монеты</h4><ul class="perks"><li>Поднять анкету на сутки: ${BOOST_COST} монет</li><li>Подарки: от 10 монет</li></ul></section>
-        <div class="plans">${['coins_100', 'coins_550', 'coins_1200'].map(k => planCard(k)).join('')}</div>
-        <div id="payMsg" aria-live="polite"></div>
-        <p class="fine">Оплата проходит на защищённой странице Робокассы: банковские карты, СБП, электронные кошельки. VIP не продлевается автоматически. Нажимая «Оплатить», вы принимаете <a href="oferta.html" target="_blank">условия оферты</a>.</p>
-      </div>`;
+      ${note ? `<div class="pay-msg">${note}</div>` : ''}${shopHtml()}`;
     showDialog(null);
-    if (focus === 'coins') $('#shopCoins').scrollIntoView({ block: 'start' });
+    if (focus === 'coins') $('#dlgBody .shop-coins').scrollIntoView({ block: 'start' });
+  }
+  function renderServices() {
+    const w = wallet(), vip = isVip(), boosted = w.boostUntil > Date.now();
+    $('#servicesBox').innerHTML = `
+      <div class="wallet">
+        ${vip ? `<span class="vip-badge">VIP</span><span class="chip">VIP до ${dateRu(w.vipUntil)}</span>` : `<span class="chip">Обычный аккаунт</span>`}
+        <span class="chip">Монеты: <b>${w.coins}</b></span>
+        ${boosted ? `<span class="chip">Анкета поднята до ${new Date(w.boostUntil).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>` : `<button class="btn" type="button" data-boost>Поднять анкету за ${BOOST_COST} монет</button>`}
+      </div>${shopHtml()}`;
   }
   // Демо-начисление без оплаты: только пока Робокасса не настроена или сайт открыт локально.
   const demoAllowed = () => location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || payState.notConfigured;
   const payState = { notConfigured: false };
   async function startPayment(key, btn) {
-    const box = $('#payMsg'); box.innerHTML = '';
+    const box = btn.closest('.shop').querySelector('.pay-box'); box.innerHTML = '';
     btn.disabled = true; const label = btn.textContent; btn.textContent = 'Переходим к оплате…';
     try {
       const r = await fetch('/api/pay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: key }) });
@@ -905,12 +1105,16 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     saveWallet(w);
     return true;
   }
-  $('#dlg').addEventListener('click', e => {
+  document.addEventListener('click', e => {
     const buy = e.target.closest('[data-buy]'), demo = e.target.closest('[data-demo]');
     if (buy) startPayment(buy.dataset.buy, buy);
-    if (demo) { grant(demo.dataset.demo); $('#dlg').close(); toast(`Начислено в демо-режиме: ${SHOP[demo.dataset.demo].title}.`); afterWalletChange(); }
+    if (demo) {
+      grant(demo.dataset.demo); if ($('#dlg').open) $('#dlg').close();
+      addEvent('pay', null, `Начислено в демо-режиме: ${SHOP[demo.dataset.demo].title}.`);
+      toast(`Начислено в демо-режиме: ${SHOP[demo.dataset.demo].title}.`); afterWalletChange();
+    }
   });
-  function afterWalletChange() { if (document.body.classList.contains('in-app')) { renderWallet(); render(); } }
+  function afterWalletChange() { if (document.body.classList.contains('in-app')) { renderMe(); renderWallet(); setView(view, { keepScroll: true }); } }
 
   // Возврат с Робокассы: SuccessURL приносит подпись, сервер проверяет её паролем #1.
   async function handlePaymentReturn() {
@@ -923,6 +1127,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       const data = await r.json();
       if (!r.ok || !data.ok) throw new Error(data.error);
       const fresh = grant(data.product, data.invId);
+      if (fresh) addEvent('pay', null, `Оплата прошла: ${SHOP[data.product].title}.`);
       toast(fresh ? `Оплата прошла: ${SHOP[data.product].title}. Спасибо!` : 'Эта оплата уже зачислена.');
       store.del('pendingPay');
       afterWalletChange();
@@ -1021,7 +1226,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   grid.addEventListener('dragover', e => { e.preventDefault(); grid.classList.add('drag'); });
   grid.addEventListener('dragleave', () => grid.classList.remove('drag'));
   grid.addEventListener('drop', e => { e.preventDefault(); grid.classList.remove('drag'); addPhotos(e.dataTransfer.files); });
-  $('#previewMe').addEventListener('click', () => {
+  $('#previewMe').addEventListener('click', () => previewMe());
+  function previewMe() {
     const u = store.get('user'), f = factsOf(u.birth);
     $('#dlgBody').innerHTML = `
       <div class="head"><div><h3 style="font-size:1.6rem">${esc(u.name)}${wallet().hideAge && isVip() ? '' : `, ${ageOf(u.birth)}`} ${isVip() ? '<span class="vip-badge">VIP</span>' : ''}</h3><div style="color:var(--muted)">${esc(u.city)}${wallet().boostUntil > Date.now() ? ', анкета поднята' : ''}</div></div>
@@ -1030,7 +1236,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       ${u.about ? `<p class="about">${esc(u.about)}</p>` : ''}
       <div class="facts" style="display:flex;flex-wrap:wrap;gap:.4rem"><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}</span></div>`;
     showDialog(null);
-  });
+  }
   function leaveApp() { document.body.classList.remove('in-app'); setNav(); }
   // Шапка: зарегистрированный человек переходит между главной страницей и своей анкетой, не выходя из аккаунта.
   function setNav() {
@@ -1071,9 +1277,11 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     if (!store.get('user')) return;
     e.preventDefault();
     if (!confirm('Выйти и удалить анкету, фото и симпатии из этого браузера? Купленные VIP и монеты сохранятся.')) return;
-    ['user', 'likes', 'passes', 'matches'].forEach(store.del);
+    ['user', 'likes', 'passes', 'matches', 'chats', 'unread', 'friends', 'friendIn', 'friendOut', 'events', 'eventsSeen', 'postLikes', 'view', 'seeded'].forEach(store.del);
     likes.clear(); passes.clear(); matches.clear();
-    myPhotos = []; idb.del('photos');
+    for (const k in chats) delete chats[k]; for (const k in unread) delete unread[k];
+    fr.list = []; fr.in = []; fr.out = []; events.length = 0; postLikes.clear(); myPosts = [];
+    myPhotos = []; idb.del('photos'); idb.del('posts'); view = 'search';
     leaveApp(); window.scrollTo(0, 0);
   });
 
@@ -1088,19 +1296,24 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       .sort((a, b) => b.res.total - a.res.total);
   }
 
+  // демо: «лайкнули» те, кто ответит взаимностью, «гости» — часть остальных
+  const admirersOf = all => all.filter(p => p.likesYou < .22 && !matches.has(p.id));
+  const guestsOf = all => all.filter(p => p.likesYou >= .22 && p.likesYou < .4);
   function render() {
+    if (!store.get('user')) return;
     const all = candidates();
     $('#cLikes').textContent = likes.size || '';
     $('#cMatches').textContent = matches.size || '';
-    // демо: «лайкнули» те, кто ответит взаимностью, «гости» — часть остальных
-    const admirers = all.filter(p => p.likesYou < .22 && !matches.has(p.id));
-    const guests = all.filter(p => p.likesYou >= .22 && p.likesYou < .4);
+    const admirers = admirersOf(all), guests = guestsOf(all);
     $('#cAdmirers').textContent = admirers.length || '';
-    $('#cGuests').textContent = guests.length || '';
+    $('#game').hidden = tab !== 'game';
+    $('#feed').hidden = tab === 'game';
+    updateCounters(all);
     $('#filters').style.display = tab === 'feed' ? '' : 'none';
     $('#appCities').style.display = tab === 'feed' ? '' : 'none';
     const left = Math.max(0, FREE_LIKES - likesUsed());
-    $('#limitNote').textContent = isVip() || tab !== 'feed' ? '' : `Осталось симпатий сегодня: ${left} из ${FREE_LIKES}. С VIP без ограничений.`;
+    $('#limitNote').textContent = isVip() || (tab !== 'feed' && tab !== 'game') ? '' : `Осталось симпатий сегодня: ${left} из ${FREE_LIKES}. С VIP без ограничений.`;
+    if (tab === 'game') return renderGame(all);
     let list;
     if (tab === 'feed') {
       const min = +$('#fMin').value, from = +$('#fAgeFrom').value || 18, to = +$('#fAgeTo').value || 99, city = $('#fCityF').value;
@@ -1144,11 +1357,50 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   }
   $('#feed').addEventListener('click', e => { const b = e.target.closest('.person'); if (b) openPerson(b.dataset.id); });
   ['#fMin', '#fAgeFrom', '#fAgeTo', '#fCityF'].forEach(s => $(s).addEventListener('input', () => { $('#minOut').textContent = $('#fMin').value; render(); }));
-  document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
-    tab = b.dataset.tab;
-    document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
-    render();
-  }));
+  const syncSubtabs = () => document.querySelectorAll('#subtabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === tab));
+  document.querySelectorAll('#subtabs button').forEach(b => b.addEventListener('click', () => { tab = b.dataset.tab; syncSubtabs(); render(); }));
+
+  // Симпатия: дневной лимит без VIP, взаимность в демо зависит от совместимости.
+  function sendLike(p, res, box, inDialog) {
+    if (!isVip() && likesUsed() >= FREE_LIKES) {
+      box.innerHTML = `<div class="pay-msg">Сегодня вы уже отправили ${FREE_LIKES} симпатий. Завтра лимит обновится, а с VIP-статусом ограничений нет.<button class="btn rose" type="button" ${inDialog ? 'data-shop-in' : 'data-shop'}="vip" style="justify-self:start">Подключить VIP</button></div>`;
+      return false;
+    }
+    if (!isVip()) store.set('likesToday', { d: today(), n: likesUsed() + 1 });
+    likes.add(p.id);
+    if (p.likesYou < res.total / 100 - .15) {
+      matches.add(p.id);
+      addEvent('match', p.id, `Взаимная симпатия: ${p.name}. Можно написать первым.`);
+      toast(`Взаимно! ${p.name} тоже отметил(а) вас. Можно написать первым.`);
+    } else toast(`Симпатия отправлена. Сообщим, когда ${p.name} ответит.`);
+    save();
+    return true;
+  }
+
+  /* ---------- «Знакомства»: анкеты по одной ---------- */
+  function renderGame(all) {
+    const next = all.find(p => !likes.has(p.id) && !passes.has(p.id));
+    const z = next && zodiac(parse(next.birth));
+    $('#game').innerHTML = next ? `<div class="game-card">
+        <button class="gc-photo" type="button" data-game="open" aria-label="Открыть анкету: ${next.name}"><img src="${next.media[0].src}" alt=""><span class="pct">${next.res.total}%</span></button>
+        <div class="gc-info"><b>${next.name}, ${next.age}</b><p>${next.city}, ${z.glyph} ${z.name}. ${next.about}</p></div>
+        <div class="gc-actions">
+          <button class="round no" type="button" data-game="pass" aria-label="Пропустить">✕</button>
+          <button class="round info" type="button" data-game="open" aria-label="Подробнее">i</button>
+          <button class="round yes" type="button" data-game="like" aria-label="Нравится">♥</button>
+        </div>
+        <div id="gameMsg" aria-live="polite"></div>
+      </div>` : `<div class="empty"><p style="margin-inline:auto;color:var(--ink);font-weight:600">Вы посмотрели все анкеты.</p><p style="margin-inline:auto">Загляните в «Поиск» с другими фильтрами или зайдите завтра.</p></div>`;
+    $('#game').dataset.id = next ? next.id : '';
+  }
+  $('#game').addEventListener('click', e => {
+    const b = e.target.closest('[data-game]'); if (!b) return;
+    const p = PEOPLE.find(x => x.id === $('#game').dataset.id); if (!p) return;
+    const act = b.dataset.game;
+    if (act === 'open') return openPerson(p.id);
+    if (act === 'pass') { passes.add(p.id); save(); return render(); }
+    if (sendLike(p, compat(store.get('user').birth, p.birth), $('#gameMsg'), false)) render();
+  });
 
   // guestBirth: анкета открыта из карусели до регистрации, совместимость считаем с датой из калькулятора
   function openPerson(id, guestBirth) {
@@ -1172,6 +1424,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       </div>`}
       <div id="likeMsg" aria-live="polite"></div>
       <div class="actions">
+        ${guestBirth ? '' : `<button class="btn" type="button" data-act="friend" ${fr.list.includes(id) || fr.out.includes(id) ? 'disabled' : ''}>${fr.list.includes(id) ? 'В друзьях' : fr.out.includes(id) ? 'Заявка отправлена' : fr.in.includes(id) ? 'Принять в друзья' : 'Добавить в друзья'}</button>`}
+        ${!guestBirth && !matched && canWrite(id) ? `<button class="btn" type="button" data-act="write">Написать</button>` : ''}
         ${guestBirth ? `<a class="btn rose" href="#join" data-act="join">Зарегистрироваться, чтобы познакомиться</a>` : matched ? `<button class="btn rose" type="button" data-act="write">Написать сообщение</button>` :
           liked ? `<button class="btn" type="button" disabled>Симпатия отправлена</button>` :
           `<button class="btn" type="button" data-act="pass">Пропустить</button><button class="btn rose" type="button" data-act="like">Нравится</button>`}
@@ -1179,18 +1433,10 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const dlg = $('#dlg');
     showDialog(act => {
       if (act === 'like') {
-        if (!isVip() && likesUsed() >= FREE_LIKES) {
-          $('#likeMsg').innerHTML = `<div class="pay-msg">Сегодня вы уже отправили ${FREE_LIKES} симпатий. Завтра лимит обновится, а с VIP-статусом ограничений нет.<button class="btn rose" type="button" data-shop-in="vip" style="justify-self:start">Подключить VIP</button></div>`;
-          return;
-        }
-        if (!isVip()) store.set('likesToday', { d: today(), n: likesUsed() + 1 });
-        likes.add(id);
-        // демо: человек отвечает взаимностью с вероятностью, растущей с совместимостью
-        if (p.likesYou < res.total / 100 - .15) { matches.add(id); toast(`Взаимно! ${p.name} тоже отметил(а) вас. Можно написать первым.`); }
-        else toast(`Симпатия отправлена. Сообщим, когда ${p.name} ответит.`);
-        save(); dlg.close(); render();
+        if (sendLike(p, res, $('#likeMsg'), true)) { dlg.close(); render(); }
       } else if (act === 'pass') { passes.add(id); save(); dlg.close(); render(); }
-      else if (act === 'write') { toast('Чат появится в следующей версии.'); }
+      else if (act === 'write') { dlg.close(); setView('messages', { thread: id }); }
+      else if (act === 'friend') { friendAction(id, fr.in.includes(id) ? 'accept' : 'add'); openPerson(id); }
       else if (act === 'join') { dlg.close(); }
     });
     $('#dlgBody').onclick = e => {
@@ -1200,9 +1446,263 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       if (w.coins < g[3]) return openShop('coins', `Для подарка «${g[2]}» нужно ${g[3]} монет, у вас ${w.coins}.`);
       w.coins -= g[3]; saveWallet(w);
       (sentGifts[id] = sentGifts[id] || []).push(g[0]); store.set('gifts', sentGifts);
+      addEvent('gift', id, `Вы подарили ${p.name}: ${g[1]} ${g[2]}.`);
       toast(`Подарок «${g[2]}» отправлен. ${p.name} увидит его в своей анкете.`);
       openPerson(id); renderWallet();
     };
+  }
+
+  /* ---------- разделы кабинета ---------- */
+  const VIEWS = { likes: 'Симпатии', messages: 'Сообщения', guests: 'Гости', services: 'Сервисы', help: 'Помощь', search: 'Поиск', friends: 'Друзья', events: 'События', feed: 'Лента', settings: 'Настройки', me: 'Моя страница' };
+  let view = store.get('view', 'search');
+  function setView(v, opts = {}) {
+    if (!VIEWS[v]) v = 'search';
+    view = v; store.set('view', v);
+    const listView = v === 'search' || v === 'likes' || v === 'guests';
+    document.querySelectorAll('.side [data-view]').forEach(b => b.setAttribute('aria-current', b.dataset.view === v ? 'page' : 'false'));
+    document.querySelectorAll('#app .view').forEach(sec => { sec.hidden = sec.dataset.v !== (listView ? 'list' : v); });
+    if (listView) {
+      if (v === 'search') tab = 'feed';
+      else if (v === 'guests') tab = 'guests';
+      else if (!['game', 'likes', 'matches', 'admirers'].includes(tab)) tab = 'game';
+      $('#listTitle').textContent = VIEWS[v];
+      $('#subtabs').hidden = v !== 'likes';
+      syncSubtabs(); render();
+    } else updateCounters();
+    if (v === 'messages') renderMessages(opts.thread);
+    if (v === 'friends') renderFriends();
+    if (v === 'events') { renderEvents(); store.set('eventsSeen', Date.now()); updateCounters(); }
+    if (v === 'feed') renderPosts();
+    if (v === 'services') renderServices();
+    if (v === 'settings') renderSettings();
+    if (!opts.keepScroll) window.scrollTo(0, 0);
+  }
+  document.querySelector('.side').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view); });
+  document.addEventListener('click', e => { const b = e.target.closest('[data-goto]'); if (b) { if ($('#dlg').open) $('#dlg').close(); setView(b.dataset.goto, { thread: b.dataset.thread }); } });
+  function updateCounters(all = candidates()) {
+    const set = (v, n) => { const el = document.querySelector(`.side-nav [data-view="${v}"] .n`); if (el) el.textContent = n || ''; };
+    set('likes', admirersOf(all).length);
+    set('guests', guestsOf(all).length);
+    set('messages', Object.values(unread).reduce((a, b) => a + b, 0));
+    set('friends', fr.in.length);
+    const seen = store.get('eventsSeen', 0);
+    set('events', events.filter(ev => ev.t > seen).length);
+  }
+  const ago = t => {
+    const m = Math.round((Date.now() - t) / 60000);
+    if (m < 1) return 'только что';
+    if (m < 60) return `${m} мин назад`;
+    if (m < 24 * 60) return `${Math.round(m / 60)} ч назад`;
+    return new Date(t).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  };
+  const person = id => PEOPLE.find(p => p.id === id);
+  const avatarOf = id => id === 'support' ? '<div class="ava sup-ava" aria-hidden="true">♥</div>' : avatar(person(id), false, person(id).media[0].src);
+  const notice = msg => { if (store.get('notify', true)) toast(msg); };
+
+  /* ---------- события ---------- */
+  const events = store.get('events', []);
+  function addEvent(type, id, text) {
+    events.unshift({ t: Date.now(), type, id, text });
+    events.length = Math.min(events.length, 100);
+    store.set('events', events);
+    if (document.body.classList.contains('in-app')) { if (view === 'events') renderEvents(); updateCounters(); }
+  }
+  const EV_ICON = { like: '♥', guest: '👁', match: '💞', gift: '🎁', friend: '🤝', message: '✉', pay: '★', boost: '⬆', info: 'i' };
+  function renderEvents() {
+    const seen = store.get('eventsSeen', 0), vip = isVip();
+    $('#eventsBox').innerHTML = events.length ? events.map(ev => {
+      const p = ev.id && ev.id !== 'support' ? person(ev.id) : null;
+      // кто лайкнул и кто заходил — видно только с VIP
+      const hidden = (ev.type === 'like' || ev.type === 'guest') && !vip;
+      const text = hidden ? (ev.type === 'like' ? 'Кто-то поставил вам симпатию.' : 'Кто-то посмотрел вашу анкету.') : ev.text;
+      const btn = hidden ? '<button class="btn" type="button" data-shop="vip">Узнать с VIP</button>'
+        : ev.type === 'message' ? `<button class="btn" type="button" data-goto="messages" data-thread="${ev.id}">Открыть</button>`
+        : p ? `<button class="btn" type="button" data-open="${p.id}">Анкета</button>` : '';
+      return `<li class="${ev.t > seen ? 'new' : ''}"><span class="ic" aria-hidden="true">${EV_ICON[ev.type] || 'i'}</span><span class="et">${text}<time>${ago(ev.t)}</time></span>${btn}</li>`;
+    }).join('') : '<li>Событий пока нет.</li>';
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (b) openPerson(b.dataset.open); });
+
+  /* ---------- сообщения ---------- */
+  const chats = store.get('chats', {}), unread = store.get('unread', {});
+  const saveChats = () => { store.set('chats', chats); store.set('unread', unread); };
+  const canWrite = id => id === 'support' || matches.has(id) || isVip() || fr.list.includes(id) || (chats[id] || []).length > 0;
+  const REPLIES = ['Привет! Приятно познакомиться 😊', 'Ого, у нас и правда высокая совместимость!', 'Привет! Как проходит день?', 'А какой у тебя знак по восточному календарю?', 'Люблю прогулки по вечерам. А ты?', 'Интересно, а чем ты занимаешься?', 'Давай как-нибудь выпьем кофе ☕', 'Я тоже верю, что числа не врут)'];
+  let thread = null;
+  const nameOf = id => id === 'support' ? 'Поддержка «Любовь в цифрах»' : person(id).name;
+  function renderMessages(open) {
+    if (open) { thread = open; if (!chats[open]) chats[open] = []; }
+    if (thread && !canWrite(thread)) thread = null;
+    if (thread) { delete unread[thread]; saveChats(); }
+    const ids = [...new Set(['support', ...Object.keys(chats), ...matches])].filter(id => id === 'support' || person(id));
+    const last = id => (chats[id] || []).slice(-1)[0];
+    ids.sort((a, b) => (last(b)?.t || 0) - (last(a)?.t || 0));
+    const list = ids.map(id => `<button class="dialog-item" type="button" data-thread="${id}" aria-current="${id === thread}">
+        ${avatarOf(id)}<span class="di"><b>${nameOf(id)}</b><span>${last(id) ? (last(id).me ? 'Вы: ' : '') + esc(last(id).text) : 'Взаимная симпатия, напишите первым'}</span></span>
+        ${unread[id] ? `<span class="un">${unread[id]}</span>` : ''}</button>`).join('');
+    const msgs = thread ? (chats[thread] || []).map(m => `<div class="msg${m.me ? ' mine' : ''}">${esc(m.text)}<time>${new Date(m.t).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</time></div>`).join('') : '';
+    $('#chat').classList.toggle('has-thread', Boolean(thread));
+    $('#chat').innerHTML = `<div class="dialogs">${list}</div>
+      <div class="thread">${thread ? `
+        <div class="thread-head"><button class="btn back" type="button" data-back aria-label="К диалогам">‹</button>${avatarOf(thread)}<b>${nameOf(thread)}</b>
+          ${thread !== 'support' ? `<button class="btn" type="button" data-open="${thread}" style="margin-left:auto;padding:.35rem .8rem;font-size:.85rem">Анкета</button>` : ''}</div>
+        <div class="msgs" id="msgs">${msgs || '<p class="thread-empty">Напишите первое сообщение. Можно начать с вашей совместимости.</p>'}</div>
+        <div><div class="typing" id="typing"></div><form class="send" id="sendForm"><label for="msgText" class="sr">Сообщение</label><input id="msgText" maxlength="1000" autocomplete="off" placeholder="Сообщение"><button class="btn rose" type="submit">Отправить</button></form></div>`
+      : '<div class="thread-empty">Выберите диалог слева. Написать можно после взаимной симпатии, друзьям или с VIP.</div>'}</div>`;
+    const box = $('#msgs'); if (box) box.scrollTop = box.scrollHeight;
+    updateCounters();
+  }
+  $('#chat').addEventListener('click', e => {
+    const d = e.target.closest('.dialog-item'); if (d) return renderMessages(d.dataset.thread);
+    if (e.target.closest('[data-back]')) { thread = null; renderMessages(); }
+  });
+  $('#chat').addEventListener('submit', e => {
+    e.preventDefault();
+    const input = $('#msgText'), text = input.value.trim(); if (!text || !thread) return;
+    const id = thread;
+    chats[id].push({ me: 1, text, t: Date.now() }); saveChats(); renderMessages(); $('#msgText').focus();
+    // демо-ответ собеседника
+    const replies = chats[id].filter(m => !m.me).length;
+    if (id !== 'support' && replies > 0 && Math.random() > .7) return;
+    setTimeout(() => { if (thread === id && $('#typing')) $('#typing').textContent = `${nameOf(id)} печатает…`; }, 500);
+    setTimeout(() => {
+      const answer = id === 'support' ? 'Спасибо! Мы получили сообщение и ответим в течение дня. Срочные вопросы: kot13061970@gmail.com.' : REPLIES[(replies + id.length) % REPLIES.length];
+      chats[id].push({ me: 0, text: answer, t: Date.now() });
+      const watching = view === 'messages' && thread === id && document.body.classList.contains('in-app');
+      if (!watching) { unread[id] = (unread[id] || 0) + 1; addEvent('message', id, `${nameOf(id)}: «${answer}»`); notice(`Новое сообщение от ${nameOf(id)}`); }
+      saveChats();
+      if (view === 'messages' && document.body.classList.contains('in-app')) renderMessages(); else updateCounters();
+    }, 1800 + Math.random() * 1200);
+  });
+
+  /* ---------- друзья ---------- */
+  const fr = { list: store.get('friends', []), in: store.get('friendIn', []), out: store.get('friendOut', []) };
+  const saveFr = () => { store.set('friends', fr.list); store.set('friendIn', fr.in); store.set('friendOut', fr.out); };
+  const without = (arr, id) => arr.filter(x => x !== id);
+  function friendAction(id, act) {
+    const p = person(id);
+    if (act === 'add' && !fr.list.includes(id) && !fr.out.includes(id)) {
+      fr.out.push(id); toast(`Заявка в друзья отправлена: ${p.name}.`);
+      // демо: заявку принимают через пару секунд, если человек к вам расположен
+      if (p.likesYou < .6) setTimeout(() => {
+        if (!fr.out.includes(id)) return;
+        fr.out = without(fr.out, id); fr.list.push(id); saveFr();
+        addEvent('friend', id, `${p.name} принял(а) вашу заявку в друзья.`); notice(`${p.name} теперь в друзьях`);
+        if (view === 'friends' && document.body.classList.contains('in-app')) renderFriends();
+      }, 2500);
+    }
+    if (act === 'accept') { fr.in = without(fr.in, id); fr.list.push(id); addEvent('friend', id, `${p.name} теперь у вас в друзьях.`); toast(`${p.name} теперь в друзьях.`); }
+    if (act === 'decline') fr.in = without(fr.in, id);
+    if (act === 'cancel') fr.out = without(fr.out, id);
+    if (act === 'remove') fr.list = without(fr.list, id);
+    saveFr(); updateCounters();
+    if (view === 'friends') renderFriends();
+  }
+  function renderFriends() {
+    const card = (id, btns) => { const p = person(id); return `<div class="mini">${avatar(p, false, p.media[0].src).replace('<img', `<img data-open="${id}"`)}
+      <div class="mi"><b>${p.name}, ${ageOf(p.birth)}</b><span>${p.city}</span></div><div class="ma">${btns}</div></div>`; };
+    const block = (title, ids, btns, empty) => `<h3 class="block-h">${title}${ids.length ? ` <span style="color:var(--muted);font-size:1rem">${ids.length}</span>` : ''}</h3>
+      ${ids.length ? `<div class="mini-list">${ids.map(id => card(id, btns(id))).join('')}</div>` : `<p class="empty" style="margin:.6rem 0 1.6rem">${empty}</p>`}`;
+    $('#friendsBox').innerHTML =
+      (fr.in.length ? block('Заявки в друзья', fr.in, id => `<button class="btn rose" type="button" data-fr="accept" data-id="${id}">Принять</button><button class="btn" type="button" data-fr="decline" data-id="${id}">Отклонить</button>`, '') : '') +
+      block('Мои друзья', fr.list, id => `<button class="btn" type="button" data-goto="messages" data-thread="${id}">Написать</button><button class="btn" type="button" data-fr="remove" data-id="${id}" aria-label="Удалить из друзей">×</button>`, 'Друзей пока нет. Откройте анкету и нажмите «Добавить в друзья».') +
+      (fr.out.length ? block('Отправленные заявки', fr.out, id => `<button class="btn" type="button" data-fr="cancel" data-id="${id}">Отменить</button>`, '') : '');
+  }
+  $('#friendsBox').addEventListener('click', e => { const b = e.target.closest('[data-fr]'); if (b) friendAction(b.dataset.id, b.dataset.fr); });
+
+  /* ---------- лента ---------- */
+  const POST_TEXTS = ['Отличный день: прогулка у реки до самого заката.', 'Кто тоже любит утренний кофе и тишину?', 'Выходные за городом без телефона — лучший отдых.', 'Нашлось новое уютное кафе, ищу компанию на субботу.', 'Посчитали совместимость с друзьями, смеялись весь вечер.', 'Наконец-то дочитана книга, начатая ещё весной.', 'Горы — лучшее лекарство от усталости.', 'Первый снег! Кто со мной на каток?', 'Пирог по бабушкиному рецепту удался.', 'Учусь играть на гитаре, пока получаются только три аккорда.'];
+  const DEMO_POSTS = PEOPLE.filter((p, i) => i % 5 === 2).slice(0, 30).map((p, i) => ({
+    id: 'd' + i, author: p.id, t: Date.now() - (i * 2.5 + 0.4) * 3600000,
+    text: POST_TEXTS[i % POST_TEXTS.length], img: i % 3 === 2 ? null : `media/${SCENES[(i * 7) % SCENES.length]}.jpg`, likes: 3 + (i * 7) % 41
+  }));
+  let myPosts = [], postImg = null;
+  const postLikes = new Set(store.get('postLikes', []));
+  function renderPosts() {
+    const u = store.get('user');
+    const demo = DEMO_POSTS.filter(x => u.seek === 'a' || person(x.author).g === u.seek);
+    const all = [...myPosts.map(x => ({ ...x, mine: true })), ...demo].sort((a, b) => b.t - a.t);
+    $('#postsBox').innerHTML = all.map(x => {
+      const p = x.mine ? null : person(x.author), liked = postLikes.has(x.id);
+      return `<article class="post">
+        <div class="post-head">${x.mine ? avatar(u, false, myPhotos[0]?.src) : avatar(p, false, p.media[0].src)}
+          ${x.mine ? `<div><b>${esc(u.name)}</b><span>${ago(x.t)}</span></div>` : `<button class="who" type="button" data-open="${p.id}"><b>${p.name}, ${ageOf(p.birth)}</b><span>${p.city}, ${ago(x.t)}</span></button>`}</div>
+        ${x.text ? `<p>${esc(x.text)}</p>` : ''}
+        ${x.img ? `<img class="pi" src="${x.img}" alt="" loading="lazy">` : ''}
+        <div class="post-foot"><button type="button" data-plike="${x.id}" aria-pressed="${liked}">♥ ${(x.likes || 0) + (liked ? 1 : 0)}</button>
+          ${x.mine ? `<button type="button" data-pdel="${x.id}">Удалить</button>` : `<button type="button" data-open="${p.id}">Анкета</button>`}</div>
+      </article>`;
+    }).join('');
+  }
+  $('#postsBox').addEventListener('click', e => {
+    const l = e.target.closest('[data-plike]'), d = e.target.closest('[data-pdel]');
+    if (l) { const id = l.dataset.plike; postLikes.has(id) ? postLikes.delete(id) : postLikes.add(id); store.set('postLikes', [...postLikes]); renderPosts(); }
+    if (d && confirm('Удалить запись?')) { myPosts = myPosts.filter(x => x.id !== d.dataset.pdel); idb.set('posts', myPosts); renderPosts(); }
+  });
+  $('#postPhotoBtn').addEventListener('click', () => $('#postPhoto').click());
+  $('#postPhoto').addEventListener('change', async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try { postImg = await toJpeg(f); $('#postImgPrev').innerHTML = `<img src="${postImg}" alt="Фото к записи">`; $('#postImgPrev').hidden = false; $('#postErr').textContent = ''; }
+    catch { $('#postErr').textContent = 'Не удалось открыть файл. Выберите фото в формате JPG или PNG.'; }
+  });
+  $('#composer').addEventListener('submit', async e => {
+    e.preventDefault();
+    const text = $('#postText').value.trim();
+    if (!text && !postImg) { $('#postErr').textContent = 'Напишите текст или добавьте фото.'; return; }
+    myPosts.unshift({ id: 'm' + Date.now(), t: Date.now(), text, img: postImg, likes: 0 });
+    await idb.set('posts', myPosts);
+    $('#postText').value = ''; postImg = null; $('#postImgPrev').hidden = true; $('#postErr').textContent = '';
+    toast('Запись опубликована в ленте.'); renderPosts();
+  });
+
+  /* ---------- настройки ---------- */
+  function renderSettings() {
+    const u = store.get('user'), w = wallet(), vip = isVip(), theme = store.get('theme', '');
+    $('#settingsBox').innerHTML = `<div class="settings">
+      <section><h3>Анкета</h3><p class="note">${esc(u.name)}, ${ageOf(u.birth)}, ${esc(u.city)}. Ищу: ${{ m: 'мужчину', f: 'женщину', a: 'не важно' }[u.seek]}.</p>
+        <div class="row"><button class="btn" type="button" data-set="edit">Изменить анкету</button><button class="btn" type="button" data-set="preview">Посмотреть глазами других</button><button class="btn" type="button" data-view-go="me">Мои фото</button></div></section>
+      <section><h3>Приватность</h3>
+        <label class="opt"><input type="checkbox" data-sw="invisible" ${w.invisible ? 'checked' : ''} ${vip ? '' : 'disabled'}> Невидимка: смотреть анкеты, не попадая в гости</label>
+        <label class="opt"><input type="checkbox" data-sw="hideAge" ${w.hideAge ? 'checked' : ''} ${vip ? '' : 'disabled'}> Скрыть возраст в анкете</label>
+        ${vip ? '' : '<p class="note">Доступно с VIP-статусом. <button class="btn" type="button" data-shop="vip" style="padding:.3rem .8rem;font-size:.85rem">Подключить VIP</button></p>'}</section>
+      <section><h3>Оформление</h3><div class="row">
+        <label class="opt"><input type="radio" name="th" value="" ${!theme ? 'checked' : ''}> Как в системе</label>
+        <label class="opt"><input type="radio" name="th" value="light" ${theme === 'light' ? 'checked' : ''}> Светлая</label>
+        <label class="opt"><input type="radio" name="th" value="dark" ${theme === 'dark' ? 'checked' : ''}> Тёмная</label></div></section>
+      <section><h3>Уведомления</h3><label class="opt"><input type="checkbox" data-sw="notify" ${store.get('notify', true) ? 'checked' : ''}> Всплывающие уведомления о сообщениях и друзьях</label></section>
+      <section><h3>Аккаунт</h3><p class="note">Анкета, фото, переписка и симпатии хранятся в этом браузере.</p><div class="row"><button class="btn" type="button" data-set="logout">Выйти и удалить анкету</button></div></section>
+    </div>`;
+  }
+  $('#settingsBox').addEventListener('click', e => {
+    const b = e.target.closest('[data-set], [data-view-go]'); if (!b) return;
+    if (b.dataset.viewGo) return setView(b.dataset.viewGo);
+    if (b.dataset.set === 'edit') startEdit();
+    if (b.dataset.set === 'preview') previewMe();
+    if (b.dataset.set === 'logout') $('#navJoin').click();
+  });
+  $('#settingsBox').addEventListener('change', e => {
+    const t = e.target;
+    if (t.name === 'th') { if (t.value) { document.documentElement.dataset.theme = t.value; store.set('theme', t.value); } else { delete document.documentElement.dataset.theme; store.del('theme'); } return; }
+    if (t.dataset.sw === 'notify') return store.set('notify', t.checked);
+    if (t.dataset.sw) { const w = wallet(); w[t.dataset.sw] = t.checked; saveWallet(w);
+      toast(t.dataset.sw === 'invisible' ? (t.checked ? 'Невидимка включена.' : 'Невидимка выключена.') : (t.checked ? 'Возраст скрыт в анкете.' : 'Возраст снова виден.')); }
+  });
+
+  // Первое посещение кабинета: приветствие поддержки, пара заявок в друзья и событий, чтобы разделы не были пустыми.
+  function seedDemo() {
+    if (store.get('seeded')) return;
+    const all = candidates(), adm = admirersOf(all), gst = guestsOf(all), now = Date.now();
+    chats.support = [{ me: 0, text: 'Добро пожаловать в «Любовь в цифрах»! Здесь можно задать вопрос о сайте, оплате или анкете.', t: now }];
+    unread.support = 1; saveChats();
+    fr.in = adm.slice(0, 2).map(p => p.id); saveFr();
+    const ev = [
+      ...gst.slice(0, 3).map((p, i) => ({ t: now - (i + 1) * 47 * 60000, type: 'guest', id: p.id, text: `${p.name} посмотрел(а) вашу анкету.` })),
+      ...adm.slice(2, 4).map((p, i) => ({ t: now - (i + 1) * 95 * 60000, type: 'like', id: p.id, text: `${p.name} поставил(а) вам симпатию.` })),
+      ...fr.in.map((id, i) => ({ t: now - (i + 1) * 30 * 60000, type: 'friend', id, text: `${person(id).name} хочет добавить вас в друзья.` })),
+      { t: now - 1000, type: 'info', id: null, text: 'Анкета создана. Добавьте фото, чтобы вас чаще замечали.' }
+    ].sort((a, b) => b.t - a.t);
+    events.push(...ev); store.set('events', events);
+    store.set('seeded', 1);
   }
 
   /* ---------- карусель анкет на главной ---------- */
@@ -1355,7 +1855,9 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   updateHero();
   renderPricing();
   handlePaymentReturn();
-  if (store.get('user')) idb.get('photos').then(ph => { myPhotos = Array.isArray(ph) ? ph : []; enterApp(); });
+  if (store.get('user')) Promise.all([idb.get('photos'), idb.get('posts')]).then(([ph, po]) => {
+    myPhotos = Array.isArray(ph) ? ph : []; myPosts = Array.isArray(po) ? po : []; enterApp();
+  });
 })();
 </script>
 </body>
