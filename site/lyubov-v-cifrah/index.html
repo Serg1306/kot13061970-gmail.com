@@ -109,12 +109,6 @@ section.block { padding-block: 4rem; border-top: 1px solid var(--line); }
 .system p { color: var(--muted); font-size: .95rem; }
 .system .ex { margin-top: .8rem; font-size: .9rem; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: .55rem .75rem; }
 
-.compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-.compare article { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 1.3rem; }
-.compare h3 { margin-bottom: .6rem; }
-.compare ul { margin: 0; padding-left: 1.1rem; color: var(--muted); font-size: .95rem; }
-.compare li + li { margin-top: .3rem; }
-.compare .take { margin-top: .9rem; font-weight: 600; font-size: .95rem; }
 
 /* регистрация */
 .reg { display: grid; grid-template-columns: .9fr 1.1fr; gap: 3rem; align-items: start; }
@@ -234,8 +228,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 @media (max-width: 900px) {
   .hero, .reg, .block .intro { grid-template-columns: 1fr; gap: 2rem; }
   .systems { grid-template-columns: 1fr 1fr; }
-  .compare { grid-template-columns: 1fr; }
-}
+  }
 @media (max-width: 560px) {
   .systems, .calc .dates, .row2, .legend { grid-template-columns: 1fr; }
   .me { grid-template-columns: auto 1fr; }
@@ -321,42 +314,6 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
         <p>День рождения каждого переводим в аркан от 1 до 22, складываем и получаем аркан пары с коротким толкованием, как в матрице судьбы.</p>
         <div class="ex">13 + 5 = 18, Луна</div>
       </div>
-    </div>
-  </section>
-
-  <section class="block wrap" id="market">
-    <div class="intro">
-      <h2>Что мы взяли у больших сервисов и что сделали иначе</h2>
-      <p>Mamba, Tinder и Badoo решают задачу «показать как можно больше анкет». Мы решаем другую: показать сначала тех, с кем есть основания для разговора.</p>
-    </div>
-    <div class="compare">
-      <article>
-        <h3>Mamba</h3>
-        <ul>
-          <li>Подробные анкеты и поиск по многим фильтрам</li>
-          <li>Сильна в России и СНГ, много взрослой аудитории</li>
-          <li>Ключевые функции за платной подпиской</li>
-        </ul>
-        <p class="take">Берём: подробную анкету и фильтры по возрасту и городу.</p>
-      </article>
-      <article>
-        <h3>Tinder</h3>
-        <ul>
-          <li>Свайпы и взаимная симпатия как условие для чата</li>
-          <li>Быстрый вход, минимум полей</li>
-          <li>Выбор в основном по фото</li>
-        </ul>
-        <p class="take">Берём: взаимность перед перепиской и короткую регистрацию.</p>
-      </article>
-      <article>
-        <h3>Badoo</h3>
-        <ul>
-          <li>Люди рядом и игровая механика «Знакомства»</li>
-          <li>Верификация по фото против фейков</li>
-          <li>Много платных «ускорений» показа</li>
-        </ul>
-        <p class="take">Берём: поиск по городу и проверку профиля.</p>
-      </article>
     </div>
   </section>
 
