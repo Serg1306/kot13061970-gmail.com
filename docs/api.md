@@ -18,7 +18,7 @@
 ```
 User (свой)  = { id, email, name, birth: "YYYY-MM-DD", g: "m"|"f", seek: "m"|"f"|"a", city, about, lang: "ru"|"en",
                  verified: bool, verifyStatus: "none"|"pending"|"approved"|"rejected",
-                 hideAge: bool, invisible: bool, notifyEmail: bool, notifyPush: bool, consentAt: ms, createdAt: ms }
+                 hideAge: bool, invisible: bool, notifyEmail: bool, notifyPush: bool, consentAt: ms|null, consentPublicAt: ms|null, consentVersion: string|null, createdAt: ms }
 Person (чужой) = { id, name, birth, g, city, about, verified: bool, hideAge: bool, vip: bool, boosted: bool,
                  online: bool (активность за 10 мин), media: [{ type: "photo", src: "/uploads/…" }], gifts: [{ kind, from?: id }] }
 Wallet       = { coins, vipUntil: ms, boostUntil: ms }
@@ -43,21 +43,26 @@ Signal       = { id, from: id, t: ms, data: object }
 
 `GET /api/config` → `{ live: true, robokassa: bool, vapidPublicKey: string|null, metrikaId: string|null, devCodes: bool }`
 
+`vapidPublicKey` = `null`, пока push выключен (`PUSH_ENABLED` ≠ `1`, по умолчанию) — тогда сайт не должен предлагать подписку на уведомления.
+
 ## Вход по почте
 
 - `POST /api/auth/start { email, lang }` → `{ ok: true, devCode?: "123456" }`. Почта приводится к нижнему регистру, пробелы обрезаются (`bad_email` при неверной). Шестизначный код, живёт 10 минут, 5 попыток, не чаще раза в 60 с на почту (`429 {error:"too_often", wait: сек}`). `devCode` возвращается только при `DEV_CODES=1`. Если SMTP не настроен, код пишется в журнал сервера; если письмо не ушло — `502 mail_failed`.
 - `POST /api/auth/verify { email, code }` → ставит cookie, `{ user: User|null }` (`null` — анкета ещё не заполнена). Ошибки: `400 bad_code`, `400 code_expired`, `429 too_many_attempts`. При первом входе создаётся аккаунт, приветственное сообщение от `support` (на языке из `auth/start`) и событие `system`.
 - `POST /api/auth/logout` → `{ ok: true }`.
-- `DELETE /api/account` → удаляет пользователя и всё его (фото-файлы, селфи, голосовые, посты, сообщения в обе стороны, лайки…), `{ ok: true }`.
+- `DELETE /api/account` → удаляет пользователя и всё его (фото-файлы, селфи, голосовые, посты, сообщения в обе стороны, лайки…), `{ ok: true }`. Счета об оплате остаются без привязки к человеку (бухучёт). В журнал уничтожения пишется запись (`reason: user_request`). Если аккаунт был забанен, хэш его почты попадает в чёрный список на 3 года.
+- `GET /api/account/export` → файл JSON (`Content-Disposition: attachment; filename="lyubov-v-cifrah-data.json"`) со всеми данными о себе (152-ФЗ, ст. 14): `profile, consents {processingAt, publicAt, version, ip}, wallet, photos, verification, likes {given, receivedCount}, passes, matches, friends, blocked, messages (свои и мне: текст, ссылки на голосовые), posts, visits {madeByMe, receivedCount}, gifts {sent, received}, reportsFiled, orders, events`. О других людях — только их id или количество. Не чаще 5 раз в час (`429 rate_limited`).
+- Почта удалённого забаненного аккаунта: `auth/start` и `auth/verify` → `403 banned` (хранится только HMAC-хэш почты, 3 года).
 
 ## Своя анкета
 
 - `GET /api/me` → `401 {error:"auth"}` или `{ user: User|null, wallet: Wallet, photos: Photo[], admin: bool, banned: bool }`.
-- `PUT /api/profile { name, birth, g, seek, city, about, lang, consent }` → `{ user }`. Проверки (строки обрезаются, внутренние пробелы в имени и городе схлопываются):
+- `PUT /api/profile { name, birth, g, seek, city, about, lang, consent, consentPublic }` → `{ user }`. Проверки (строки обрезаются, внутренние пробелы в имени и городе схлопываются):
   - `name` — `/^[\p{L}\p{M}][\p{L}\p{M} .'’-]{0,39}$/u`, иначе `400 bad_name`;
   - `city` — `/^[\p{L}\p{M}0-9][\p{L}\p{M}0-9 .,'’()-]{0,59}$/u`, иначе `400 bad_city`;
   - `about` — свободный текст ≤ 500 (`invalid`, field `about`); `birth` — настоящая дата `YYYY-MM-DD` (`invalid`, field `birth`); `g`, `seek` — `invalid`;
-  - возраст ≥ 18 (`under_18`); при первом сохранении `consent: true` обязателен (`consent_required`) — пишется `consentAt`.
+  - возраст ≥ 18 (`under_18`);
+  - два отдельных согласия по 152-ФЗ, оба обязательны при первом сохранении: `consent: true` — на обработку (`consent_required`) и `consentPublic: true` — на распространение, ст. 10.1, анкету видят другие (`consent_public_required`). Записываются `consentAt`, `consentPublicAt`, `consentVersion` (из `CONSENT_VERSION`) и IP. При следующих сохранениях согласия не нужны.
 - `PUT /api/settings { hideAge?, invisible?, notifyEmail?, notifyPush?, lang? }` → `{ user }`. `hideAge`/`invisible` = true только с активным VIP (`403 vip_required`).
 - `POST /api/photos { dataUrl }` (jpeg/png/webp — тип проверяется по сигнатуре файла, `bad_image`; ≤ 4 МБ после декодирования, `413 too_large`; максимум 10 фото → `too_many`) → `{ photos: Photo[] }`. При `AUTO_APPROVE=1` сразу `approved`, иначе `pending` до модерации. Работает и до заполнения анкеты.
 - `DELETE /api/photos/:id` → `{ photos }`; `PUT /api/photos/order { ids }` → `{ photos }` (перечисленные идут первыми в указанном порядке, остальные — после).
@@ -97,6 +102,7 @@ Signal       = { id, from: id, t: ms, data: object }
 
 ## Push-уведомления
 
+- **Выключены по умолчанию** (трансграничная передача через Google/Mozilla/Apple требует уведомления РКН). Пока `PUSH_ENABLED` ≠ `1`: `vapidPublicKey: null`, `POST /api/push/subscribe` → `403 push_disabled`, ключи VAPID не создаются, push не отправляются.
 - `POST /api/push/subscribe { subscription }` (объект PushSubscription.toJSON()) / `POST /api/push/unsubscribe { endpoint }`. Принимаются только адреса служб push (FCM, Mozilla, Apple, Windows) по https.
 - Сервер шлёт Web Push (VAPID, шифрование aes128gcm, реализовано на `node:crypto`) о новом сообщении, взаимной симпатии, заявке в друзья, входящем звонке, ответе поддержки — если у получателя `notifyPush`. Полезная нагрузка: `{ title, body, url }`, где `url`:
   `/?go=messages&with=<id>`, `/?go=matches&with=<id>`, `/?go=friends`, `/?go=call&from=<id>`, `/?go=messages&with=support`. Подписки, на которые служба ответила 404/410, удаляются.
@@ -121,7 +127,19 @@ Signal       = { id, from: id, t: ms, data: object }
      stats: { users, today, online, paid, paidToday, revenue, messagesToday, banned } }`
 - `POST /api/admin/photo { id, approve }`, `POST /api/admin/verify { userId, approve }` (пользователю — событие `system`), `POST /api/admin/report { id, action: "dismiss"|"ban" }` (бан закрывает все открытые жалобы на этого человека), `POST /api/admin/unban { userId }`.
 - `GET /api/admin/support?userId=` → `{ user, messages }` (отмечает обращения прочитанными); ответ: `POST /api/admin/support { userId, text }` → `{ message }` — у пользователя появляется сообщение от `"support"` (+ push).
-- `GET /api/admin/file/:name` — селфи для проверки (хранятся в `DATA_DIR/private`, не в `/uploads`).
+- `GET /api/admin/file/:name` — селфи для проверки (хранятся в `DATA_DIR/private`, не в `/uploads`). Селфи удаляется после решения модератора или через 30 дней, с записью в журнал уничтожения.
+
+### Платежи
+- `GET /api/admin/orders?status=new|paid|refunded&q=` → `{ orders: Order[], totals: { today, todayCount, month, monthCount, all, allCount, refunded, refundedCount } }` — новые первыми, до 200; `q` ищет по номеру счёта (точно), почте и имени (подстрока). Суммы в рублях: `today/month/all` — счета в статусе `paid` по дате оплаты (сутки и месяц по Москве), `refunded` — сумма возвращённых.
+  `Order = { invId, userId, email, name, product, title, price, status: "new"|"paid"|"refunded", createdAt, paidAt, refundedAt, refundNote, lastCheckedAt }` (`userId/email/name` = null, если аккаунт удалён).
+- `POST /api/admin/refund { invId, note }` → `{ order }` — только для `paid` (иначе `not_paid`). Отмечает возврат и отменяет услугу: `coins = MAX(0, coins − купленные)`, `vipUntil = MAX(сейчас, vipUntil − купленные дни)`; пользователю — событие `system`. Сами деньги возвращаются оператором в кабинете Робокассы (Операции → Возврат).
+- `POST /api/admin/order-check { invId }` → `{ state, code, resultCode, credited }` — сверка через XML-интерфейс Робокассы `OpStateExt` (подпись `MerchantLogin:InvoiceID:Пароль#2` тем же алгоритмом `ROBOKASSA_HASH`). `state`: `paid` (код 100) / `pending` (5) / `cancelled` (10) / `held` (20) / `processing` (50) / `refunded` (60) / `suspended` (80) / `not_found` / `error`. При `paid` начисление идемпотентно (`credited` — начислено именно сейчас). Ошибки: `404 not_found`, `503 not_configured`, `502 robokassa_unavailable`.
+- Фоновая сверка раз в 10 минут: счета `new` возрастом от 5 минут до 48 часов, каждый не чаще раза в 30 минут (`last_checked_at`); только если Робокасса настроена; ошибки сети пишутся в журнал и не роняют сервер.
+
+### Персональные данные
+- `GET /api/admin/destruction?from=YYYY-MM-DD&to=YYYY-MM-DD` (включительно, сутки по Москве) → `{ rows: [{ id, at, subjectRef, emailMasked, categories, reason, method, operator }] }` — журнал уничтожения ПДн (приказ РКН № 179 от 28.10.2022). `subjectRef` = первые 16 hex от sha256(user_id + секрет сервера), `emailMasked` вида `k***@gmail.com`, `reason`: `user_request` | `ban` | `retention` | `consent_withdrawn`, `method` = «удаление из БД и файлов», `operator` — почта модератора, «пользователь (сам, через сайт)» или «система …». Записи пишутся при удалении аккаунта (сам или модератор) и при удалении селфи (после проверки и по сроку 30 дней, категория «селфи для проверки»).
+- `POST /api/admin/delete-user { userId | email, reason }` → `{ ok }` — то же полное удаление, что `DELETE /api/account`; `reason` по умолчанию `user_request`, для писем об отзыве согласия — `consent_withdrawn`, `ban` — заодно запрещает повторную регистрацию. Ошибки: `404 not_found`, `400 self`.
+- Хэши почт удалённых забаненных (`banned_emails`) хранятся 3 года и удаляются уборкой. Секрет сервера — `DATA_DIR/secret.key` (создаётся сам, входит в резервную копию).
 
 ## Переменные окружения
 
@@ -135,9 +153,11 @@ Signal       = { id, from: id, t: ms, data: object }
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | отправка писем (SMTPS 465 или STARTTLS 587) |
 | `DEV_CODES` | `1` — показывать код входа в ответе (только для проверки!) |
 | `AUTO_APPROVE` | `1` — фото без модерации |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | push; если не заданы, сервер создаёт ключи и хранит в `DATA_DIR/vapid.json` |
+| `PUSH_ENABLED` | `1` — включить Web Push (по умолчанию выключен, нужен для этого уведомление РКН о трансграничной передаче) |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | push; если не заданы, сервер создаёт ключи и хранит в `DATA_DIR/vapid.json` (только при `PUSH_ENABLED=1`) |
+| `CONSENT_VERSION` | редакция текстов согласий, записывается с каждым согласием (по умолчанию `2026-10-14`) |
 | `METRIKA_ID` | номер счётчика Яндекс Метрики |
-| `ROBOKASSA_*` | как в `docs/robokassa-setup.md` |
+| `ROBOKASSA_*` | как в `docs/robokassa-setup.md`; `ROBOKASSA_XML_URL` — адрес XML-интерфейса для сверки (только для тестов, по умолчанию `https://auth.robokassa.ru/Merchant/WebService/Service.asmx`) |
 
 Файл `.env` в корне проекта читается сервером автоматически (уже заданные переменные окружения важнее). Пример — `server/.env.example`, установка — `docs/deploy.md`.
 
