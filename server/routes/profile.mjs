@@ -39,13 +39,22 @@ export function validateProfile(body) {
 const meAgain = (db, id) => db.get('SELECT * FROM users WHERE id = ?', id);
 
 export default function profileRoutes(route) {
-  route('PUT', '/api/profile', ({ app, user, body }) => {
+  route('PUT', '/api/profile', ({ app, user, body, ip }) => {
     const { db } = app;
     const p = validateProfile(body);
+    // Два отдельных согласия (152-ФЗ): на обработку и на распространение (ст. 10.1 — анкету видят другие).
     if (!user.consent_at && body.consent !== true) fail(400, 'consent_required');
-    const consentAt = user.consent_at || Date.now();
-    db.run('UPDATE users SET name = ?, birth = ?, g = ?, seek = ?, city = ?, about = ?, lang = ?, consent_at = ? WHERE id = ?',
-      p.name, p.birth, p.g, p.seek, p.city, p.about, body.lang ? p.lang : user.lang, consentAt, user.id);
+    if (!user.consent_public_at && body.consentPublic !== true) fail(400, 'consent_public_required');
+    const now = Date.now();
+    const fresh = !user.consent_at || !user.consent_public_at;
+    db.tx(() => {
+      db.run('UPDATE users SET name = ?, birth = ?, g = ?, seek = ?, city = ?, about = ?, lang = ? WHERE id = ?',
+        p.name, p.birth, p.g, p.seek, p.city, p.about, body.lang ? p.lang : user.lang, user.id);
+      if (fresh) {
+        db.run('UPDATE users SET consent_at = COALESCE(consent_at, ?), consent_public_at = COALESCE(consent_public_at, ?), consent_version = ?, consent_ip = ? WHERE id = ?',
+          now, now, app.config.consentVersion, String(ip || '').slice(0, 64), user.id);
+      }
+    });
     return { user: userOut(meAgain(db, user.id)) };
   }, { auth: 'user' });
 

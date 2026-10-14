@@ -152,8 +152,7 @@ CREATE TABLE IF NOT EXISTS orders (
   price REAL NOT NULL,
   status TEXT NOT NULL DEFAULT 'new',
   created_at INTEGER NOT NULL,
-  paid_at INTEGER,
-  confirmed_at INTEGER
+  paid_at INTEGER
 );
 CREATE TABLE IF NOT EXISTS push_subs (
   endpoint TEXT PRIMARY KEY,
@@ -163,12 +162,47 @@ CREATE TABLE IF NOT EXISTS push_subs (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS push_user ON push_subs(user_id);
+-- Журнал уничтожения персональных данных (приказ Роскомнадзора № 179 от 28.10.2022).
+-- Сам человек здесь не хранится: только обезличенная ссылка и замаскированная почта.
+CREATE TABLE IF NOT EXISTS pd_destruction (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  at INTEGER NOT NULL,
+  subject_ref TEXT NOT NULL,
+  email_masked TEXT NOT NULL,
+  categories TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  method TEXT NOT NULL,
+  operator TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS pd_destruction_at ON pd_destruction(at);
+-- Почты удалённых забаненных (только HMAC-хэш), чтобы они не могли зарегистрироваться снова. Хранятся 3 года.
+CREATE TABLE IF NOT EXISTS banned_emails (
+  email_hash TEXT PRIMARY KEY,
+  reason TEXT NOT NULL,
+  at INTEGER NOT NULL
+);
 `;
+
+// Колонки, добавленные после первого выпуска: в старой базе их создаём через ALTER TABLE.
+const COLUMNS = {
+  users: { consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT' },
+  orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER' },
+};
+
+function migrate(raw) {
+  for (const [table, cols] of Object.entries(COLUMNS)) {
+    const have = new Set(raw.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name));
+    for (const [name, type] of Object.entries(cols)) {
+      if (!have.has(name)) raw.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+    }
+  }
+}
 
 export function openDb(file) {
   const raw = new DatabaseSync(file);
   raw.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA synchronous = NORMAL;');
   raw.exec(SCHEMA);
+  migrate(raw);
   const cache = new Map();
   const stmt = sql => {
     let s = cache.get(sql);

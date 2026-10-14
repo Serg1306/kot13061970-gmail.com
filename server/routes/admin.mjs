@@ -1,8 +1,12 @@
 // Модерация: фото, проверка селфи, жалобы, поддержка, статистика. Доступ — только почтам из ADMIN_EMAILS.
 import path from 'node:path';
 import { fail, serveFile } from '../http.mjs';
-import { isSafeName, removeFile } from '../media.mjs';
+import { CATALOG } from '../../netlify/lib/robokassa.mjs';
+import { isSafeName } from '../media.mjs';
 import { ONLINE_MS, addEvent, dayStartMsk, messageOut, uploadSrc } from '../model.mjs';
+import { REASONS, deleteUser, destroySelfie } from '../pd.mjs';
+import { checkOrder, refundOrder } from './pay.mjs';
+import { normEmail } from './auth.mjs';
 
 const VERIFY_TEXT = {
   ru: { ok: 'Фото проверено: на анкете появился значок «фото проверено».', no: 'Проверка фото не пройдена. Попробуйте ещё раз: лицо должно быть хорошо видно, жест — как в задании.' },
@@ -71,14 +75,14 @@ export default function adminRoutes(route) {
     return { ok: true };
   }, opts);
 
-  route('POST', '/api/admin/verify', ({ app, body }) => {
+  route('POST', '/api/admin/verify', ({ app, body, user }) => {
     const { db, config } = app;
     const u = userById(db, String(body.userId));
     if (!u) fail(404, 'not_found');
     const t = VERIFY_TEXT[u.lang] || VERIFY_TEXT.ru;
     db.run('UPDATE users SET verify_status = ?, verify_file = NULL WHERE id = ?', body.approve ? 'approved' : 'rejected', u.id);
     addEvent(db, u.id, 'system', null, body.approve ? t.ok : t.no);
-    removeFile(config.privateDir, u.verify_file);
+    destroySelfie(app, u, user.email);
     return { ok: true };
   }, opts);
 
@@ -88,7 +92,7 @@ export default function adminRoutes(route) {
     if (!rep) fail(404, 'not_found');
     if (body.action === 'ban') {
       db.tx(() => {
-        db.run('UPDATE users SET banned = 1 WHERE id = ?', rep.target_id);
+        db.run('UPDATE users SET banned = 1, ban_reason = ? WHERE id = ?', rep.reason, rep.target_id);
         db.run("UPDATE reports SET status = 'banned' WHERE target_id = ? AND status = 'open'", rep.target_id);
       });
     } else if (body.action === 'dismiss') {
@@ -132,5 +136,83 @@ export default function adminRoutes(route) {
   route('GET', '/api/admin/file/:name', ({ app, req, res, params }) => {
     if (!isSafeName(params.name) || !serveFile(req, res, path.join(app.config.privateDir, params.name), 'private, no-store')) fail(404, 'not_found');
   }, opts);
+
+  // ---------- Платежи ----------
+
+  route('GET', '/api/admin/orders', ({ app, url }) => {
+    const { db } = app;
+    const status = String(url.searchParams.get('status') || '');
+    if (status && !['new', 'paid', 'refunded'].includes(status)) fail(400, 'invalid', { field: 'status' });
+    const q = String(url.searchParams.get('q') || '').trim().toLowerCase().slice(0, 100);
+    const like = '%' + q.replace(/[\\%_]/g, c => '\\' + c) + '%';
+    const orders = db.all(`SELECT o.*, u.email, u.name FROM orders o LEFT JOIN users u ON u.id = o.user_id
+      WHERE (:status = '' OR o.status = :status)
+        AND (:q = '' OR o.inv_id = :q OR lower(u.email) LIKE :like ESCAPE '\\' OR lower(u.name) LIKE :like ESCAPE '\\')
+      ORDER BY o.created_at DESC LIMIT 200`, { status, q, like }).map(orderOut);
+    const now = Date.now();
+    const sum = (where, ...p) => db.get(`SELECT COALESCE(SUM(price), 0) AS s, COUNT(*) AS n FROM orders WHERE ${where}`, ...p);
+    const t = sum("status = 'paid' AND paid_at >= ?", dayStartMsk(now));
+    const m = sum("status = 'paid' AND paid_at >= ?", monthStartMsk(now));
+    const a = sum("status = 'paid'");
+    const r = sum("status = 'refunded'");
+    return {
+      orders,
+      totals: { today: t.s, todayCount: t.n, month: m.s, monthCount: m.n, all: a.s, allCount: a.n, refunded: r.s, refundedCount: r.n },
+    };
+  }, opts);
+
+  route('POST', '/api/admin/refund', ({ app, body }) => {
+    const note = typeof body.note === 'string' ? body.note.trim().slice(0, 500) : '';
+    return { order: orderOut(refundOrder(app.db, String(body.invId || ''), note)) };
+  }, opts);
+
+  route('POST', '/api/admin/order-check', ({ app, body }) => checkOrder(app, String(body.invId || '')), opts);
+
+  // ---------- Персональные данные ----------
+
+  route('GET', '/api/admin/destruction', ({ app, url }) => {
+    const from = dateMsk(url.searchParams.get('from'), 0) ?? 0;
+    const to = dateMsk(url.searchParams.get('to'), 1) ?? Date.now() + 1;
+    const rows = app.db.all('SELECT * FROM pd_destruction WHERE at >= ? AND at < ? ORDER BY at DESC, id DESC LIMIT 5000', from, to).map(r => ({
+      id: r.id, at: r.at, subjectRef: r.subject_ref, emailMasked: r.email_masked, categories: r.categories,
+      reason: r.reason, method: r.method, operator: r.operator,
+    }));
+    return { rows };
+  }, opts);
+
+  // Полное удаление пользователя модератором (например, по письму об отзыве согласия).
+  route('POST', '/api/admin/delete-user', ({ app, body, user }) => {
+    const { db } = app;
+    const reason = body.reason || 'user_request';
+    if (!REASONS.includes(reason)) fail(400, 'invalid', { field: 'reason' });
+    const target = body.userId
+      ? db.get('SELECT * FROM users WHERE id = ?', String(body.userId))
+      : db.get('SELECT * FROM users WHERE email = ?', normEmail(body.email));
+    if (!target) fail(404, 'not_found');
+    if (target.id === user.id) fail(400, 'self');
+    deleteUser(app, target.id, { reason, operator: user.email });
+    return { ok: true };
+  }, opts);
 }
 
+
+const orderOut = o => ({
+  invId: o.inv_id, userId: o.user_id, email: o.email ?? null, name: o.name ?? null, product: o.product,
+  title: CATALOG[o.product]?.title || o.product, price: o.price, status: o.status,
+  createdAt: o.created_at, paidAt: o.paid_at, refundedAt: o.refunded_at ?? null, refundNote: o.refund_note ?? null,
+  lastCheckedAt: o.last_checked_at ?? null,
+});
+
+// Начало месяца по Москве.
+function monthStartMsk(now) {
+  const off = 3 * 3600e3;
+  const d = new Date(now + off);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) - off;
+}
+
+// 'YYYY-MM-DD' → начало этих суток по Москве (+ addDays дней) или null.
+function dateMsk(s, addDays) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(s || ''))) return null;
+  const t = Date.parse(`${s}T00:00:00+03:00`);
+  return Number.isNaN(t) ? null : t + addDays * 86400e3;
+}

@@ -55,6 +55,17 @@ textarea { min-height: 5rem; resize: vertical; }
 .msg .t { display: block; font-size: .75rem; opacity: .75; }
 .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr)); gap: .8rem; }
 .stat b { display: block; font-family: "Prata", Georgia, serif; font-size: 2rem; font-weight: 400; }
+.totals { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: .6rem; margin-bottom: .8rem; }
+.totals .stat b { font-size: 1.4rem; }
+.filters { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; margin-bottom: .8rem; }
+.filters label { display: grid; gap: .2rem; font-size: .85rem; color: var(--muted); flex: 1 1 9rem; min-width: 0; }
+select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: .55rem .7rem; width: 100%; }
+.note { background: var(--card); border: 1px dashed var(--rose); border-radius: 14px; padding: .6rem .8rem; font-size: .92rem; margin: 0 0 .8rem; }
+.order { display: grid; gap: .3rem; }
+.order .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem; }
+.status { display: inline-block; border-radius: 999px; padding: 0 .6em; font-size: .82rem; font-weight: 600; border: 1px solid var(--line); }
+.status.paid { color: var(--ok); border-color: var(--ok); }
+.status.refunded { color: var(--rose); border-color: var(--rose); }
 .empty { padding: 1.5rem; text-align: center; color: var(--muted); }
 .login { max-width: 26rem; }
 .login label { display: block; margin: .8rem 0 .3rem; }
@@ -102,6 +113,8 @@ textarea { min-height: 5rem; resize: vertical; }
       <button class="btn tab" role="tab" data-tab="verify">Подтверждение<span class="badge" data-count="verify" hidden></span></button>
       <button class="btn tab" role="tab" data-tab="reports">Жалобы<span class="badge" data-count="reports" hidden></span></button>
       <button class="btn tab" role="tab" data-tab="support">Поддержка<span class="badge" data-count="support" hidden></span></button>
+      <button class="btn tab" role="tab" data-tab="pay">Платежи</button>
+      <button class="btn tab" role="tab" data-tab="pd">Журнал уничтожения</button>
       <button class="btn tab" role="tab" data-tab="stats">Статистика</button>
     </nav>
     <div id="view" aria-live="polite"></div>
@@ -117,6 +130,35 @@ textarea { min-height: 5rem; resize: vertical; }
   const ERRORS = { bad_email: 'Проверьте адрес почты.', too_often: 'Код уже отправлен, подождите минуту.', bad_code: 'Неверный код.', code_expired: 'Код устарел, запросите новый.', too_many_attempts: 'Слишком много попыток, запросите новый код.', mail_failed: 'Не удалось отправить письмо, проверьте настройки почты.', rate_limited: 'Слишком много запросов, подождите.' };
 
   let queue = null, tab = 'photos', thread = null, email = '';
+  const STATUS = { new: 'не оплачен', paid: 'оплачен', refunded: 'возврат' };
+  const PD_REASONS = { user_request: 'запрос пользователя', consent_withdrawn: 'отзыв согласия', ban: 'бан', retention: 'истёк срок хранения' };
+  const REFUND_NOTE = 'Деньги возвращаются в личном кабинете Робокассы: Операции → Возврат. Эта кнопка только отменяет услугу на сайте.';
+  const rub = n => Number(n || 0).toLocaleString('ru-RU') + ' ₽';
+  const isoDay = t => new Date(t + 3 * 3600e3).toISOString().slice(0, 10);
+  const pay = { status: '', q: '', data: null };
+  const pd = { from: isoDay(Date.now()).slice(0, 8) + '01', to: isoDay(Date.now()), rows: null };
+
+  // CSV для Excel: разделитель «;», в начале BOM, чтобы кириллица открывалась без «кракозябр».
+  function downloadCsv(name, header, rows) {
+    const cell = v => { const t = String(v ?? ''); return /[";\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const text = '\uFEFF' + [header, ...rows].map(r => r.map(cell).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
+    a.download = name;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  const dt = t => t ? new Date(t).toLocaleString('ru-RU') : '';
+
+  async function loadPay() {
+    const q = new URLSearchParams({ status: pay.status, q: pay.q });
+    pay.data = await api('GET', '/api/admin/orders?' + q);
+    if (tab === 'pay') render();
+  }
+  async function loadPd() {
+    pd.rows = (await api('GET', `/api/admin/destruction?from=${pd.from}&to=${pd.to}`)).rows;
+    if (tab === 'pd') render();
+  }
 
   async function api(method, url, body) {
     const opts = { method, headers: { 'X-Requested-With': 'lvc' }, credentials: 'same-origin' };
@@ -186,6 +228,8 @@ textarea { min-height: 5rem; resize: vertical; }
     tab = t;
     for (const b of document.querySelectorAll('.tab')) b.setAttribute('aria-selected', String(b.dataset.tab === t));
     render();
+    if (t === 'pay') loadPay().catch(err => alert('Платежи не загрузились: ' + err.message));
+    if (t === 'pd') loadPd().catch(err => alert('Журнал не загрузился: ' + err.message));
   }
   document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) setTab(b.dataset.tab); });
 
@@ -223,7 +267,7 @@ textarea { min-height: 5rem; resize: vertical; }
         </div>
       </article>`).join('')}</div>` : empty('Открытых жалоб нет.')}
       <h2>Забаненные</h2>
-      ${queue.banned.length ? `<div class="list">${queue.banned.map(u => `<div class="card row" style="justify-content:space-between">${person(u)}<button class="btn" data-act="unban" data-id="${esc(u.id)}">Разбанить</button></div>`).join('')}</div>` : empty('Никого.')}`,
+      ${queue.banned.length ? `<div class="list">${queue.banned.map(u => `<div class="card row" style="justify-content:space-between">${person(u)}<span class="row"><button class="btn" data-act="unban" data-id="${esc(u.id)}">Разбанить</button><button class="btn" data-act="delban" data-id="${esc(u.id)}">Удалить данные</button></span></div>`).join('')}</div>` : empty('Никого.')}`,
 
     support: () => {
       if (!queue.support.length) return empty('Обращений пока нет.');
@@ -239,6 +283,56 @@ textarea { min-height: 5rem; resize: vertical; }
           <p class="row" style="margin:.6rem 0 0"><button class="btn rose" type="submit">Отправить</button></p></form>`
         : '<p class="muted">Выберите обращение слева.</p>'}</div></div>`;
     },
+
+    pay: () => {
+      const d = pay.data;
+      const t = d?.totals;
+      return `<form id="payFilter" class="filters">
+          <label>Статус<select name="status">${[['', 'все'], ['new', STATUS.new], ['paid', STATUS.paid], ['refunded', STATUS.refunded]]
+            .map(([v, l]) => `<option value="${v}"${pay.status === v ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
+          <label>Почта, имя или номер счёта<input name="q" value="${esc(pay.q)}" maxlength="100"></label>
+          <button class="btn rose" type="submit">Найти</button>
+          <button class="btn" type="button" data-act="csv-pay"${d?.orders.length ? '' : ' disabled'}>Скачать CSV</button>
+        </form>
+        ${t ? `<div class="totals">${[['Сегодня', t.today, t.todayCount], ['За месяц', t.month, t.monthCount], ['За всё время', t.all, t.allCount], ['Возвраты', t.refunded, t.refundedCount]]
+          .map(([k, v, n]) => `<div class="card stat"><span class="muted">${k} · ${n}</span><b>${rub(v)}</b></div>`).join('')}</div>` : ''}
+        <p class="note">${esc(REFUND_NOTE)}</p>
+        ${!d ? empty('Загрузка…') : d.orders.length ? `<div class="list">${d.orders.map(o => `
+          <article class="card order">
+            <div class="head"><b>${esc(o.title)} · ${rub(o.price)}</b><span class="status ${esc(o.status)}">${esc(STATUS[o.status] || o.status)}</span></div>
+            <span class="muted">Счёт № ${esc(o.invId)} · создан ${when(o.createdAt)}${o.paidAt ? ` · оплачен ${when(o.paidAt)}` : ''}${o.refundedAt ? ` · возврат ${when(o.refundedAt)}` : ''}</span>
+            ${o.email ? person({ name: o.name, email: o.email }) : '<span class="muted">аккаунт удалён</span>'}
+            ${o.refundNote ? `<span class="muted">Примечание: ${esc(o.refundNote)}</span>` : ''}
+            <div class="row" style="margin-top:.3rem">
+              ${o.status === 'new' ? `<button class="btn" data-act="check" data-id="${esc(o.invId)}">Проверить в Робокассе</button>` : ''}
+              ${o.status === 'paid' ? `<button class="btn rose" data-act="refund" data-id="${esc(o.invId)}">Оформить возврат</button>` : ''}
+            </div>
+          </article>`).join('')}</div>` : empty('Платежей не найдено.')}`;
+    },
+
+    pd: () => `<form id="pdFilter" class="filters">
+          <label>С<input type="date" name="from" value="${esc(pd.from)}" required></label>
+          <label>По<input type="date" name="to" value="${esc(pd.to)}" required></label>
+          <button class="btn rose" type="submit">Показать</button>
+          <button class="btn" type="button" data-act="csv-pd"${pd.rows?.length ? '' : ' disabled'}>Скачать CSV</button>
+        </form>
+        <p class="muted">Журнал уничтожения персональных данных (приказ Роскомнадзора № 179 от 28.10.2022). Выгружайте CSV раз в месяц и храните 3 года.</p>
+        ${!pd.rows ? empty('Загрузка…') : pd.rows.length ? `<div class="list">${pd.rows.map(r => `
+          <article class="card order">
+            <div class="head"><b>${dt(r.at)}</b><span class="status">${esc(PD_REASONS[r.reason] || r.reason)}</span></div>
+            <span>Субъект: <code>${esc(r.subjectRef)}</code> · ${esc(r.emailMasked)}</span>
+            <span class="muted">Данные: ${esc(r.categories)}</span>
+            <span class="muted">Способ: ${esc(r.method)} · Кто: ${esc(r.operator)}</span>
+          </article>`).join('')}</div>` : empty('За этот период записей нет.')}
+        <h2>Удалить пользователя по запросу</h2>
+        <form id="delForm" class="card">
+          <p class="muted" style="margin-top:0">Например, если человек прислал письмо об отзыве согласия. Удаляются анкета, фото, переписка и всё остальное; в журнал попадёт запись.</p>
+          <div class="filters" style="margin:0">
+            <label>Почта пользователя<input type="email" name="email" required></label>
+            <label>Основание<select name="reason">${['consent_withdrawn', 'user_request', 'ban'].map(v => `<option value="${v}">${PD_REASONS[v]}</option>`).join('')}</select></label>
+            <button class="btn rose" type="submit">Удалить</button>
+          </div>
+        </form>`,
 
     stats: () => {
       const s = queue.stats;
@@ -269,8 +363,31 @@ textarea { min-height: 5rem; resize: vertical; }
     if (!b) return;
     const { act, id, ok } = b.dataset;
     if (act === 'ban' && !confirm('Забанить пользователя? Его анкета исчезнет с сайта.')) return;
+    if (act === 'csv-pay') {
+      return downloadCsv(`platezhi-${isoDay(Date.now())}.csv`,
+        ['Счёт', 'Создан', 'Оплачен', 'Возврат', 'Статус', 'Товар', 'Сумма, ₽', 'Почта', 'Имя', 'Примечание'],
+        pay.data.orders.map(o => [o.invId, dt(o.createdAt), dt(o.paidAt), dt(o.refundedAt), STATUS[o.status] || o.status, o.title, o.price, o.email, o.name, o.refundNote]));
+    }
+    if (act === 'csv-pd') {
+      return downloadCsv(`zhurnal-unichtozheniya-${pd.from}_${pd.to}.csv`,
+        ['№', 'Дата и время', 'Субъект (обезличенно)', 'Почта (маска)', 'Категории данных', 'Основание', 'Способ', 'Кто уничтожил'],
+        pd.rows.map(r => [r.id, dt(r.at), r.subjectRef, r.emailMasked, r.categories, PD_REASONS[r.reason] || r.reason, r.method, r.operator]));
+    }
+    let note = '';
+    if (act === 'refund') {
+      note = prompt(REFUND_NOTE + '\n\nВозврат уже сделан в кабинете Робокассы? Напишите примечание (дата, причина):', '');
+      if (note === null) return;
+    }
+    if (act === 'delban' && !confirm('Удалить все данные забаненного пользователя? Почта останется в чёрном списке (только хэш) на 3 года.')) return;
     b.disabled = true;
     try {
+      if (act === 'check') {
+        const r = await api('POST', '/api/admin/order-check', { invId: id });
+        alert(r.credited ? 'Оплата найдена в Робокассе — услуга начислена.' : `Состояние в Робокассе: ${r.state}${r.code != null ? ' (код ' + r.code + ')' : ''}.`);
+        return await loadPay();
+      }
+      if (act === 'refund') { await api('POST', '/api/admin/refund', { invId: id, note }); return await loadPay(); }
+      if (act === 'delban') await api('POST', '/api/admin/delete-user', { userId: id, reason: 'ban' });
       if (act === 'photo') await api('POST', '/api/admin/photo', { id: Number(id), approve: ok === '1' });
       if (act === 'verify') await api('POST', '/api/admin/verify', { userId: id, approve: ok === '1' });
       if (act === 'ban' || act === 'dismiss') await api('POST', '/api/admin/report', { id: Number(id), action: act });
@@ -280,7 +397,21 @@ textarea { min-height: 5rem; resize: vertical; }
   });
 
   $('#view').addEventListener('submit', async e => {
-    if (e.target.id !== 'reply') return;
+    const f = e.target;
+    if (f.id === 'payFilter') { e.preventDefault(); pay.status = f.status.value; pay.q = f.q.value.trim(); pay.data = null; render(); return loadPay(); }
+    if (f.id === 'pdFilter') { e.preventDefault(); pd.from = f.from.value; pd.to = f.to.value; pd.rows = null; render(); return loadPd(); }
+    if (f.id === 'delForm') {
+      e.preventDefault();
+      const mail = f.email.value.trim();
+      if (!confirm(`Удалить все данные пользователя ${mail}? Это нельзя отменить.`)) return;
+      try {
+        await api('POST', '/api/admin/delete-user', { email: mail, reason: f.reason.value });
+        alert('Пользователь удалён, запись добавлена в журнал.');
+        await loadPd();
+      } catch (err) { alert(err.status === 404 ? 'Пользователь с такой почтой не найден.' : 'Не получилось: ' + err.message); }
+      return;
+    }
+    if (f.id !== 'reply') return;
     e.preventDefault();
     const text = $('#replyText').value.trim();
     if (!text || !thread) return;
@@ -294,7 +425,9 @@ textarea { min-height: 5rem; resize: vertical; }
 
   // Обновление раз в 30 секунд, если не набирается ответ.
   setInterval(() => {
-    if ($('#panel').hidden || document.activeElement?.id === 'replyText') return;
+    const el = document.activeElement;
+    if ($('#panel').hidden || (el && el.closest('#view') && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName))) return;
+    if (tab === 'pay' || tab === 'pd') return; // эти вкладки обновляются кнопками
     (thread ? openThread(thread.user.id) : refresh()).catch(() => {});
   }, 30000);
 

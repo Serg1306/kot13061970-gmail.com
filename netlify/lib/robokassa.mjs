@@ -8,6 +8,7 @@
 //   ROBOKASSA_RECEIPT — "1", если подключена фискализация (Робочеки); тогда передаём чек
 //   ROBOKASSA_SNO     — система налогообложения для чека, например usn_income (необязательно)
 //   ROBOKASSA_TAX     — ставка НДС для чека, по умолчанию none
+//   ROBOKASSA_XML_URL — адрес XML-интерфейса (для сверки платежей; меняется только в автотестах)
 import crypto from 'node:crypto';
 
 // Цены задаёт только сервер: браузер присылает код товара, а не сумму.
@@ -22,6 +23,7 @@ export const CATALOG = {
 };
 
 export const PAY_URL = 'https://auth.robokassa.ru/Merchant/Index.aspx';
+export const XML_URL = 'https://auth.robokassa.ru/Merchant/WebService/Service.asmx';
 
 export function settings(env = process.env) {
   return {
@@ -33,6 +35,7 @@ export function settings(env = process.env) {
     receipt: env.ROBOKASSA_RECEIPT === '1',
     sno: env.ROBOKASSA_SNO || '',
     tax: env.ROBOKASSA_TAX || 'none',
+    xmlUrl: (env.ROBOKASSA_XML_URL || XML_URL).replace(/\/+$/, ''),
   };
 }
 
@@ -91,6 +94,30 @@ export function checkPaid(s, params, password) {
   const product = CATALOG[key];
   if (!product || Math.abs(parseFloat(outSum) - product.price) > 0.001) return null;
   return { invId, productKey: key, product };
+}
+
+// Сверка счёта через XML-интерфейс: OpStateExt, подпись MerchantLogin:InvoiceID:Пароль#2.
+export function opStateUrl(s, invId) {
+  const q = new URLSearchParams({
+    MerchantLogin: s.login, InvoiceID: String(invId),
+    Signature: digest(s.algo, `${s.login}:${invId}:${s.pass2}`),
+  });
+  if (s.test) q.set('IsTest', '1');
+  return `${s.xmlUrl}/OpStateExt?${q}`;
+}
+
+// Коды состояния операции из документации Робокассы.
+export const OP_STATES = { 5: 'pending', 10: 'cancelled', 20: 'held', 50: 'processing', 60: 'refunded', 80: 'suspended', 100: 'paid' };
+
+// Разбор ответа OpStateExt: <Result><Code>0</Code></Result> … <State><Code>100</Code></State>.
+export function parseOpState(xml) {
+  const text = String(xml || '');
+  const resultCode = Number(/<Result>\s*<Code>\s*(\d+)\s*<\/Code>/i.exec(text)?.[1] ?? NaN);
+  const stateCode = Number(/<State>\s*<Code>\s*(\d+)\s*<\/Code>/i.exec(text)?.[1] ?? NaN);
+  let state = 'error';
+  if (resultCode === 3) state = 'not_found';
+  else if (resultCode === 0) state = OP_STATES[stateCode] || 'unknown';
+  return { resultCode, stateCode: Number.isNaN(stateCode) ? null : stateCode, state, paid: resultCode === 0 && stateCode === 100 };
 }
 
 export const json = (data, status = 200) => new Response(JSON.stringify(data), {

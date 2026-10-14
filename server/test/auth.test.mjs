@@ -14,7 +14,7 @@ test('config и заголовки безопасности', async () => {
   assert.equal(r.body.live, true);
   assert.equal(r.body.devCodes, true);
   assert.equal(r.body.robokassa, false);
-  assert.match(r.body.vapidPublicKey, /^[A-Za-z0-9_-]{87}$/);
+  assert.equal(r.body.vapidPublicKey, null); // push выключен по умолчанию
   assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
   assert.match(r.headers.get('content-security-policy'), /frame-ancestors 'none'/);
 });
@@ -92,7 +92,8 @@ test('анкета: проверки, согласие, 18+', async () => {
   const c = srv.client();
   await c.login('profile@example.ru');
   const good = { name: 'Анна-Мария', birth: '1995-03-08', g: 'f', seek: 'm', city: 'Санкт-Петербург', about: 'Люблю <b>книги</b>' };
-  assert.equal((await c.put('/api/profile', { ...good, consent: false })).body.error, 'consent_required');
+  assert.equal((await c.put('/api/profile', { ...good, consent: false, consentPublic: true })).body.error, 'consent_required');
+  assert.equal((await c.put('/api/profile', { ...good, consent: true })).body.error, 'consent_public_required');
   const young = new Date(); young.setFullYear(young.getFullYear() - 17);
   assert.equal((await c.put('/api/profile', { ...good, birth: young.toISOString().slice(0, 10), consent: true })).body.error, 'under_18');
   assert.equal((await c.put('/api/profile', { ...good, name: '<img src=x>', consent: true })).body.error, 'bad_name');
@@ -101,10 +102,13 @@ test('анкета: проверки, согласие, 18+', async () => {
   assert.equal((await c.put('/api/profile', { ...good, birth: '1995-02-30', consent: true })).body.field, 'birth');
   assert.equal((await c.put('/api/profile', { ...good, g: 'x', consent: true })).body.field, 'g');
 
-  const r = await c.put('/api/profile', { ...good, name: '  Анна-Мария  ', consent: true });
+  const r = await c.put('/api/profile', { ...good, name: '  Анна-Мария  ', consent: true, consentPublic: true });
   assert.equal(r.status, 200);
   assert.equal(r.body.user.name, 'Анна-Мария');
   assert.ok(r.body.user.consentAt > 0);
+  assert.equal(r.body.user.consentPublicAt, r.body.user.consentAt);
+  assert.equal(r.body.user.consentVersion, '2026-10-14');
+  assert.equal(srv.app.db.get('SELECT consent_ip FROM users WHERE id = ?', r.body.user.id).consent_ip, '127.0.0.1');
   // Повторное сохранение — согласие уже есть.
   const r2 = await c.put('/api/profile', { ...good, city: 'Казань' });
   assert.equal(r2.body.user.city, 'Казань');
@@ -120,7 +124,7 @@ test('приветствие от поддержки на русском и ан
 
   const en = srv.client();
   await en.login('welcome-en@example.ru', 'en');
-  await en.put('/api/profile', { name: 'John', birth: '1990-01-01', g: 'm', seek: 'f', city: 'London', consent: true, lang: 'en' });
+  await en.put('/api/profile', { name: 'John', birth: '1990-01-01', g: 'm', seek: 'f', city: 'London', consent: true, consentPublic: true, lang: 'en' });
   const st2 = await en.get('/api/state');
   assert.equal(st2.body.chats.support[0].text, 'Welcome to Love in Numbers! Ask us anything about the site, payments or your profile here.');
 });

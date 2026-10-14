@@ -40,7 +40,7 @@ export function createNotifier(app) {
   }
 
   function sendPush(to, kind, fromUser) {
-    if (!to.notify_push) return;
+    if (!push.publicKey || !to.notify_push) return;
     const t = PUSH_TEXT[to.lang === 'en' ? 'en' : 'ru'][kind](fromUser?.name || '');
     bg(pushTo(to.id, { ...t, url: URLS[kind](fromUser?.id) }));
   }

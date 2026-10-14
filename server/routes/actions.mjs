@@ -245,6 +245,7 @@ export default function actionRoutes(route) {
   });
 
   route('POST', '/api/push/subscribe', ({ app, user, body }) => {
+    if (!app.config.pushEnabled) fail(403, 'push_disabled');
     const s = body.subscription;
     const endpoint = s && typeof s.endpoint === 'string' ? s.endpoint : '';
     const p256dh = s?.keys?.p256dh, auth = s?.keys?.auth;

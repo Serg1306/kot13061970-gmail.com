@@ -81,9 +81,10 @@ test('сервер отправляет push о новом сообщении и
     req.on('end', () => { got.push({ headers: req.headers, body: Buffer.concat(chunks) }); res.writeHead(status); res.end(); });
   });
   await new Promise(r => ps.listen(0, '127.0.0.1', r));
-  const srv = await startServer({ PUSH_ALLOW_LOCAL: '1' });
+  const srv = await startServer({ PUSH_ENABLED: '1', PUSH_ALLOW_LOCAL: '1' });
   try {
     const pubKey = (await srv.client().get('/api/config')).body.vapidPublicKey;
+    assert.match(pubKey, /^[A-Za-z0-9_-]{87}$/);
     const a = await srv.user('push-a@example.ru', { name: 'Анна' });
     const b = await srv.user('push-b@example.ru');
     const r = receiverKeys();
@@ -111,4 +112,17 @@ test('сервер отправляет push о новом сообщении и
     await srv.close();
     ps.close();
   }
+});
+
+test('push-подписка принимает только службы push', async () => {
+  const srv = await startServer({ PUSH_ENABLED: '1' });
+  try {
+    const a = await srv.user('push@example.ru');
+    const keys = { p256dh: 'B'.repeat(87), auth: 'A'.repeat(22) };
+    assert.equal((await a.post('/api/push/subscribe', { subscription: { endpoint: 'https://evil.example/x', keys } })).body.field, 'endpoint');
+    assert.equal((await a.post('/api/push/subscribe', { subscription: { endpoint: 'http://127.0.0.1:1/x', keys } })).body.field, 'endpoint');
+    assert.equal((await a.post('/api/push/subscribe', { subscription: { endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys } })).status, 200);
+    assert.equal((await a.post('/api/push/unsubscribe', { endpoint: 'https://fcm.googleapis.com/fcm/send/abc' })).status, 200);
+    assert.equal(srv.app.db.get('SELECT COUNT(*) AS n FROM push_subs').n, 0);
+  } finally { await srv.close(); }
 });

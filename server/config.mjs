@@ -34,9 +34,13 @@ export function loadConfig(env = process.env) {
       privateKey: env.VAPID_PRIVATE_KEY || '',
       subject: env.VAPID_SUBJECT || '',
     },
+    // Push выключен по умолчанию: это трансграничная передача (Google/Mozilla/Apple), нужно уведомление РКН.
+    pushEnabled: env.PUSH_ENABLED === '1',
     // Только для автотестов: разрешить push на http://127.0.0.1.
     pushAllowLocal: env.PUSH_ALLOW_LOCAL === '1',
     metrikaId: env.METRIKA_ID || null,
+    // Редакция текста согласий на обработку ПДн: записывается вместе с согласием.
+    consentVersion: env.CONSENT_VERSION || '2026-10-14',
     // ICE_SERVERS — JSON-список STUN/TURN для звонков, например [{"urls":"turn:203.0.113.10:3478","username":"u","credential":"p"}]
     iceServers: parseIce(env.ICE_SERVERS),
   };

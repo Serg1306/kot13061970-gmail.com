@@ -218,11 +218,11 @@ test('проверка селфи: модератор видит селфи и �
   assert.equal((await admin.get(v.selfie)).status, 404);
 });
 
-test('push-подписка принимает только службы push', async () => {
+test('push выключен по умолчанию', async () => {
   const a = await srv.user('push@example.ru');
   const keys = { p256dh: 'B'.repeat(87), auth: 'A'.repeat(22) };
-  assert.equal((await a.post('/api/push/subscribe', { subscription: { endpoint: 'https://evil.example/x', keys } })).body.field, 'endpoint');
-  assert.equal((await a.post('/api/push/subscribe', { subscription: { endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys } })).status, 200);
-  assert.equal((await a.post('/api/push/unsubscribe', { endpoint: 'https://fcm.googleapis.com/fcm/send/abc' })).status, 200);
-  assert.equal(srv.app.db.get('SELECT COUNT(*) AS n FROM push_subs').n, 0);
+  const r = await a.post('/api/push/subscribe', { subscription: { endpoint: 'https://fcm.googleapis.com/fcm/send/abc', keys } });
+  assert.equal(r.status, 403);
+  assert.equal(r.body.error, 'push_disabled');
+  assert.equal(srv.app.push.publicKey, null);
 });

@@ -29,7 +29,8 @@ export function userOut(u) {
     lang: u.lang, verified: u.verify_status === 'approved', verifyStatus: u.verify_status,
     hideAge: Boolean(u.hide_age) && vip, invisible: Boolean(u.invisible) && vip,
     notifyEmail: Boolean(u.notify_email), notifyPush: Boolean(u.notify_push),
-    consentAt: u.consent_at, createdAt: u.created_at,
+    consentAt: u.consent_at, consentPublicAt: u.consent_public_at ?? null, consentVersion: u.consent_version ?? null,
+    createdAt: u.created_at,
   };
 }
 

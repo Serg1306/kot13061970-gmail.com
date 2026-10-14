@@ -9,14 +9,15 @@ import {
   HttpError, TEXT, clientIp, createLimiter, isHttps, parseCookies, readBody, safeJoin, securityHeaders, sendJson, sendText, serveFile,
 } from './http.mjs';
 import { createMailer } from './mail.mjs';
-import { isSafeName, removeFile } from './media.mjs';
+import { isSafeName } from './media.mjs';
 import { sha256 } from './model.mjs';
 import { createNotifier } from './notify.mjs';
+import { destroySelfie, loadSecret, purgeBannedEmails } from './pd.mjs';
 import { createPush } from './push.mjs';
 import actionRoutes from './routes/actions.mjs';
 import adminRoutes from './routes/admin.mjs';
 import authRoutes from './routes/auth.mjs';
-import payRoutes from './routes/pay.mjs';
+import payRoutes, { checkPendingOrders } from './routes/pay.mjs';
 import peopleRoutes from './routes/people.mjs';
 import profileRoutes from './routes/profile.mjs';
 
@@ -46,6 +47,9 @@ function createRouter() {
   return { route, match };
 }
 
+// Заглушка, когда push выключен (PUSH_ENABLED не равен 1): ключи не создаются, ничего не отправляется.
+const DISABLED_PUSH = { enabled: false, publicKey: null, send: async () => 0 };
+
 const silentLog = { info() {}, warn() {}, error() {} };
 
 export function createApp(env = process.env, { log = console } = {}) {
@@ -53,7 +57,8 @@ export function createApp(env = process.env, { log = console } = {}) {
   for (const dir of [config.dataDir, config.uploadsDir, config.privateDir]) fs.mkdirSync(dir, { recursive: true });
   const logger = log || silentLog;
   const db = openDb(path.join(config.dataDir, 'lvc.sqlite'));
-  const app = { config, db, log: logger, limiter: createLimiter(), mailer: createMailer(config, logger), push: createPush(config, logger) };
+  const app = { config, db, log: logger, limiter: createLimiter(), mailer: createMailer(config, logger), push: config.pushEnabled ? createPush(config, logger) : DISABLED_PUSH };
+  app.secret = loadSecret(config.dataDir);
   app.notify = createNotifier(app);
 
   const router = createRouter();
@@ -160,27 +165,33 @@ export function createApp(env = process.env, { log = console } = {}) {
     db.run('DELETE FROM sessions WHERE expires < ?', now);
     db.run('DELETE FROM signals WHERE t < ?', now - 60e3);
     // Селфи для проверки храним не дольше 30 дней (так обещает политика конфиденциальности).
-    for (const u of db.all('SELECT id, verify_file FROM users WHERE verify_file IS NOT NULL AND verify_at < ?', now - 30 * 86400e3)) {
-      removeFile(config.privateDir, u.verify_file);
+    for (const u of db.all('SELECT id, email, verify_file FROM users WHERE verify_file IS NOT NULL AND verify_at < ?', now - 30 * 86400e3)) {
+      destroySelfie(app, u, 'система (срок хранения 30 дней)');
       db.run("UPDATE users SET verify_file = NULL, verify_status = CASE verify_status WHEN 'pending' THEN 'none' ELSE verify_status END WHERE id = ?", u.id);
     }
+    purgeBannedEmails(app);
     app.limiter.prune();
   }
   cleanup();
   const timer = setInterval(cleanup, 60e3);
   timer.unref();
+  // Сверка неоплаченных счетов с Робокассой раз в 10 минут; ошибки сети не роняют сервер.
+  const checkOrders = () => checkPendingOrders(app).catch(e => logger.warn(`сверка счетов: ${e.message}`));
+  const payTimer = setInterval(checkOrders, 10 * 60e3);
+  payTimer.unref();
 
   const server = http.createServer((req, res) => { handle(req, res); });
   server.requestTimeout = 60e3;
   server.headersTimeout = 20e3;
 
   return {
-    app, server, cleanup,
+    app, server, cleanup, checkOrders,
     listen(port = config.port, host = config.host) {
       return new Promise(resolve => server.listen(port, host, () => resolve(server.address().port)));
     },
     close() {
       clearInterval(timer);
+      clearInterval(payTimer);
       server.closeAllConnections?.();
       return new Promise(resolve => server.close(() => { db.close(); resolve(); }));
     },

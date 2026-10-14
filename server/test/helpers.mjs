@@ -20,13 +20,13 @@ export async function startServer(env = {}) {
   const port = await instance.listen(0, '127.0.0.1');
   const base = `http://127.0.0.1:${port}`;
   return {
-    base, dataDir, app: instance.app, cleanup: instance.cleanup,
+    base, dataDir, app: instance.app, cleanup: instance.cleanup, checkOrders: instance.checkOrders,
     client: () => new Client(base),
     // Пользователь с заполненной анкетой.
     async user(email, profile = {}) {
       const c = new Client(base);
       await c.login(email);
-      const r = await c.put('/api/profile', { name: 'Тест', birth: '1990-05-01', g: 'f', seek: 'a', city: 'Москва', about: '', consent: true, ...profile });
+      const r = await c.put('/api/profile', { name: 'Тест', birth: '1990-05-01', g: 'f', seek: 'a', city: 'Москва', about: '', consent: true, consentPublic: true, ...profile });
       if (r.status !== 200) throw new Error('profile: ' + JSON.stringify(r.body));
       c.id = r.body.user.id;
       return c;

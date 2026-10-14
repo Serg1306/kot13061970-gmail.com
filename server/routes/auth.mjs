@@ -2,8 +2,8 @@
 import crypto from 'node:crypto';
 import { isConfigured, settings } from '../../netlify/lib/robokassa.mjs';
 import { fail } from '../http.mjs';
-import { removeFile } from '../media.mjs';
 import { SUPPORT, addEvent, myPhotos, newUserId, sha256, userOut, walletOf } from '../model.mjs';
+import { deleteUser, exportUser, isEmailBanned } from '../pd.mjs';
 
 const CODE_TTL = 10 * 60 * 1000;
 const CODE_GAP = 60 * 1000;
@@ -37,29 +37,6 @@ function createUser(db, email, lang) {
   return db.get('SELECT * FROM users WHERE id = ?', id);
 }
 
-// Все файлы пользователя: фото, селфи, голосовые, картинки постов.
-function userFiles(db, id) {
-  return {
-    uploads: [
-      ...db.all('SELECT file FROM photos WHERE user_id = ?', id).map(r => r.file),
-      ...db.all('SELECT src FROM messages WHERE (from_id = :id OR to_id = :id) AND src IS NOT NULL', { id }).map(r => r.src),
-      ...db.all('SELECT img FROM posts WHERE author = ? AND img IS NOT NULL', id).map(r => r.img),
-    ],
-    private: db.get('SELECT verify_file FROM users WHERE id = ?', id)?.verify_file,
-  };
-}
-
-export function deleteUser(app, id) {
-  const { db, config } = app;
-  const files = userFiles(db, id);
-  db.tx(() => {
-    db.run('DELETE FROM messages WHERE from_id = :id OR to_id = :id', { id });
-    db.run('DELETE FROM users WHERE id = ?', id); // остальное удаляется каскадом
-  });
-  for (const f of files.uploads) removeFile(config.uploadsDir, f);
-  if (files.private) removeFile(config.privateDir, files.private);
-}
-
 export default function authRoutes(route) {
   route('GET', '/api/config', ({ app }) => ({
     live: true,
@@ -75,6 +52,8 @@ export default function authRoutes(route) {
     limiter.check(`start:${ip}`, 40, 600e3);
     const email = normEmail(body.email);
     if (email.length > 254 || !EMAIL_RE.test(email)) fail(400, 'bad_email');
+    // Почта удалённого забаненного аккаунта: новая регистрация запрещена.
+    if (!db.get('SELECT 1 FROM users WHERE email = ?', email) && isEmailBanned(app, email)) fail(403, 'banned');
     const lang = body.lang === 'en' ? 'en' : 'ru';
     const now = Date.now();
     const prev = db.get('SELECT sent_at FROM codes WHERE email = ?', email);
@@ -116,7 +95,11 @@ export default function authRoutes(route) {
       fail(400, 'bad_code');
     }
     db.run('DELETE FROM codes WHERE email = ?', email);
-    const user = db.get('SELECT * FROM users WHERE email = ?', email) || createUser(db, email, row.lang);
+    let user = db.get('SELECT * FROM users WHERE email = ?', email);
+    if (!user) {
+      if (isEmailBanned(app, email)) fail(403, 'banned');
+      user = createUser(db, email, row.lang);
+    }
     startSession(user.id);
     return { user: userOut(user) };
   }, { auth: 'none' });
@@ -128,9 +111,21 @@ export default function authRoutes(route) {
   }, { auth: 'none' });
 
   route('DELETE', '/api/account', ({ app, user, endSession }) => {
-    deleteUser(app, user.id);
+    deleteUser(app, user.id, { reason: 'user_request', operator: 'пользователь (сам, через сайт)' });
     endSession();
     return { ok: true };
+  }, { auth: 'user', banned: true });
+
+  // Выгрузка своих данных (152-ФЗ, ст. 14) — файлом JSON.
+  route('GET', '/api/account/export', ({ app, user, res }) => {
+    app.limiter.check(`export:${user.id}`, 5, 3600e3);
+    const body = JSON.stringify(exportUser(app, user), null, 2);
+    res.writeHead(200, {
+      'content-type': 'application/json; charset=utf-8',
+      'content-disposition': 'attachment; filename="lyubov-v-cifrah-data.json"',
+      'cache-control': 'no-store',
+    });
+    res.end(body);
   }, { auth: 'user', banned: true });
 
   route('GET', '/api/me', ({ app, user }) => ({
