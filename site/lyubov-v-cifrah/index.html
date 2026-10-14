@@ -73,6 +73,7 @@ button, input, select { font: inherit; color: inherit; }
 .btn.solid { background: var(--ink); color: var(--paper); }
 .btn.rose { background: var(--rose); border-color: var(--rose); color: #fff; }
 .btn.ghost { border-color: transparent; }
+.btn.lang { padding: .45rem .75rem; font-size: .85rem; letter-spacing: .04em; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 
 /* герой */
@@ -466,6 +467,9 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   .city-chips button { flex: none; }
   .city-grid { grid-template-columns: 1fr 1fr; }
   .top nav .btn { padding: .45rem .7rem; font-size: .85rem; white-space: nowrap; }
+  .top nav .btn.lang { padding: .45rem .55rem; }
+  .top { flex-wrap: wrap; row-gap: .5rem; padding-block: .8rem; }
+  .top nav { margin-left: auto; }
   .logo { font-size: 1.45rem; }
   .logo svg { width: 20px; height: 20px; }
 }
@@ -479,6 +483,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       Любовь в цифрах
     </a>
     <nav>
+      <button class="btn lang" id="langBtn" type="button" aria-label="Switch to English" title="Switch to English" data-lang>EN</button>
       <button class="btn ghost" id="themeBtn" type="button" aria-label="Сменить тему">Тема</button>
       <a class="btn ghost" href="#how">Как считаем</a>
       <button class="btn" type="button" id="navView" hidden>Моя анкета</button>
@@ -611,7 +616,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
         <div class="row2">
           <div class="field"><label for="fName">Имя</label><input id="fName" autocomplete="given-name" maxlength="30" required></div>
           <div class="field"><label for="fCity">Город</label>
-            <select id="fCity"></select>
+            <input id="fCity" list="cityList" autocomplete="address-level2" maxlength="60" placeholder="Начните вводить, например Москва" required>
+            <datalist id="cityList"></datalist>
           </div>
         </div>
         <div class="field"><label>Я</label>
@@ -782,6 +788,9 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     set(k, v) { try { localStorage.setItem('lvc.' + k, JSON.stringify(v)); } catch {} },
     del(k) { try { localStorage.removeItem('lvc.' + k); } catch {} }
   };
+  let LANG = store.get('lang', 'ru') === 'en' ? 'en' : 'ru';
+  const loc = () => LANG === 'en' ? 'en-GB' : 'ru-RU';
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   /* ---------- расчёты по дате ---------- */
   const parse = s => { const [y, m, d] = s.split('-').map(Number); return { y, m, d }; };
@@ -920,7 +929,28 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   $('#d2').addEventListener('input', updateHero);
 
   /* ---------- демо-анкеты ---------- */
-  const CITIES = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Краснодар', 'Самара', 'Ростов-на-Дону', 'Воронеж'];
+  // Города мира для подсказок при вводе: «название по-русски|по-английски|страна|country».
+  const WORLD = 'Москва|Moscow|Россия|Russia;Санкт-Петербург|Saint Petersburg|Россия|Russia;Новосибирск|Novosibirsk|Россия|Russia;Екатеринбург|Yekaterinburg|Россия|Russia;Казань|Kazan|Россия|Russia;Нижний Новгород|Nizhny Novgorod|Россия|Russia;Челябинск|Chelyabinsk|Россия|Russia;Красноярск|Krasnoyarsk|Россия|Russia;Самара|Samara|Россия|Russia;Уфа|Ufa|Россия|Russia;Ростов-на-Дону|Rostov-on-Don|Россия|Russia;Омск|Omsk|Россия|Russia;Краснодар|Krasnodar|Россия|Russia;Воронеж|Voronezh|Россия|Russia;Пермь|Perm|Россия|Russia;Волгоград|Volgograd|Россия|Russia;Саратов|Saratov|Россия|Russia;Тюмень|Tyumen|Россия|Russia;Тольятти|Tolyatti|Россия|Russia;Ижевск|Izhevsk|Россия|Russia;Барнаул|Barnaul|Россия|Russia;Ульяновск|Ulyanovsk|Россия|Russia;Иркутск|Irkutsk|Россия|Russia;Хабаровск|Khabarovsk|Россия|Russia;Ярославль|Yaroslavl|Россия|Russia;Владивосток|Vladivostok|Россия|Russia;Махачкала|Makhachkala|Россия|Russia;Томск|Tomsk|Россия|Russia;Оренбург|Orenburg|Россия|Russia;Кемерово|Kemerovo|Россия|Russia;Рязань|Ryazan|Россия|Russia;Астрахань|Astrakhan|Россия|Russia;Пенза|Penza|Россия|Russia;Липецк|Lipetsk|Россия|Russia;Калининград|Kaliningrad|Россия|Russia;Тула|Tula|Россия|Russia;Курск|Kursk|Россия|Russia;Сочи|Sochi|Россия|Russia;Ставрополь|Stavropol|Россия|Russia;Тверь|Tver|Россия|Russia;Белгород|Belgorod|Россия|Russia;Архангельск|Arkhangelsk|Россия|Russia;Владимир|Vladimir|Россия|Russia;Мурманск|Murmansk|Россия|Russia;Якутск|Yakutsk|Россия|Russia;Сургут|Surgut|Россия|Russia;Смоленск|Smolensk|Россия|Russia;Калуга|Kaluga|Россия|Russia;Чебоксары|Cheboksary|Россия|Russia;Петрозаводск|Petrozavodsk|Россия|Russia;Севастополь|Sevastopol|Россия|Russia;Симферополь|Simferopol|Россия|Russia;Минск|Minsk|Беларусь|Belarus;Гомель|Gomel|Беларусь|Belarus;Брест|Brest|Беларусь|Belarus;Киев|Kyiv|Украина|Ukraine;Харьков|Kharkiv|Украина|Ukraine;Одесса|Odesa|Украина|Ukraine;Днепр|Dnipro|Украина|Ukraine;Львов|Lviv|Украина|Ukraine;Алматы|Almaty|Казахстан|Kazakhstan;Астана|Astana|Казахстан|Kazakhstan;Шымкент|Shymkent|Казахстан|Kazakhstan;Караганда|Karaganda|Казахстан|Kazakhstan;Ташкент|Tashkent|Узбекистан|Uzbekistan;Самарканд|Samarkand|Узбекистан|Uzbekistan;Бишкек|Bishkek|Киргизия|Kyrgyzstan;Душанбе|Dushanbe|Таджикистан|Tajikistan;Ашхабад|Ashgabat|Туркменистан|Turkmenistan;Баку|Baku|Азербайджан|Azerbaijan;Ереван|Yerevan|Армения|Armenia;Тбилиси|Tbilisi|Грузия|Georgia;Батуми|Batumi|Грузия|Georgia;Кишинёв|Chișinău|Молдова|Moldova;Рига|Riga|Латвия|Latvia;Вильнюс|Vilnius|Литва|Lithuania;Таллин|Tallinn|Эстония|Estonia;Варшава|Warsaw|Польша|Poland;Краков|Kraków|Польша|Poland;Прага|Prague|Чехия|Czechia;Братислава|Bratislava|Словакия|Slovakia;Будапешт|Budapest|Венгрия|Hungary;Вена|Vienna|Австрия|Austria;Берлин|Berlin|Германия|Germany;Мюнхен|Munich|Германия|Germany;Гамбург|Hamburg|Германия|Germany;Франкфурт-на-Майне|Frankfurt|Германия|Germany;Цюрих|Zurich|Швейцария|Switzerland;Женева|Geneva|Швейцария|Switzerland;Париж|Paris|Франция|France;Ницца|Nice|Франция|France;Лион|Lyon|Франция|France;Брюссель|Brussels|Бельгия|Belgium;Амстердам|Amsterdam|Нидерланды|Netherlands;Лондон|London|Великобритания|United Kingdom;Манчестер|Manchester|Великобритания|United Kingdom;Эдинбург|Edinburgh|Великобритания|United Kingdom;Дублин|Dublin|Ирландия|Ireland;Мадрид|Madrid|Испания|Spain;Барселона|Barcelona|Испания|Spain;Валенсия|Valencia|Испания|Spain;Лиссабон|Lisbon|Португалия|Portugal;Рим|Rome|Италия|Italy;Милан|Milan|Италия|Italy;Венеция|Venice|Италия|Italy;Неаполь|Naples|Италия|Italy;Афины|Athens|Греция|Greece;Белград|Belgrade|Сербия|Serbia;София|Sofia|Болгария|Bulgaria;Бухарест|Bucharest|Румыния|Romania;Копенгаген|Copenhagen|Дания|Denmark;Стокгольм|Stockholm|Швеция|Sweden;Осло|Oslo|Норвегия|Norway;Хельсинки|Helsinki|Финляндия|Finland;Стамбул|Istanbul|Турция|Turkey;Анталья|Antalya|Турция|Turkey;Анкара|Ankara|Турция|Turkey;Тель-Авив|Tel Aviv|Израиль|Israel;Иерусалим|Jerusalem|Израиль|Israel;Дубай|Dubai|ОАЭ|UAE;Абу-Даби|Abu Dhabi|ОАЭ|UAE;Доха|Doha|Катар|Qatar;Эр-Рияд|Riyadh|Саудовская Аравия|Saudi Arabia;Тегеран|Tehran|Иран|Iran;Каир|Cairo|Египет|Egypt;Касабланка|Casablanca|Марокко|Morocco;Лагос|Lagos|Нигерия|Nigeria;Найроби|Nairobi|Кения|Kenya;Кейптаун|Cape Town|ЮАР|South Africa;Йоханнесбург|Johannesburg|ЮАР|South Africa;Дели|Delhi|Индия|India;Мумбаи|Mumbai|Индия|India;Бангалор|Bangalore|Индия|India;Гоа|Goa|Индия|India;Пекин|Beijing|Китай|China;Шанхай|Shanghai|Китай|China;Гуанчжоу|Guangzhou|Китай|China;Шэньчжэнь|Shenzhen|Китай|China;Гонконг|Hong Kong|Китай|China;Тайбэй|Taipei|Тайвань|Taiwan;Токио|Tokyo|Япония|Japan;Осака|Osaka|Япония|Japan;Сеул|Seoul|Южная Корея|South Korea;Пусан|Busan|Южная Корея|South Korea;Улан-Батор|Ulaanbaatar|Монголия|Mongolia;Бангкок|Bangkok|Таиланд|Thailand;Пхукет|Phuket|Таиланд|Thailand;Паттайя|Pattaya|Таиланд|Thailand;Ханой|Hanoi|Вьетнам|Vietnam;Хошимин|Ho Chi Minh City|Вьетнам|Vietnam;Нячанг|Nha Trang|Вьетнам|Vietnam;Сингапур|Singapore|Сингапур|Singapore;Куала-Лумпур|Kuala Lumpur|Малайзия|Malaysia;Джакарта|Jakarta|Индонезия|Indonesia;Бали|Bali|Индонезия|Indonesia;Манила|Manila|Филиппины|Philippines;Сидней|Sydney|Австралия|Australia;Мельбурн|Melbourne|Австралия|Australia;Окленд|Auckland|Новая Зеландия|New Zealand;Нью-Йорк|New York|США|USA;Лос-Анджелес|Los Angeles|США|USA;Сан-Франциско|San Francisco|США|USA;Чикаго|Chicago|США|USA;Майами|Miami|США|USA;Бостон|Boston|США|USA;Сиэтл|Seattle|США|USA;Лас-Вегас|Las Vegas|США|USA;Вашингтон|Washington|США|USA;Торонто|Toronto|Канада|Canada;Ванкувер|Vancouver|Канада|Canada;Монреаль|Montreal|Канада|Canada;Мехико|Mexico City|Мексика|Mexico;Канкун|Cancún|Мексика|Mexico;Гавана|Havana|Куба|Cuba;Богота|Bogotá|Колумбия|Colombia;Лима|Lima|Перу|Peru;Сантьяго|Santiago|Чили|Chile;Буэнос-Айрес|Buenos Aires|Аргентина|Argentina;Сан-Паулу|São Paulo|Бразилия|Brazil;Рио-де-Жанейро|Rio de Janeiro|Бразилия|Brazil'.split(';').map(x => { const [ru, en, cru, cen] = x.split('|'); return { ru, en, cru, cen }; });
+  // Демо-анкеты: российские города чаще, остальные — по всему миру
+  const CITIES = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Краснодар', 'Самара', 'Ростов-на-Дону', 'Воронеж', 'Минск', 'Алматы', 'Ташкент', 'Тбилиси', 'Ереван', 'Берлин', 'Париж', 'Лондон', 'Нью-Йорк', 'Дубай', 'Стамбул', 'Прага', 'Барселона', 'Рим'];
+  // Свои города, которые люди вписали сами, сохраняются и попадают в подсказки и фильтры.
+  const customCities = () => store.get('customCities', []);
+  // Приводит введённый город к единому написанию: «moscow» и «Москва» — один и тот же город.
+  function normalizeCity(raw) {
+    const v = raw.trim().replace(/\s+/g, ' ');
+    if (!v) return '';
+    const low = v.toLowerCase();
+    const known = WORLD.find(c => c.ru.toLowerCase() === low || c.en.toLowerCase() === low) || customCities().find(c => c.toLowerCase() === low);
+    if (known) return known.ru || known;
+    return v[0].toLocaleUpperCase() + v.slice(1);
+  }
+  function rememberCity(city) {
+    if (WORLD.some(c => c.ru === city)) return;
+    const list = customCities(); if (!list.includes(city)) { list.push(city); store.set('customCities', list); }
+    fillCityLists();
+  }
+  // Название города на языке сайта; свои города показываются так, как их вписали.
+  const cityName = c => (LANG === 'en' && (WORLD.find(w => w.ru === c) || {}).en) || c;
   const NAMES = {
     f: ['Анна', 'Мария', 'Екатерина', 'Ольга', 'Дарья', 'Алина', 'Виктория', 'Полина', 'Ксения', 'Наталья', 'Ирина', 'Елена', 'Светлана', 'Юлия', 'Вера', 'Софья', 'Татьяна', 'Марина', 'Алёна', 'Людмила'],
     m: ['Алексей', 'Дмитрий', 'Иван', 'Сергей', 'Андрей', 'Михаил', 'Никита', 'Артём', 'Павел', 'Максим', 'Илья', 'Роман', 'Олег', 'Владимир', 'Егор', 'Константин', 'Николай', 'Тимур', 'Глеб', 'Виктор']
@@ -937,7 +967,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       list.push({
         id: 'p' + i, g, name: NAMES[g][Math.floor(r() * 20)],
         birth: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
-        city: CITIES[Math.floor(r() * (r() < .45 ? 2 : CITIES.length))],
+        city: CITIES[Math.floor(r() * (r() < .35 ? 2 : r() < .55 ? 10 : CITIES.length))],
         about: ABOUT[Math.floor(r() * ABOUT.length)],
         verified: r() < .6, likesYou: r()
       });
@@ -964,8 +994,16 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 
   /* ---------- регистрация ---------- */
   const opt = (list, all) => (all ? `<option value="">Любой</option>` : '') + list.map(c => `<option>${c}</option>`).join('');
-  $('#fCity').innerHTML = opt(CITIES);
-  $('#fCityF').innerHTML = opt(CITIES, true);
+  function fillCityLists() {
+    // подсказки в поле «Город»: весь мир на языке сайта плюс свои города
+    $('#cityList').innerHTML = WORLD.map(c => `<option value="${LANG === 'en' ? c.en : c.ru}">${LANG === 'en' ? c.cen : c.cru}</option>`).join('') +
+      customCities().map(c => `<option value="${esc(c)}"></option>`).join('');
+    const u = store.get('user'), cur = $('#fCityF').value;
+    const inFilter = [...new Set([...CITIES, ...customCities(), ...(u ? [u.city] : [])])];
+    $('#fCityF').innerHTML = `<option value="">Весь мир</option>` + inFilter.map(c => `<option value="${esc(c)}">${esc(cityName(c))}</option>`).join('');
+    $('#fCityF').value = inFilter.includes(cur) ? cur : '';
+  }
+  fillCityLists();
 
   function factsOf(birth) {
     const p = parse(birth), z = zodiac(p), e = eastern(p);
@@ -990,17 +1028,22 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     if (!name) { err.textContent = 'Введите имя, чтобы другие знали, как к вам обращаться.'; $('#fName').focus(); return; }
     if (!valid(birth)) { err.textContent = 'Укажите дату рождения: по ней считается совместимость.'; $('#fBirth').focus(); return; }
     if (ageOf(birth) < 18) { err.textContent = 'Регистрация доступна с 18 лет.'; $('#fBirth').focus(); return; }
+    const city = normalizeCity($('#fCity').value);
+    if (!city) { err.textContent = 'Укажите город: выберите из подсказок или впишите свой.'; $('#fCity').focus(); return; }
     if (!$('#fAge').checked) { err.textContent = 'Подтвердите, что вам есть 18 лет и вы согласны с правилами.'; return; }
     err.textContent = '';
+    rememberCity(city);
     const user = {
-      name, birth, city: $('#fCity').value, about: $('#fAbout').value.trim(),
+      name, birth, city, about: $('#fAbout').value.trim(),
       g: document.querySelector('[name=g]:checked').value, seek: document.querySelector('[name=s]:checked').value
     };
     store.set('user', user);
     editing = false;
     const a = ageOf(birth);
     $('#fAgeFrom').value = Math.max(18, a - 8); $('#fAgeTo').value = a + 8;
-    $('#fCityF').value = user.city;
+    fillCityLists();
+    // лента сразу по своему городу, если там есть анкеты, иначе — весь мир
+    $('#fCityF').value = PEOPLE.some(p => p.city === user.city) ? user.city : '';
     enterApp();
   });
 
@@ -1051,8 +1094,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   const wallet = () => ({ coins: 0, vipUntil: 0, boostUntil: 0, invisible: false, hideAge: false, paid: [], ...store.get('wallet', {}) });
   const saveWallet = w => store.set('wallet', w);
   const isVip = () => wallet().vipUntil > Date.now();
-  const rub = n => `${n.toLocaleString('ru-RU')}\u00a0₽`;
-  const dateRu = t => new Date(t).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  const rub = n => `${n.toLocaleString(loc())}\u00a0₽`;
+  const dateRu = t => new Date(t).toLocaleDateString(loc(), { day: 'numeric', month: 'long' });
   const today = () => new Date().toISOString().slice(0, 10);
   const likesUsed = () => { const l = store.get('likesToday', {}); return l.d === today() ? l.n : 0; };
   const sentGifts = store.get('gifts', {});
@@ -1064,7 +1107,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <span class="chip">Монеты: <b>${w.coins}</b></span>
       <button class="btn rose" type="button" data-shop="vip">${vip ? 'Продлить VIP' : 'Подключить VIP'}</button>
       <button class="btn" type="button" data-shop="coins">Купить монеты</button>
-      ${boosted ? `<span class="chip">Анкета поднята до ${new Date(w.boostUntil).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>`
+      ${boosted ? `<span class="chip">Анкета поднята до ${new Date(w.boostUntil).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</span>`
         : `<button class="btn" type="button" data-boost>Поднять анкету за ${BOOST_COST} монет</button>`}`;
   }
   document.addEventListener('click', e => {
@@ -1107,7 +1150,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <div class="wallet">
         ${vip ? `<span class="vip-badge">VIP</span><span class="chip">VIP до ${dateRu(w.vipUntil)}</span>` : `<span class="chip">Обычный аккаунт</span>`}
         <span class="chip">Монеты: <b>${w.coins}</b></span>
-        ${boosted ? `<span class="chip">Анкета поднята до ${new Date(w.boostUntil).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>` : `<button class="btn" type="button" data-boost>Поднять анкету за ${BOOST_COST} монет</button>`}
+        ${boosted ? `<span class="chip">Анкета поднята до ${new Date(w.boostUntil).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</span>` : `<button class="btn" type="button" data-boost>Поднять анкету за ${BOOST_COST} монет</button>`}
       </div>${shopHtml()}`;
   }
   // Демо-начисление без оплаты: только пока Робокасса не настроена или сайт открыт локально.
@@ -1271,7 +1314,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <div class="head"><div><h3 style="font-size:1.6rem">${esc(u.name)}${wallet().hideAge && isVip() ? '' : `, ${ageOf(u.birth)}`} ${isVip() ? '<span class="vip-badge">VIP</span>' : ''}</h3><div style="color:var(--muted)">${esc(u.city)}${wallet().boostUntil > Date.now() ? ', анкета поднята' : ''}</div></div>
         <button class="x" type="button" aria-label="Закрыть" data-close>×</button></div>
       ${myPhotos.length ? galleryHtml(myPhotos.map(ph => ({ type: 'photo', src: ph.src }))) : '<div class="empty">Фото пока нет. Анкеты с фото чаще получают симпатии.</div>'}
-      ${u.about ? `<p class="about">${esc(u.about)}</p>` : ''}
+      ${u.about ? `<p class="about" data-raw>${esc(u.about)}</p>` : ''}
       <div class="facts" style="display:flex;flex-wrap:wrap;gap:.4rem"><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}</span></div>`;
     showDialog(null);
   }
@@ -1306,7 +1349,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   $('#navView').addEventListener('click', () => document.body.classList.contains('in-app') ? showHome() : enterApp());
   $('#heroCta').addEventListener('click', e => { if (store.get('user')) { e.preventDefault(); enterApp(); } });
   function fillForm(u) {
-    $('#fName').value = u.name; $('#fBirth').value = u.birth; $('#fCity').value = u.city; $('#fAbout').value = u.about || '';
+    $('#fName').value = u.name; $('#fBirth').value = u.birth; $('#fCity').value = cityName(u.city); $('#fAbout').value = u.about || '';
     document.querySelector(`[name=g][value=${u.g}]`).checked = true;
     document.querySelector(`[name=s][value=${u.seek}]`).checked = true;
     $('#fBirth').dispatchEvent(new Event('input'));
@@ -1323,7 +1366,6 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     leaveApp(); window.scrollTo(0, 0);
   });
 
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   function candidates() {
     const u = store.get('user');
@@ -1378,7 +1420,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       const r = $('#relax'); if (r) r.onclick = () => { $('#fMin').value = 0; $('#minOut').textContent = 0; $('#fAgeFrom').value = 18; $('#fAgeTo').value = 80; $('#fCityF').value = ''; render(); };
       return;
     }
-    const wall = locked ? `<div class="paywall"><div><h3>${tab === 'admirers' ? `Вас лайкнули ${list.length} человек` : `Вашу анкету смотрели ${list.length} человек`}</h3>
+    const wall = locked ? `<div class="paywall"><div><h3>${tab === 'admirers' ? `Вам поставили симпатию: ${list.length}` : `Вашу анкету смотрели ${list.length} человек`}</h3>
       <p>Подключите VIP-статус, чтобы увидеть, кто это.</p></div><button class="btn" type="button" data-shop="vip">Подключить VIP</button></div>` : '';
     feed.innerHTML = wall + list.slice(0, locked ? 8 : 60).map(p => {
       const f = factsOf(p.birth);
@@ -1531,7 +1573,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     if (m < 1) return 'только что';
     if (m < 60) return `${m} мин назад`;
     if (m < 24 * 60) return `${Math.round(m / 60)} ч назад`;
-    return new Date(t).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    return new Date(t).toLocaleDateString(loc(), { day: 'numeric', month: 'long' });
   };
   const person = id => PEOPLE.find(p => p.id === id);
   const avatarOf = id => id === 'support' ? '<div class="ava sup-ava" aria-hidden="true">♥</div>' : avatar(person(id), false, person(id).media[0].src);
@@ -1576,9 +1618,9 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const last = id => (chats[id] || []).slice(-1)[0];
     ids.sort((a, b) => (last(b)?.t || 0) - (last(a)?.t || 0));
     const list = ids.map(id => `<button class="dialog-item" type="button" data-thread="${id}" aria-current="${id === thread}">
-        ${avatarOf(id)}<span class="di"><b>${nameOf(id)}</b><span>${last(id) ? (last(id).me ? 'Вы: ' : '') + esc(last(id).text) : 'Взаимная симпатия, напишите первым'}</span></span>
+        ${avatarOf(id)}<span class="di"><b>${nameOf(id)}</b><span>${last(id) ? (last(id).me ? `Вы: <bdi data-raw>${esc(last(id).text)}</bdi>` : esc(last(id).text)) : 'Взаимная симпатия, напишите первым'}</span></span>
         ${unread[id] ? `<span class="un">${unread[id]}</span>` : ''}</button>`).join('');
-    const msgs = thread ? (chats[thread] || []).map(m => `<div class="msg${m.me ? ' mine' : ''}">${esc(m.text)}<time>${new Date(m.t).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</time></div>`).join('') : '';
+    const msgs = thread ? (chats[thread] || []).map(m => `<div class="msg${m.me ? ' mine" data-raw="' : ''}">${esc(m.text)}<time>${new Date(m.t).toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })}</time></div>`).join('') : '';
     $('#chat').classList.toggle('has-thread', Boolean(thread));
     $('#chat').innerHTML = `<div class="dialogs">${list}</div>
       <div class="thread">${thread ? `
@@ -1665,7 +1707,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       return `<article class="post">
         <div class="post-head">${x.mine ? avatar(u, false, myPhotos[0]?.src) : avatar(p, false, p.media[0].src)}
           ${x.mine ? `<div><b>${esc(u.name)}</b><span>${ago(x.t)}</span></div>` : `<button class="who" type="button" data-open="${p.id}"><b>${p.name}, ${ageOf(p.birth)}</b><span>${p.city}, ${ago(x.t)}</span></button>`}</div>
-        ${x.text ? `<p>${esc(x.text)}</p>` : ''}
+        ${x.text ? `<p${x.mine ? ' data-raw' : ''}>${esc(x.text)}</p>` : ''}
         ${x.img ? `<img class="pi" src="${x.img}" alt="" loading="lazy">` : ''}
         <div class="post-foot"><button type="button" data-plike="${x.id}" aria-pressed="${liked}">♥ ${(x.likes || 0) + (liked ? 1 : 0)}</button>
           ${x.mine ? `<button type="button" data-pdel="${x.id}">Удалить</button>` : `<button type="button" data-open="${p.id}">Анкета</button>`}</div>
@@ -1748,9 +1790,9 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   // Кнопки городов с числом анкет; самые большие города первыми.
   function cityChips(list, active) {
     const n = {}; list.forEach(p => { n[p.city] = (n[p.city] || 0) + 1; });
-    const cities = CITIES.filter(c => n[c]).sort((a, b) => n[b] - n[a]);
-    return `<button type="button" data-city="" aria-pressed="${!active}">Все города<span>${list.length}</span></button>` +
-      cities.map(c => `<button type="button" data-city="${c}" aria-pressed="${active === c}">${c}<span>${n[c]}</span></button>`).join('');
+    const own = [...new Set([...CITIES, ...customCities()])].filter(c => n[c]).sort((a, b) => n[b] - n[a]);
+    return `<button type="button" data-city="" aria-pressed="${!active}">Весь мир<span>${list.length}</span></button>` +
+      own.map(c => `<button type="button" data-city="${esc(c)}" aria-pressed="${active === c}">${esc(cityName(c))}<span>${n[c]}</span></button>`).join('');
   }
   let homeCity = '', homeShown = 12;
   function renderCities() {
@@ -1894,6 +1936,91 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const next = cur === 'dark' ? 'light' : 'dark';
     document.documentElement.dataset.theme = next; store.set('theme', next);
   });
+  /* ---------- языки: русский и английский ---------- */
+  // Разметка и скрипты пишут текст по-русски; в английском режиме переводчик подменяет текстовые узлы и подписи
+  // по словарю (сначала целая фраза, затем самые длинные известные куски). Тексты пользователей ([data-raw]) не трогаем.
+  const EN = {"Я":"I am","Ищу":"Looking for","Имя":"Name","Город":"City","Тема":"Theme","Да":"Yes","до":"to","из":"of","и":"and","все":"all","Выйти":"Sign out","Регистрация":"Sign up","Главная":"Home","Моя анкета":"My profile","Как считаем":"How it works","Сменить тему":"Switch theme","Любой":"Any","Весь мир":"Whole world","мужчина":"man","женщина":"woman","мужчину":"a man","женщину":"a woman","не важно":"anyone","мужчины":"men","женщины":"women","Дата рождения":"Date of birth","О себе":"About me","(необязательно)":"(optional)","Отмена":"Cancel","Удалить":"Delete","Открыть":"Open","Принять":"Accept","Отклонить":"Decline","Отменить":"Cancel request","Написать":"Message","Оплатить":"Pay","Анкета":"Profile","Аккаунт":"Account","Оформление":"Appearance","Приватность":"Privacy","Уведомления":"Notifications","Светлая":"Light","Тёмная":"Dark","Как в системе":"Match system","Симпатии":"Likes","Сообщения":"Messages","Гости":"Visitors","Сервисы":"Services","Помощь":"Help","Поиск":"Search","Друзья":"Friends","События":"Events","Лента":"Feed","Настройки":"Settings","Моя страница":"My page","моя страница":"my page","Разделы кабинета":"Account sections","Знакомства":"Discover","Мне понравились":"I liked","Взаимно":"Mutual","Взаимно!":"It's a match!","Вас лайкнули":"Liked you","Мои фото":"My photos","Мои друзья":"My friends","Заявки в друзья":"Friend requests","Отправленные заявки":"Sent requests","В друзьях":"Friends","Добавить в друзья":"Add friend","Принять в друзья":"Accept friend request","Заявка отправлена":"Request sent","Сообщение":"Message","Отправить":"Send","К диалогам":"Back to chats","печатает…":"is typing…","только что":"just now","мин назад":"min ago","ч назад":"h ago","Амуры":"Cupids","Амуры: включить":"Cupids: turn on","Амуры: выключить":"Cupids: turn off","Амуры снова летают.":"The cupids are flying again.","Амуры отдыхают. Включить можно той же кнопкой.":"The cupids are resting. Turn them back on with the same button.","Любовь в цифрах":"Love in Numbers","Знакомства, где дата рождения говорит первой":"Dating where your birthday speaks first","Укажите свой день рождения, и мы покажем людей, с которыми у вас совпадают число судьбы, стихия, восточный знак и аркан пары. Анкеты отсортированы по совместимости, а не по случайности.":"Enter your birthday and we'll show people who share your life path number, element, Chinese sign and couple arcana. Profiles are sorted by compatibility, not by chance.","Найти свою пару":"Find your match","Мои совпадения":"My matches","Как устроен расчёт":"How the math works","Проверьте совместимость двух дат":"Check how two birthdays match","Ваша дата рождения":"Your date of birth","Дата партнёра":"Partner's date of birth","Редкое совпадение, пишите первыми":"A rare match, write first","Хорошая пара, есть о чём поговорить":"A good pair with plenty to talk about","Можно попробовать":"Worth a try","Разные ритмы, но всё решает встреча":"Different rhythms, but meeting decides","Сейчас на сайте":"Online now","Процент показывает совместимость с вашей датой из калькулятора ниже":"The percentage is compatibility with your date from the calculator below","Предыдущие анкеты":"Previous profiles","Следующие анкеты":"Next profiles","Анкеты, листаются стрелками":"Profiles, scroll with arrow keys","Анкеты по городам":"Profiles by city","Выберите город, чтобы посмотреть, кто там ищет пару. Процент на карточке показывает совместимость с вашей датой рождения.":"Pick a city to see who is looking for a partner there. The percentage on each card is compatibility with your date of birth.","Кого показать":"Who to show","Показать ещё":"Show more","анкет":"profiles","Четыре системы, одна цифра":"Four systems, one number","Каждая система даёт свою оценку от 0 до 100. Итог складывается по весам: нумерология весит больше всего, потому что в ней учитывается вся дата целиком. В анкете партнёра видно, из чего сложился процент.":"Each system gives its own score from 0 to 100. The total is weighted: numerology counts most because it uses the whole date. A partner's profile shows how the percentage was built.","Число судьбы":"Life path number","Складываем все цифры даты до одной (11 и 22 оставляем). Числа делятся на три «семьи»: внутри семьи пары понимают друг друга без слов.":"We add up all the digits of the date down to one (11 and 22 stay). Numbers fall into three \"families\": inside a family, couples understand each other without words.","Знак и стихия":"Sign and element","Огонь дружит с воздухом, земля с водой. Одна стихия даёт спокойствие, противоположные знаки дают притяжение.":"Fire gets along with air, earth with water. The same element brings calm, opposite signs bring attraction.","Близнецы (воздух) + Скорпион (вода)":"Gemini (air) + Scorpio (water)","Восточный год":"Chinese year","Двенадцать животных образуют четыре треугольника союзников. Знаки, стоящие напротив друг друга в круге, конфликтуют.":"Twelve animals form four triangles of allies. Signs opposite each other in the circle clash.","Лошадь + Дракон: нейтрально":"Horse + Dragon: neutral","Аркан пары":"Couple arcana","День рождения каждого переводим в аркан от 1 до 22, складываем и получаем аркан пары с коротким толкованием, как в матрице судьбы.":"Each birthday becomes an arcana from 1 to 22; we add them up to get the couple's arcana with a short reading, as in the destiny matrix.","13 + 5 = 18, Луна":"13 + 5 = 18, The Moon","Бесплатно и с VIP":"Free and with VIP","Знакомиться, смотреть анкеты и считать совместимость можно бесплатно. VIP-статус и монеты открывают дополнительные возможности. Оплата картой или через СБП в Робокассе.":"Meeting people, browsing profiles and checking compatibility are free. VIP status and coins unlock extra features. Pay by card or SBP via Robokassa.","Бесплатно":"Free","Анкета, до 10 фото":"Profile with up to 10 photos","Подбор по дате рождения и разбор совместимости":"Matching by date of birth with a compatibility breakdown","симпатий в день":"likes a day","Просмотр анкет, фото и видео":"Browse profiles, photos and videos","Переписка при взаимной симпатии":"Chat once the like is mutual","VIP-статус":"VIP status","Монеты":"Coins","Как оплатить":"How to pay","Оплата через Робокассу: карты, СБП, кошельки":"Pay via Robokassa: cards, SBP, wallets","Чек приходит на почту":"The receipt is emailed to you","VIP не продлевается автоматически":"VIP does not renew automatically","Поднять анкету в поиске на сутки:":"Boost your profile in search for a day:","Подарки:":"Gifts:","монет":"coins","Зарегистрироваться":"Sign up","Оферта, оплата и возврат":"Offer, payment and refunds (in Russian)","Регистрация за минуту":"Sign up in a minute","Дата рождения нужна для расчёта. В анкете другие видят только возраст, знак и число судьбы, точная дата скрыта.":"Your date of birth is used for the calculation. Others see only your age, sign and life path number; the exact date stays hidden.","Имя и кого вы ищете":"Your name and who you're looking for","Дата рождения: сразу покажем ваши числа":"Date of birth: we'll show your numbers right away","Город и пара слов о себе":"City and a few words about yourself","До 10 фото в анкету":"Up to 10 photos in your profile","Лента людей с фото и видео, отсортированная по совместимости":"A feed of people with photos and videos, sorted by compatibility","Начните вводить, например Москва":"Start typing, for example London","Например: люблю походы и старое кино":"For example: I love hiking and old films","Мне исполнилось 18 лет, я согласен(на) с правилами сервиса":"I am 18 or older and I accept the terms of service","Показать мои совпадения":"Show my matches","Сохранить анкету":"Save profile","Изменить анкету":"Edit profile","Вы уже с нами":"You're already here","Вы вошли как":"Signed in as","Ваша анкета сохранена. Совпадения, симпатии и фото ждут в личном кабинете.":"Your profile is saved. Matches, likes and photos are waiting in your account.","Введите имя, чтобы другие знали, как к вам обращаться.":"Enter your name so people know what to call you.","Укажите дату рождения: по ней считается совместимость.":"Enter your date of birth: compatibility is calculated from it.","Регистрация доступна с 18 лет.":"You must be 18 or older to sign up.","Укажите город: выберите из подсказок или впишите свой.":"Enter your city: pick a suggestion or type your own.","Подтвердите, что вам есть 18 лет и вы согласны с правилами.":"Confirm that you are 18 or older and accept the terms.","Любовь в цифрах. Демо-версия: анкеты и их фото сгенерированы, ваши данные и фото хранятся только в вашем браузере.":"Love in Numbers. Demo version: profiles and their photos are generated; your data and photos stay only in your browser.","Расчёты носят развлекательный характер.":"Calculations are for entertainment.","Разработчик: Жеребцов Сергей Владимирович. ИНН 667807174690. Почта:":"Developer: Sergey Vladimirovich Zherebtsov. Taxpayer ID 667807174690. Email:","Сайт знакомств, который подбирает партнёра по дате рождения: число судьбы, знак зодиака, восточный год и аркан пары.":"A dating site that matches partners by date of birth: life path number, zodiac sign, Chinese year and couple arcana.","фото проверено":"photo verified",", фото проверено":", photo verified","видео":"video","взаимно":"mutual","число":"number",", число":", number","Число":"Number","Аркан":"Arcana","Знак":"Sign","Аркан вашей пары:":"Your couple's arcana:","Подарок":"Gift","Вы подарили:":"You gave:","Нравится":"Like","Пропустить":"Skip","Симпатия отправлена":"Like sent","Зарегистрироваться, чтобы познакомиться":"Sign up to get acquainted","Числа":"Numbers","Одинаковое число":"Same number",": вы смотрите на мир похоже.":": you see the world alike.","из одной семьи, ритм жизни совпадает.":"are from the same family, your rhythms match.","дополняют друг друга.":"complement each other.","разные по темпу, нужно больше разговаривать.":"move at different paces; talk more.","Оба":"Both",": хорошо понимаете друг друга, но можете скучать.":": you understand each other well but may get bored.","напротив друг друга: притяжение противоположностей.":"are opposite each other: opposites attract.","Одна стихия (":"Same element (","): общий темперамент.":"): shared temperament.","усиливают друг друга.":"strengthen each other.",": разный темперамент, интересно, но непросто.":": different temperaments, interesting but not easy.","стоят напротив в круге: частые споры.":"stand opposite in the circle: frequent arguments.","в одном треугольнике союзников.":"are in the same triangle of allies.",": похожие привычки.":": similar habits.",": тайные друзья по восточному кругу.":": secret friends in the Chinese circle.",": нейтральное сочетание.":": a neutral combination.","Козерог":"Capricorn","Водолей":"Aquarius","Рыбы":"Pisces","Овен":"Aries","Телец":"Taurus","Близнецы":"Gemini","Рак":"Cancer","Лев":"Leo","Дева":"Virgo","Весы":"Libra","Скорпион":"Scorpio","Стрелец":"Sagittarius","земля":"earth","воздух":"air","вода":"water","огонь":"fire","Земля":"Earth","Воздух":"Air","Вода":"Water","Огонь":"Fire","Крыса":"Rat","Бык":"Ox","Тигр":"Tiger","Кролик":"Rabbit","Дракон":"Dragon","Змея":"Snake","Лошадь":"Horse","Коза":"Goat","Обезьяна":"Monkey","Петух":"Rooster","Собака":"Dog","Свинья":"Pig","Маг":"The Magician","Жрица":"The High Priestess","Императрица":"The Empress","Император":"The Emperor","Иерофант":"The Hierophant","Влюблённые":"The Lovers","Колесница":"The Chariot","Справедливость":"Justice","Отшельник":"The Hermit","Колесо фортуны":"Wheel of Fortune","Сила":"Strength","Повешенный":"The Hanged Man","Перемены":"Change","Умеренность":"Temperance","Дьявол":"The Devil","Башня":"The Tower","Звезда":"The Star","Луна":"The Moon","Солнце":"The Sun","Суд":"Judgement","Мир":"The World","Шут":"The Fool","Пара инициатив: вместе легко начинать новое.":"A couple of initiative: starting new things together is easy.","Глубокое понимание без слов, важно доверие.":"Deep understanding without words; trust matters.","Тепло, забота, желание строить дом.":"Warmth, care and a wish to build a home.","Надёжная пара с ясными ролями и планами.":"A reliable couple with clear roles and plans.","Общие ценности и традиции, союз «на века».":"Shared values and traditions, a union \"for ages\".","Сильное притяжение и выбор друг друга каждый день.":"Strong attraction and choosing each other every day.","Пара в движении: путешествия, цели, азарт.":"A couple on the move: travel, goals, excitement.","Честность и равноправие, нужно договариваться.":"Honesty and equality; you need to negotiate.","Тихий союз двух глубоких людей.":"A quiet union of two deep people.","Яркие перемены, судьбоносная встреча.":"Bright changes, a fateful meeting.","Страсть и сильные характеры, важно уступать.":"Passion and strong characters; learn to give way.","Отношения учат терпению и смене взгляда.":"The relationship teaches patience and a new perspective.","Встреча, после которой многое меняется.":"A meeting after which much changes.","Гармония и спокойный ритм.":"Harmony and a calm rhythm.","Очень сильное влечение, следите за ревностью.":"Very strong attraction; watch out for jealousy.","Бурный старт, нужно строить фундамент.":"A stormy start; build a foundation.","Вдохновляете друг друга, общие мечты.":"You inspire each other and share dreams.","Романтика и интуиция, нужна открытость.":"Romance and intuition; openness is needed.","Радость, лёгкость, много общих друзей.":"Joy, ease and many friends in common.","Связь с семьёй и прошлым, второй шанс.":"Ties to family and the past, a second chance.","Цельная пара, вам хорошо где угодно вместе.":"A whole couple: you're happy together anywhere.","Свобода и спонтанность, без рутины.":"Freedom and spontaneity, no routine.","Люблю горы и утренний кофе":"I love mountains and morning coffee","Читаю, бегаю, готовлю по выходным":"I read, run and cook on weekends","Ищу человека для долгих прогулок":"Looking for someone for long walks","Работаю в IT, по вечерам играю на гитаре":"I work in IT and play guitar in the evenings","Путешествую при любой возможности":"I travel whenever I can","Врач, люблю театр и тишину":"Doctor; I love theatre and quiet","Танцую сальсу, ищу партнёра не только по танцам":"I dance salsa and look for a partner beyond the dance floor","Собака, дача, старое кино":"A dog, a country house, old films","Фотографирую города и людей":"I photograph cities and people","Учусь рисовать акварелью":"Learning watercolour painting","Хочу семью и уютный дом":"I want a family and a cosy home","Велосипед, книги, настолки":"Cycling, books, board games","Подобрано для вас":"Picked for you","Осталось симпатий сегодня:":"Likes left today:",". С VIP без ограничений.":". Unlimited with VIP.","Совместимость от":"Compatibility from","Возраст от":"Age from","Сбросить фильтры":"Reset filters","Под эти фильтры никто не подходит.":"Nobody matches these filters.","Снизьте порог совместимости или выберите «Любой» город.":"Lower the compatibility threshold or choose the whole world.","Вы ещё никого не отметили.":"You haven't liked anyone yet.","Откройте анкету в подборке и нажмите «Нравится».":"Open a profile and tap Like.","Взаимных симпатий пока нет.":"No mutual likes yet.","Когда человек ответит на ваш лайк, он появится здесь и можно будет написать.":"When someone likes you back, they'll appear here and you can write to them.","Новых симпатий пока нет.":"No new likes yet.","Добавьте фото и поднимите анкету, чтобы вас замечали чаще.":"Add photos and boost your profile to get noticed more.","Вашу анкету ещё никто не открывал.":"Nobody has opened your profile yet.","Поднимите анкету, чтобы её чаще показывали в поиске.":"Boost your profile so it shows up more in search.","Подключите VIP-статус, чтобы увидеть, кто это.":"Get VIP status to see who it is.","Подключить VIP":"Get VIP","Продлить VIP":"Extend VIP","Вы посмотрели все анкеты.":"You've seen all the profiles.","Загляните в «Поиск» с другими фильтрами или зайдите завтра.":"Try Search with other filters or come back tomorrow.","Подробнее":"Details","Сегодня вы уже отправили":"Today you've already sent","симпатий. Завтра лимит обновится, а с VIP-статусом ограничений нет.":"likes. The limit resets tomorrow; with VIP there's no limit.","Симпатия отправлена. Сообщим, когда":"Like sent. We'll let you know when","ответит.":"responds.","тоже отметил(а) вас. Можно написать первым.":"liked you too. You can write first.","Обычный аккаунт":"Regular account","Монеты:":"Coins:","Купить монеты":"Buy coins","Поднять анкету за":"Boost profile for","Анкета поднята до":"Profile boosted until","VIP до":"VIP until","Моя анкета глазами других":"My profile as others see it","До 10 фото. Первое фото главное: его видят в поиске. Можно перетащить файлы сюда.":"Up to 10 photos. The first one is the main photo shown in search. You can drag files here.","Добавить фото":"Add photo","Добавить ещё":"Add more","осталось":"left","Главное":"Main","Сделать главным":"Make main","Удалить фото":"Delete photo","Моё фото":"My photo","из 10":"of 10","Фото пока нет. Анкеты с фото чаще получают симпатии.":"No photos yet. Profiles with photos get more likes.","Фото добавлены в анкету.":"Photos added to your profile.","Файлы, которые не являются фото, пропущены.":"Files that aren't photos were skipped.","В анкете уже":"Your profile already has","фото. Удалите какое-нибудь, чтобы добавить новое.":"photos. Delete one to add a new one.","Добавлено":"Added",": в анкете может быть не больше":": a profile can have at most","фото.":"photos.","Не удалось открыть":"Could not open","фото: файл повреждён или больше 25 МБ.":"photo(s): the file is damaged or larger than 25 MB.","Браузер не дал сохранить фото: они пропадут после перезагрузки страницы. Проверьте, что сайт не открыт в приватном режиме.":"The browser didn't let us save the photos: they'll disappear after reloading. Make sure the site isn't open in a private window.","анкета поднята":"profile boosted","VIP и монеты":"VIP and coins","монет:":"coins:","Видно, кто вас лайкнул":"See who liked you","Видно гостей анкеты":"See profile visitors","Симпатии без лимита":"Unlimited likes","Режим невидимки":"Invisible mode","Можно скрыть возраст":"Hide your age","Значок VIP в анкете":"VIP badge on your profile","Поднять анкету на сутки:":"Boost your profile for a day:","Подарки: от 10 монет":"Gifts: from 10 coins","VIP на 3 дня":"VIP for 3 days","VIP на 30 дней":"VIP for 30 days","VIP на 90 дней":"VIP for 90 days","100 монет":"100 coins","550 монет":"550 coins","1200 монет":"1200 coins","₽ в день":"₽ a day","₽ за монету":"₽ per coin","Выгоднее":"Best value","Оплата проходит на защищённой странице Робокассы: банковские карты, СБП, электронные кошельки. VIP не продлевается автоматически. Нажимая «Оплатить», вы принимаете":"Payment happens on Robokassa's secure page: bank cards, SBP, e-wallets. VIP does not renew automatically. By tapping Pay you accept the","условия оферты":"terms of the offer","Переходим к оплате…":"Opening payment…","Оплата пока не подключена: владельцу сайта нужно указать данные магазина Робокассы в настройках Netlify.":"Payments aren't connected yet: the site owner needs to add the Robokassa shop details in Netlify settings.","Не удалось перейти к оплате. Проверьте интернет и попробуйте ещё раз.":"Couldn't open the payment page. Check your connection and try again.","Начислить в демо-режиме, без оплаты":"Credit in demo mode, without paying","Начислено в демо-режиме:":"Credited in demo mode:","Оплата прошла:":"Payment successful:",". Спасибо!":". Thank you!","Эта оплата уже зачислена.":"This payment has already been credited.","Оплата не завершена, деньги не списаны. Можно попробовать ещё раз.":"Payment wasn't completed and no money was taken. You can try again.","Не удалось подтвердить оплату. Если деньги списались, напишите нам, указав номер заказа":"Couldn't confirm the payment. If money was taken, write to us with the order number","Для поднятия анкеты нужно":"Boosting your profile needs","монет, у вас":"coins; you have","Для подарка «":"The gift «","» нужно":"» needs","Анкета поднята: сутки она показывается первой в поиске.":"Profile boosted: it shows first in search for a day.","Анкета поднята в поиске на сутки.":"Profile boosted in search for a day.","Роза":"Rose","Кофе":"Coffee","Сердце":"Heart","Мишка":"Teddy bear","Подарок «":"Gift «","» отправлен.":"» sent.","увидит его в своей анкете.":"will see it on their profile.","Вы подарили":"You gave","Подарить:":"Give:","Поддержка «Любовь в цифрах»":"Love in Numbers support","Вы:":"You:","Взаимная симпатия, напишите первым":"Mutual like, write first","Напишите первое сообщение. Можно начать с вашей совместимости.":"Write the first message. You could start with your compatibility.","Выберите диалог слева. Написать можно после взаимной симпатии, друзьям или с VIP.":"Pick a chat on the left. You can write after a mutual like, to friends or with VIP.","Новое сообщение от":"New message from","Добро пожаловать в «Любовь в цифрах»! Здесь можно задать вопрос о сайте, оплате или анкете.":"Welcome to Love in Numbers! Ask us anything about the site, payments or your profile here.","Спасибо! Мы получили сообщение и ответим в течение дня. Срочные вопросы: kot13061970@gmail.com.":"Thank you! We got your message and will reply within a day. Urgent questions: kot13061970@gmail.com.","Привет! Приятно познакомиться 😊":"Hi! Nice to meet you 😊","Ого, у нас и правда высокая совместимость!":"Wow, our compatibility really is high!","Привет! Как проходит день?":"Hi! How's your day going?","А какой у тебя знак по восточному календарю?":"What's your Chinese zodiac sign?","Люблю прогулки по вечерам. А ты?":"I love evening walks. And you?","Интересно, а чем ты занимаешься?":"So what do you do?","Давай как-нибудь выпьем кофе ☕":"Let's grab a coffee sometime ☕","Я тоже верю, что числа не врут)":"I also believe numbers don't lie)","Заявка в друзья отправлена:":"Friend request sent:","принял(а) вашу заявку в друзья.":"accepted your friend request.","теперь в друзьях":"is now your friend","теперь в друзьях.":"is now your friend.","теперь у вас в друзьях.":"is now on your friends list.","хочет добавить вас в друзья.":"wants to add you as a friend.","Друзей пока нет. Откройте анкету и нажмите «Добавить в друзья».":"No friends yet. Open a profile and tap Add friend.","Удалить из друзей":"Remove friend","Событий пока нет.":"No events yet.","Кто-то поставил вам симпатию.":"Someone liked you.","Кто-то посмотрел вашу анкету.":"Someone viewed your profile.","Узнать с VIP":"Find out with VIP","посмотрел(а) вашу анкету.":"viewed your profile.","поставил(а) вам симпатию.":"liked you.","Взаимная симпатия:":"It's a match:",". Можно написать первым.":". You can write first.","Анкета создана. Добавьте фото, чтобы вас чаще замечали.":"Profile created. Add photos to get noticed more.","Новая запись":"New post","Что у вас нового? Расскажите о себе или поделитесь фото":"What's new? Tell people about yourself or share a photo","Опубликовать":"Publish","Запись опубликована в ленте.":"Post published to the feed.","Напишите текст или добавьте фото.":"Write some text or add a photo.","Не удалось открыть файл. Выберите фото в формате JPG или PNG.":"Couldn't open the file. Choose a JPG or PNG photo.","Удалить запись из ленты?":"Delete this post from the feed?","Фото к записи":"Post photo","Отличный день: прогулка у реки до самого заката.":"A great day: a walk by the river until sunset.","Кто тоже любит утренний кофе и тишину?":"Who else loves morning coffee and quiet?","Выходные за городом без телефона — лучший отдых.":"A weekend out of town without a phone is the best rest.","Нашлось новое уютное кафе, ищу компанию на субботу.":"Found a cosy new café; looking for company on Saturday.","Посчитали совместимость с друзьями, смеялись весь вечер.":"We calculated compatibility with friends and laughed all evening.","Наконец-то дочитана книга, начатая ещё весной.":"Finally finished the book I started in spring.","Горы — лучшее лекарство от усталости.":"Mountains are the best cure for tiredness.","Первый снег! Кто со мной на каток?":"First snow! Who's coming skating?","Пирог по бабушкиному рецепту удался.":"Grandma's pie recipe turned out great.","Учусь играть на гитаре, пока получаются только три аккорда.":"Learning guitar, only three chords so far.","Как считается совместимость?":"How is compatibility calculated?","Мы сравниваем ваши даты рождения по четырём системам: число судьбы (30%), знак зодиака и стихия (25%), восточный год (25%) и аркан пары (20%). В анкете человека видно, из чего сложился процент.":"We compare your dates of birth with four systems: life path number (30%), zodiac sign and element (25%), Chinese year (25%) and couple arcana (20%). A person's profile shows how the percentage was built.","Кто видит мою дату рождения?":"Who sees my date of birth?","Никто. В анкете другие видят только возраст, знак и число судьбы. С VIP можно скрыть и возраст.":"Nobody. Others see only your age, sign and life path number. With VIP you can hide your age too.","Как написать человеку?":"How do I message someone?","Поставьте симпатию. Когда она станет взаимной, откроется переписка в разделе «Сообщения». С VIP-статусом можно писать сразу, а друзьям — всегда.":"Send a like. Once it's mutual, a chat opens in Messages. With VIP you can write right away, and you can always write to friends.","Что такое «Знакомства» в разделе «Симпатии»?":"What is Discover in Likes?","Это быстрый просмотр анкет по одной: нажмите сердце, если человек понравился, или крестик, чтобы пропустить. Бесплатно — 30 симпатий в день.":"A quick look at profiles one at a time: tap the heart if you like someone or the cross to skip. Free accounts get 30 likes a day.","Что даёт VIP-статус и монеты?":"What do VIP status and coins give me?","VIP показывает, кто вас лайкнул и кто заходил в анкету, снимает лимит симпатий, включает невидимку и скрытие возраста. Монеты тратятся на поднятие анкеты и подарки. Всё это — в разделе «Сервисы».":"VIP shows who liked you and who visited your profile, removes the like limit and unlocks invisible mode and hiding your age. Coins pay for profile boosts and gifts. All of this is in Services.","Как оплатить и вернуть деньги?":"How do I pay and get a refund?","Оплата проходит через Робокассу: карты, СБП, кошельки. VIP не продлевается автоматически. Условия возврата — в":"Payment goes through Robokassa: cards, SBP, wallets. VIP does not renew automatically. Refund terms are in the","оферте":"offer (in Russian)","Как удалить анкету?":"How do I delete my profile?","Откройте «Настройки» и нажмите «Выйти и удалить анкету».":"Open Settings and tap Sign out and delete profile.","Как не попасть на мошенников?":"How do I avoid scammers?","Не переводите деньги людям с сайта, не сообщайте коды из СМС и данные карты. Если кто-то просит деньги, напишите в поддержку.":"Never send money to people from the site and never share SMS codes or card details. If someone asks for money, write to support.","Не нашли ответ? Напишите нам в чате или на почту":"Didn't find an answer? Write to us in the chat or by email","Написать в поддержку":"Write to support","Ищу:":"Looking for:",". Ищу:":". Looking for:","Посмотреть глазами других":"See it as others do","Невидимка: смотреть анкеты, не попадая в гости":"Invisible: browse profiles without showing up as a visitor","Скрыть возраст в анкете":"Hide age on my profile","Доступно с VIP-статусом.":"Available with VIP status.","Всплывающие уведомления о сообщениях и друзьях":"Pop-up notifications about messages and friends","Анкета, фото, переписка и симпатии хранятся в этом браузере.":"Your profile, photos, chats and likes are stored in this browser.","Выйти и удалить анкету":"Sign out and delete profile","Выйти и удалить":"Sign out and delete","Невидимка включена.":"Invisible mode on.","Невидимка выключена.":"Invisible mode off.","Возраст скрыт в анкете.":"Age hidden on your profile.","Возраст снова виден.":"Age visible again.","Выйти и удалить анкету, фото, переписку и симпатии из этого браузера? Купленные VIP и монеты сохранятся.":"Sign out and delete your profile, photos, chats and likes from this browser? Purchased VIP and coins will be kept.","Закрыть":"Close","Предыдущее":"Previous","Следующее":"Next","Фото":"Photo","Видео":"Video","галерея":"gallery","Анна":"Anna","Мария":"Maria","Екатерина":"Ekaterina","Ольга":"Olga","Дарья":"Daria","Алина":"Alina","Виктория":"Victoria","Полина":"Polina","Ксения":"Ksenia","Наталья":"Natalia","Ирина":"Irina","Елена":"Elena","Светлана":"Svetlana","Юлия":"Yulia","Вера":"Vera","Софья":"Sofia","Татьяна":"Tatiana","Марина":"Marina","Алёна":"Alena","Людмила":"Lyudmila","Алексей":"Alexey","Дмитрий":"Dmitry","Иван":"Ivan","Сергей":"Sergey","Андрей":"Andrey","Михаил":"Mikhail","Никита":"Nikita","Артём":"Artem","Павел":"Pavel","Максим":"Maxim","Илья":"Ilya","Роман":"Roman","Олег":"Oleg","Владимир":"Vladimir","Егор":"Egor","Константин":"Konstantin","Николай":"Nikolay","Тимур":"Timur","Глеб":"Gleb","Виктор":"Viktor","Москва":"Moscow","Россия":"Russia","Санкт-Петербург":"Saint Petersburg","Новосибирск":"Novosibirsk","Екатеринбург":"Yekaterinburg","Казань":"Kazan","Нижний Новгород":"Nizhny Novgorod","Челябинск":"Chelyabinsk","Красноярск":"Krasnoyarsk","Самара":"Samara","Уфа":"Ufa","Ростов-на-Дону":"Rostov-on-Don","Омск":"Omsk","Краснодар":"Krasnodar","Воронеж":"Voronezh","Пермь":"Perm","Волгоград":"Volgograd","Саратов":"Saratov","Тюмень":"Tyumen","Тольятти":"Tolyatti","Ижевск":"Izhevsk","Барнаул":"Barnaul","Ульяновск":"Ulyanovsk","Иркутск":"Irkutsk","Хабаровск":"Khabarovsk","Ярославль":"Yaroslavl","Владивосток":"Vladivostok","Махачкала":"Makhachkala","Томск":"Tomsk","Оренбург":"Orenburg","Кемерово":"Kemerovo","Рязань":"Ryazan","Астрахань":"Astrakhan","Пенза":"Penza","Липецк":"Lipetsk","Калининград":"Kaliningrad","Тула":"Tula","Курск":"Kursk","Сочи":"Sochi","Ставрополь":"Stavropol","Тверь":"Tver","Белгород":"Belgorod","Архангельск":"Arkhangelsk","Мурманск":"Murmansk","Якутск":"Yakutsk","Сургут":"Surgut","Смоленск":"Smolensk","Калуга":"Kaluga","Чебоксары":"Cheboksary","Петрозаводск":"Petrozavodsk","Севастополь":"Sevastopol","Симферополь":"Simferopol","Минск":"Minsk","Беларусь":"Belarus","Гомель":"Gomel","Брест":"Brest","Киев":"Kyiv","Украина":"Ukraine","Харьков":"Kharkiv","Одесса":"Odesa","Днепр":"Dnipro","Львов":"Lviv","Алматы":"Almaty","Казахстан":"Kazakhstan","Астана":"Astana","Шымкент":"Shymkent","Караганда":"Karaganda","Ташкент":"Tashkent","Узбекистан":"Uzbekistan","Самарканд":"Samarkand","Бишкек":"Bishkek","Киргизия":"Kyrgyzstan","Душанбе":"Dushanbe","Таджикистан":"Tajikistan","Ашхабад":"Ashgabat","Туркменистан":"Turkmenistan","Баку":"Baku","Азербайджан":"Azerbaijan","Ереван":"Yerevan","Армения":"Armenia","Тбилиси":"Tbilisi","Грузия":"Georgia","Батуми":"Batumi","Кишинёв":"Chișinău","Молдова":"Moldova","Рига":"Riga","Латвия":"Latvia","Вильнюс":"Vilnius","Литва":"Lithuania","Таллин":"Tallinn","Эстония":"Estonia","Варшава":"Warsaw","Польша":"Poland","Краков":"Kraków","Прага":"Prague","Чехия":"Czechia","Братислава":"Bratislava","Словакия":"Slovakia","Будапешт":"Budapest","Венгрия":"Hungary","Вена":"Vienna","Австрия":"Austria","Берлин":"Berlin","Германия":"Germany","Мюнхен":"Munich","Гамбург":"Hamburg","Франкфурт-на-Майне":"Frankfurt","Цюрих":"Zurich","Швейцария":"Switzerland","Женева":"Geneva","Париж":"Paris","Франция":"France","Ницца":"Nice","Лион":"Lyon","Брюссель":"Brussels","Бельгия":"Belgium","Амстердам":"Amsterdam","Нидерланды":"Netherlands","Лондон":"London","Великобритания":"United Kingdom","Манчестер":"Manchester","Эдинбург":"Edinburgh","Дублин":"Dublin","Ирландия":"Ireland","Мадрид":"Madrid","Испания":"Spain","Барселона":"Barcelona","Валенсия":"Valencia","Лиссабон":"Lisbon","Португалия":"Portugal","Рим":"Rome","Италия":"Italy","Милан":"Milan","Венеция":"Venice","Неаполь":"Naples","Афины":"Athens","Греция":"Greece","Белград":"Belgrade","Сербия":"Serbia","София":"Sofia","Болгария":"Bulgaria","Бухарест":"Bucharest","Румыния":"Romania","Копенгаген":"Copenhagen","Дания":"Denmark","Стокгольм":"Stockholm","Швеция":"Sweden","Осло":"Oslo","Норвегия":"Norway","Хельсинки":"Helsinki","Финляндия":"Finland","Стамбул":"Istanbul","Турция":"Turkey","Анталья":"Antalya","Анкара":"Ankara","Тель-Авив":"Tel Aviv","Израиль":"Israel","Иерусалим":"Jerusalem","Дубай":"Dubai","ОАЭ":"UAE","Абу-Даби":"Abu Dhabi","Доха":"Doha","Катар":"Qatar","Эр-Рияд":"Riyadh","Саудовская Аравия":"Saudi Arabia","Тегеран":"Tehran","Иран":"Iran","Каир":"Cairo","Египет":"Egypt","Касабланка":"Casablanca","Марокко":"Morocco","Лагос":"Lagos","Нигерия":"Nigeria","Найроби":"Nairobi","Кения":"Kenya","Кейптаун":"Cape Town","ЮАР":"South Africa","Йоханнесбург":"Johannesburg","Дели":"Delhi","Индия":"India","Мумбаи":"Mumbai","Бангалор":"Bangalore","Гоа":"Goa","Пекин":"Beijing","Китай":"China","Шанхай":"Shanghai","Гуанчжоу":"Guangzhou","Шэньчжэнь":"Shenzhen","Гонконг":"Hong Kong","Тайбэй":"Taipei","Тайвань":"Taiwan","Токио":"Tokyo","Япония":"Japan","Осака":"Osaka","Сеул":"Seoul","Южная Корея":"South Korea","Пусан":"Busan","Улан-Батор":"Ulaanbaatar","Монголия":"Mongolia","Бангкок":"Bangkok","Таиланд":"Thailand","Пхукет":"Phuket","Паттайя":"Pattaya","Ханой":"Hanoi","Вьетнам":"Vietnam","Хошимин":"Ho Chi Minh City","Нячанг":"Nha Trang","Сингапур":"Singapore","Куала-Лумпур":"Kuala Lumpur","Малайзия":"Malaysia","Джакарта":"Jakarta","Индонезия":"Indonesia","Бали":"Bali","Манила":"Manila","Филиппины":"Philippines","Сидней":"Sydney","Австралия":"Australia","Мельбурн":"Melbourne","Окленд":"Auckland","Новая Зеландия":"New Zealand","Нью-Йорк":"New York","США":"USA","Лос-Анджелес":"Los Angeles","Сан-Франциско":"San Francisco","Чикаго":"Chicago","Майами":"Miami","Бостон":"Boston","Сиэтл":"Seattle","Лас-Вегас":"Las Vegas","Вашингтон":"Washington","Торонто":"Toronto","Канада":"Canada","Ванкувер":"Vancouver","Монреаль":"Montreal","Мехико":"Mexico City","Мексика":"Mexico","Канкун":"Cancún","Гавана":"Havana","Куба":"Cuba","Богота":"Bogotá","Колумбия":"Colombia","Лима":"Lima","Перу":"Peru","Сантьяго":"Santiago","Чили":"Chile","Буэнос-Айрес":"Buenos Aires","Аргентина":"Argentina","Сан-Паулу":"São Paulo","Бразилия":"Brazil","Рио-де-Жанейро":"Rio de Janeiro","совместимость":"compatibility","фото":"photos","Открыть анкету:":"Open profile:","Вашу анкету смотрели":"Your profile was viewed by","человек":"people","за":"for","Монет:":"Coins:","Вам поставили симпатию:":"People who liked you:"};
+  const CYR = /[А-Яа-яЁё]/;
+  const reEsc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Граница слова нужна только там, где ключ начинается или заканчивается буквой: «Одна стихия (» должно совпасть перед «вода».
+  const L = 'А-Яа-яЁё';
+  const EN_RX = new RegExp(Object.keys(EN).sort((a, b) => b.length - a.length)
+    .map(k => (new RegExp(`^[${L}]`).test(k) ? `(?<![${L}])` : '') + reEsc(k) + (new RegExp(`[${L}]$`).test(k) ? `(?![${L}])` : '')).join('|'), 'g');
+  const tr = s => {
+    if (!CYR.test(s)) return s;
+    const t = s.trim();
+    return EN[t] ? s.replace(t, EN[t]) : s.replace(EN_RX, m => EN[m]);
+  };
+  const ATTRS = ['placeholder', 'aria-label', 'title', 'alt', 'content'];
+  const origText = new WeakMap(), origAttr = new WeakMap();
+  const skip = el => !el || el.closest('[data-raw], script, style, textarea, [data-lang]');
+  function trNode(n) {
+    if (n.nodeType === 3) {
+      if (skip(n.parentElement)) return;
+      const rec = origText.get(n);
+      if (rec && n.data === rec.en) return;
+      const en = tr(n.data);
+      if (en !== n.data) { origText.set(n, { ru: n.data, en }); n.data = en; }
+    } else if (n.nodeType === 1) {
+      if (skip(n)) return;
+      trAttrs(n);
+      n.querySelectorAll('*').forEach(trAttrs);
+      const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT);
+      for (let t; (t = w.nextNode());) trNode(t);
+    }
+  }
+  function trAttrs(el) {
+    if (el.closest('[data-raw], [data-lang]')) return;
+    for (const a of ATTRS) {
+      if (a === 'content' && el.tagName !== 'META') continue;
+      const v = el.getAttribute(a); if (!v || !CYR.test(v)) continue;
+      const map = origAttr.get(el) || {}; if (map[a] && map[a].en === v) continue;
+      const en = tr(v); if (en === v) continue;
+      map[a] = { ru: v, en }; origAttr.set(el, map); el.setAttribute(a, en);
+    }
+  }
+  function restore(root) {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let t; (t = w.nextNode());) { const r = origText.get(t); if (r && t.data === r.en) t.data = r.ru; origText.delete(t); }
+    root.querySelectorAll('*').forEach(el => {
+      const map = origAttr.get(el); if (!map) return;
+      for (const a in map) if (el.getAttribute(a) === map[a].en) el.setAttribute(a, map[a].ru);
+      origAttr.delete(el);
+    });
+  }
+  const obs = new MutationObserver(list => {
+    if (LANG !== 'en') return;
+    for (const m of list) {
+      if (m.type === 'childList') m.addedNodes.forEach(trNode);
+      else if (m.type === 'characterData') trNode(m.target);
+      else if (m.type === 'attributes') trAttrs(m.target);
+    }
+  });
+  const RU_TITLE = document.title;
+  function applyLang() {
+    document.documentElement.lang = LANG;
+    const b = $('#langBtn');
+    b.textContent = LANG === 'en' ? 'RU' : 'EN';
+    b.title = LANG === 'en' ? 'Переключить на русский' : 'Switch to English';
+    b.setAttribute('aria-label', b.title);
+    if (LANG === 'en') {
+      document.title = 'Love in Numbers: dating by date of birth';
+      trNode(document.head); trNode(document.body);
+      obs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+    } else {
+      obs.disconnect(); document.title = RU_TITLE; restore(document.head); restore(document.body);
+    }
+  }
+  $('#langBtn').addEventListener('click', () => {
+    const city = normalizeCity($('#fCity').value);
+    LANG = LANG === 'en' ? 'ru' : 'en'; store.set('lang', LANG);
+    fillCityLists(); if (city) $('#fCity').value = cityName(city);
+    applyLang();
+    // Перерисовываем то, где есть даты и время, чтобы они вышли в формате выбранного языка.
+    if (document.body.classList.contains('in-app')) setView(view);
+  });
+  applyLang();
+
   $('#home').addEventListener('click', e => { e.preventDefault(); if (document.body.classList.contains('in-app')) showHome(); else window.scrollTo(0, 0); });
 
   /* ---------- амуры: летают по сайту и стреляют из лука по анкетам ---------- */
