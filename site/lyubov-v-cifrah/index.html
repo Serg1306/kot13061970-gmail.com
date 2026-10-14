@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Совпало — знакомства по дате рождения</title>
+<title>Любовь в цифрах — знакомства по дате рождения</title>
 <meta name="description" content="Сайт знакомств, который подбирает партнёра по дате рождения: число судьбы, знак зодиака, восточный год и аркан пары.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Golos+Text:wght@400;500;600;700&display=swap">
 <style>
-/* Совпало: светлая «бумага», баклажановые чернила, кольцо совместимости — главный элемент страницы */
+/* Любовь в цифрах: светлая «бумага», баклажановые чернила, кольцо совместимости — главный элемент страницы */
 :root {
   --paper: #f5f3f8;
   --card: #ffffff;
@@ -55,7 +55,8 @@ button, input, select { font: inherit; color: inherit; }
 /* шапка */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.1rem; }
 .logo { font-family: var(--font-display); font-size: 1.5rem; text-decoration: none; color: var(--ink); display: flex; align-items: center; gap: .5rem; }
-.logo svg { width: 30px; height: 30px; }
+.logo { white-space: nowrap; }
+.logo svg { width: 30px; height: 30px; flex: none; }
 .top nav { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .btn { color: var(--ink); border: 1.5px solid var(--ink); background: transparent; border-radius: 999px; padding: .6rem 1.15rem; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; }
 .btn.solid { background: var(--ink); color: var(--paper); }
@@ -191,6 +192,9 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
   .me .btn { grid-column: 1 / -1; justify-self: start; }
   .preview.show { grid-template-columns: 1fr 1fr; }
   .top .btn.ghost { display: none; }
+  .logo { font-size: 1.2rem; gap: .35rem; }
+  .logo svg { width: 24px; height: 24px; }
+  .top .btn.solid { padding: .5rem .85rem; font-size: .9rem; }
 }
 </style>
 </head>
@@ -199,12 +203,12 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
   <header class="top">
     <a class="logo" href="#" id="home">
       <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="12" cy="16" r="9" fill="none" stroke="var(--rose)" stroke-width="2.5"/><circle cx="20" cy="16" r="9" fill="none" stroke="var(--sea)" stroke-width="2.5"/></svg>
-      Совпало
+      Любовь в цифрах
     </a>
     <nav>
       <button class="btn ghost" id="themeBtn" type="button" aria-label="Сменить тему">Тема</button>
       <a class="btn ghost" href="#how">Как считаем</a>
-      <a class="btn solid" href="#join" id="navJoin">Зарегистрироваться</a>
+      <a class="btn solid" href="#join" id="navJoin">Регистрация</a>
     </nav>
   </header>
 </div>
@@ -367,7 +371,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 
 <div class="wrap">
   <footer>
-    <span>Совпало. Демо-версия: анкеты сгенерированы, данные хранятся только в вашем браузере.</span>
+    <span>Любовь в цифрах. Демо-версия: анкеты сгенерированы, данные хранятся только в вашем браузере.</span>
     <span>Расчёты носят развлекательный характер.</span>
   </footer>
 </div>
@@ -379,9 +383,9 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const store = {
-    get(k, d) { try { const v = localStorage.getItem('sovpalo.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
-    set(k, v) { try { localStorage.setItem('sovpalo.' + k, JSON.stringify(v)); } catch {} },
-    del(k) { try { localStorage.removeItem('sovpalo.' + k); } catch {} }
+    get(k, d) { try { const v = localStorage.getItem('lvc.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('lvc.' + k, JSON.stringify(v)); } catch {} },
+    del(k) { try { localStorage.removeItem('lvc.' + k); } catch {} }
   };
 
   /* ---------- расчёты по дате ---------- */
@@ -606,7 +610,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
     window.scrollTo(0, 0);
     render();
   }
-  function leaveApp() { document.body.classList.remove('in-app'); $('#navJoin').textContent = 'Зарегистрироваться'; $('#navJoin').href = '#join'; }
+  function leaveApp() { document.body.classList.remove('in-app'); $('#navJoin').textContent = 'Регистрация'; $('#navJoin').href = '#join'; }
   function fillForm(u) {
     $('#fName').value = u.name; $('#fBirth').value = u.birth; $('#fCity').value = u.city; $('#fAbout').value = u.about || '';
     document.querySelector(`[name=g][value=${u.g}]`).checked = true;
