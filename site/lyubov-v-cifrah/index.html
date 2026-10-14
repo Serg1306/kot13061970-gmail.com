@@ -382,6 +382,7 @@ img.ava { object-fit: cover; }
 .empty .btn { margin-top: 1rem; }
 
 dialog { border: 0; border-radius: 26px; padding: 0; width: min(560px, calc(100vw - 2rem)); background: var(--card); color: var(--ink); max-height: calc(100vh - 2rem); }
+.ask { width: min(420px, calc(100vw - 2rem)); }
 dialog::backdrop { background: rgb(20 10 35 / .55); }
 .dlg { padding: 1.5rem; display: grid; gap: 1.1rem; }
 .dlg .head { display: flex; gap: 1rem; align-items: center; }
@@ -418,7 +419,7 @@ dialog::backdrop { background: rgb(20 10 35 / .55); }
 @keyframes heart-up { from { transform: translate(-50%, -50%) scale(.4); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% - var(--dy))) scale(1.1); opacity: 0; } }
 .cupid-hit { animation: cupid-hit .7s ease; }
 @keyframes cupid-hit { 0% { box-shadow: 0 0 0 0 rgb(217 58 99 / .55); } 25% { transform: rotate(-1.2deg) scale(1.025); } 55% { transform: rotate(1deg); } 100% { box-shadow: 0 0 0 18px rgb(217 58 99 / 0); transform: none; } }
-.cupid-toggle { position: fixed; left: 1rem; bottom: 1rem; z-index: 45; width: 2.9rem; height: 2.9rem; border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); cursor: pointer; display: grid; place-items: center; box-shadow: 0 4px 14px rgb(60 20 70 / .15); }
+.cupid-toggle { position: fixed; left: calc(1rem + env(safe-area-inset-left, 0px)); bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); z-index: 45; width: 2.9rem; height: 2.9rem; border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); cursor: pointer; display: grid; place-items: center; box-shadow: 0 4px 14px rgb(60 20 70 / .15); }
 .cupid-toggle svg { width: 1.6rem; height: 1.6rem; }
 .cupid-toggle[aria-pressed="false"] { opacity: .55; }
 .cupid-toggle[aria-pressed="false"]::after { content: ""; position: absolute; width: 2rem; height: 2px; background: var(--muted); transform: rotate(-45deg); }
@@ -761,6 +762,10 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 </div>
 
 <dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<dialog id="ask" class="ask"><form method="dialog" class="dlg">
+  <p id="askText" style="font-weight:600"></p>
+  <div class="actions"><button class="btn" value="no" id="askNo">Отмена</button><button class="btn rose" value="yes" id="askYes">Да</button></div>
+</form></dialog>
 <div class="toast" id="toast" role="status"></div>
 <div class="cupids" id="cupids" aria-hidden="true"></div>
 <button class="cupid-toggle" type="button" id="cupidToggle" aria-pressed="true" aria-label="Амуры: выключить" title="Амуры">
@@ -1104,7 +1109,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       </div>${shopHtml()}`;
   }
   // Демо-начисление без оплаты: только пока Робокасса не настроена или сайт открыт локально.
-  const demoAllowed = () => location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || payState.notConfigured;
+  // Демо-начисление: локально, пока Робокасса не настроена или когда у сайта нет сервера оплаты вовсе.
+  const demoAllowed = () => location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || payState.notConfigured || payState.noServer;
   const payState = { notConfigured: false };
   async function startPayment(key, btn) {
     const box = btn.closest('.shop').querySelector('.pay-box'); box.innerHTML = '';
@@ -1118,6 +1124,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     } catch (err) {
       btn.disabled = false; btn.textContent = label;
       const notReady = payState.notConfigured || location.protocol === 'file:' || /^http_404$/.test(err.message) || err instanceof TypeError;
+      if (/^http_404$/.test(err.message) || err instanceof TypeError) payState.noServer = true;
       box.innerHTML = `<div class="pay-msg">${notReady
         ? 'Оплата пока не подключена: владельцу сайта нужно указать данные магазина Робокассы в настройках Netlify.'
         : 'Не удалось перейти к оплате. Проверьте интернет и попробуйте ещё раз.'}
@@ -1302,10 +1309,10 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     document.querySelector(`[name=s][value=${u.seek}]`).checked = true;
     $('#fBirth').dispatchEvent(new Event('input'));
   }
-  $('#navJoin').addEventListener('click', e => {
+  $('#navJoin').addEventListener('click', async e => {
     if (!store.get('user')) return;
     e.preventDefault();
-    if (!confirm('Выйти и удалить анкету, фото и симпатии из этого браузера? Купленные VIP и монеты сохранятся.')) return;
+    if (!await ask('Выйти и удалить анкету, фото, переписку и симпатии из этого браузера? Купленные VIP и монеты сохранятся.', 'Выйти и удалить')) return;
     ['user', 'likes', 'passes', 'matches', 'chats', 'unread', 'friends', 'friendIn', 'friendOut', 'events', 'eventsSeen', 'postLikes', 'view', 'seeded'].forEach(store.del);
     likes.clear(); passes.clear(); matches.clear();
     for (const k in chats) delete chats[k]; for (const k in unread) delete unread[k];
@@ -1663,10 +1670,10 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       </article>`;
     }).join('');
   }
-  $('#postsBox').addEventListener('click', e => {
+  $('#postsBox').addEventListener('click', async e => {
     const l = e.target.closest('[data-plike]'), d = e.target.closest('[data-pdel]');
     if (l) { const id = l.dataset.plike; postLikes.has(id) ? postLikes.delete(id) : postLikes.add(id); store.set('postLikes', [...postLikes]); renderPosts(); }
-    if (d && confirm('Удалить запись?')) { myPosts = myPosts.filter(x => x.id !== d.dataset.pdel); idb.set('posts', myPosts); renderPosts(); }
+    if (d && await ask('Удалить запись из ленты?', 'Удалить')) { myPosts = myPosts.filter(x => x.id !== d.dataset.pdel); idb.set('posts', myPosts); renderPosts(); }
   });
   $('#postPhotoBtn').addEventListener('click', () => $('#postPhoto').click());
   $('#postPhoto').addEventListener('change', async e => {
@@ -1869,6 +1876,12 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   });
   $('#dlg').addEventListener('close', () => { const st = $('#gStage'); if (st) st.innerHTML = ''; });
 
+  // Своё окно подтверждения: стандартный confirm() блокируется в некоторых встроенных просмотрщиках.
+  function ask(text, yes = 'Да') {
+    const d = $('#ask'); $('#askText').textContent = text; $('#askYes').textContent = yes; d.returnValue = '';
+    d.showModal();
+    return new Promise(res => d.addEventListener('close', () => res(d.returnValue === 'yes'), { once: true }));
+  }
   let tt;
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 3400); }
 
