@@ -69,7 +69,7 @@ button, input, select { font: inherit; color: inherit; }
 .logo svg { width: 30px; height: 30px; flex: none; }
 .top nav { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .btn { color: var(--ink); border: 1.5px solid var(--ink); background: transparent; border-radius: 999px; padding: .6rem 1.15rem; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: .4rem; }
-.btn[hidden] { display: none; }
+[hidden] { display: none !important; }
 .btn.solid { background: var(--ink); color: var(--paper); }
 .btn.rose { background: var(--rose); border-color: var(--rose); color: #fff; }
 .btn.ghost { border-color: transparent; }
@@ -229,6 +229,8 @@ img.ava { object-fit: cover; }
 .gift .g { font-size: 1.7rem; line-height: 1.1; }
 .gift:hover { border-color: var(--rose); color: var(--ink); }
 .sent-gifts { font-size: 1.3rem; letter-spacing: .1em; }
+.joined { display: flex; flex-wrap: wrap; gap: 1.2rem 2rem; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 1.6rem; }
+.joined-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
 .pricing { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 .pricing article { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 1.4rem; display: grid; gap: .8rem; align-content: start; }
 .pricing ul { margin: 0; padding-left: 1.1rem; color: var(--muted); }
@@ -446,9 +448,17 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   </section>
 
   <section class="block wrap" id="join">
+    <div class="joined" id="joined" hidden>
+      <div><h2 id="joinedTitle">Вы уже с нами</h2>
+        <p style="color:var(--muted);margin-top:.6rem">Ваша анкета сохранена. Совпадения, симпатии и фото ждут в личном кабинете.</p></div>
+      <div class="joined-actions">
+        <button class="btn rose" type="button" id="joinedOpen">Моя анкета</button>
+        <button class="btn" type="button" id="joinedEdit">Изменить анкету</button>
+      </div>
+    </div>
     <div class="reg">
       <div>
-        <h2>Регистрация за минуту</h2>
+        <h2 id="regTitle">Регистрация за минуту</h2>
         <p style="color:var(--muted);margin-top:1rem">Дата рождения нужна для расчёта. В анкете другие видят только возраст, знак и число судьбы, точная дата скрыта.</p>
         <ol class="steps-list" id="steps">
           <li class="on">Имя и кого вы ищете</li>
@@ -755,6 +765,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       g: document.querySelector('[name=g]:checked').value, seek: document.querySelector('[name=s]:checked').value
     };
     store.set('user', user);
+    editing = false;
     const a = ageOf(birth);
     $('#fAgeFrom').value = Math.max(18, a - 8); $('#fAgeTo').value = a + 8;
     $('#fCityF').value = user.city;
@@ -772,6 +783,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const u = store.get('user');
     if (!u) return;
     document.body.classList.add('in-app');
+    editing = false;
     setNav();
     renderMe();
     renderPhotos();
@@ -785,7 +797,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <div><h2 style="font-size:1.8rem">${esc(u.name)}, ${ageOf(u.birth)}</h2>
         <div class="facts"><span class="chip">${esc(u.city)}</span><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}, ${ARCANA[f.arc][0]}</span></div></div>
       <button class="btn" id="editBtn" type="button">Изменить анкету</button>`;
-    $('#editBtn').onclick = () => { fillForm(u); leaveApp(); location.hash = 'join'; };
+    $('#editBtn').onclick = startEdit;
   }
 
   /* ---------- VIP, монеты, подарки и оплата через Робокассу ---------- */
@@ -925,7 +937,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
         <div class="rows">${['vip_3d', 'vip_1m', 'vip_3m'].map(k => `<div><span>${SHOP[k].title}</span><b>${rub(SHOP[k].price)}</b></div>`).join('')}</div></article>
       <article><h3>Монеты</h3><ul><li>Поднять анкету в поиске на сутки: ${BOOST_COST} монет</li><li>Подарки: ${GIFTS.map(g => `${g[1]} ${g[3]}`).join(', ')} монет</li></ul>
         <div class="rows">${['coins_100', 'coins_550', 'coins_1200'].map(k => `<div><span>${SHOP[k].title}</span><b>${rub(SHOP[k].price)}</b></div>`).join('')}</div></article>
-      <article><h3>Как оплатить</h3><ul><li>Оплата через Робокассу: карты, СБП, кошельки</li><li>Чек приходит на почту</li><li>VIP не продлевается автоматически</li></ul><a class="btn rose" href="#join" style="justify-self:start">Зарегистрироваться</a><a href="oferta.html">Оферта, оплата и возврат</a></article>`;
+      <article><h3>Как оплатить</h3><ul><li>Оплата через Робокассу: карты, СБП, кошельки</li><li>Чек приходит на почту</li><li>VIP не продлевается автоматически</li></ul><a class="btn rose" href="#join" id="priceJoin" style="justify-self:start">Зарегистрироваться</a><a href="oferta.html">Оферта, оплата и возврат</a></article>`;
   }
 
   /* ---------- мои фото: до 10 штук, хранятся в IndexedDB этого браузера ---------- */
@@ -1029,7 +1041,17 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     $('#navView').textContent = inApp ? 'Главная' : 'Моя анкета';
     $('#heroCta').textContent = u ? 'Мои совпадения' : 'Найти свою пару';
     $('#regForm button[type=submit]').textContent = u ? 'Сохранить анкету' : 'Показать мои совпадения';
+    // зарегистрированным не предлагаем регистрацию снова: вместо формы — переход в анкету, форма только для правки
+    $('#joined').hidden = !u || editing;
+    $('.reg').hidden = Boolean(u) && !editing;
+    $('#regTitle').textContent = u ? 'Изменить анкету' : 'Регистрация за минуту';
+    if (u) $('#joinedTitle').textContent = `Вы вошли как ${u.name}`;
+    $('#priceJoin').hidden = Boolean(u);
   }
+  let editing = false;
+  function startEdit() { editing = true; fillForm(store.get('user')); leaveApp(); $('#join').scrollIntoView(); }
+  $('#joinedOpen').addEventListener('click', () => enterApp());
+  $('#joinedEdit').addEventListener('click', startEdit);
   function showHome() {
     const u = store.get('user');
     leaveApp();
