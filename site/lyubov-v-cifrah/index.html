@@ -185,6 +185,44 @@ body.in-app #app { display: block; }
 .ava.big { width: 84px; height: 84px; font-size: 2rem; }
 img.ava { object-fit: cover; }
 
+/* платные возможности: VIP, монеты, подарки */
+.wallet { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: 1rem 0 1.2rem; border-bottom: 1px solid var(--line); }
+.wallet .chip b { font-variant-numeric: tabular-nums; }
+.vip-badge { background: linear-gradient(100deg, var(--sun), var(--rose)); color: #fff; font-weight: 700; font-size: .78rem; padding: .15rem .55rem; border-radius: 999px; letter-spacing: .02em; }
+.wallet .btn { padding: .45rem .95rem; font-size: .92rem; }
+.wallet .switch { display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; color: var(--muted); }
+.wallet .switch input { accent-color: var(--rose); }
+.limit-note { color: var(--muted); font-size: .9rem; margin: -.6rem 0 1rem; }
+.locked .person { pointer-events: none; }
+.locked .person .cover img, .locked .person .body { filter: blur(9px); }
+.paywall { grid-column: 1 / -1; border-radius: 20px; padding: 1.4rem; background: linear-gradient(110deg, var(--rose), var(--plum)); color: #fff; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+.paywall p { color: #fff; opacity: .92; }
+.paywall .btn { background: #fff; color: var(--ink); border-color: #fff; }
+.shop { display: grid; gap: 1.3rem; }
+.shop h4 { font-family: var(--font-display); font-weight: 400; font-size: 1.3rem; margin: 0; }
+.shop .perks { margin: .2rem 0 0; padding-left: 1.1rem; color: var(--muted); font-size: .93rem; columns: 2 14rem; }
+.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+.plan { border: 1.5px solid var(--line); border-radius: 16px; padding: .9rem .8rem; display: grid; gap: .25rem; text-align: center; background: var(--paper); }
+.plan.hit { border-color: var(--rose); position: relative; }
+.plan.hit::before { content: "Выгоднее"; position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); background: var(--rose); color: #fff; font-size: .72rem; font-weight: 700; padding: .05rem .5rem; border-radius: 999px; }
+.plan .t { font-weight: 600; font-size: .92rem; }
+.plan .p { font-family: var(--font-display); font-size: 1.7rem; line-height: 1.1; }
+.plan .d { color: var(--muted); font-size: .8rem; }
+.plan .btn { justify-content: center; padding: .45rem .6rem; font-size: .88rem; margin-top: .35rem; }
+.shop .fine { color: var(--muted); font-size: .82rem; }
+.pay-msg { border-radius: 14px; padding: .8rem 1rem; background: var(--paper); border: 1.5px dashed var(--rose); font-size: .92rem; display: grid; gap: .6rem; }
+.gifts { display: grid; grid-template-columns: repeat(5, 1fr); gap: .45rem; }
+.gift { border: 1.5px solid var(--line); background: var(--paper); border-radius: 14px; padding: .55rem .2rem; cursor: pointer; display: grid; gap: .1rem; justify-items: center; font-size: .78rem; color: var(--muted); }
+.gift .g { font-size: 1.7rem; line-height: 1.1; }
+.gift:hover { border-color: var(--rose); color: var(--ink); }
+.sent-gifts { font-size: 1.3rem; letter-spacing: .1em; }
+.pricing { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.pricing article { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 1.4rem; display: grid; gap: .8rem; align-content: start; }
+.pricing ul { margin: 0; padding-left: 1.1rem; color: var(--muted); }
+.pricing .rows { display: grid; gap: .35rem; }
+.pricing .rows div { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--line); padding-bottom: .3rem; }
+.pricing .rows b { font-variant-numeric: tabular-nums; }
+
 /* мои фото */
 .myphotos { padding: 1.4rem 0 1.6rem; border-bottom: 1px solid var(--line); }
 .mp-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1rem; }
@@ -252,6 +290,7 @@ footer { border-top: 1px solid var(--line); padding-block: 2rem; color: var(--mu
 footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--ink); }
 
 @media (max-width: 900px) {
+  .pricing { grid-template-columns: 1fr; }
   .hero, .reg, .block .intro { grid-template-columns: 1fr; gap: 2rem; }
   .systems { grid-template-columns: 1fr 1fr; }
   }
@@ -261,6 +300,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   .me .btn { grid-column: 1 / -1; justify-self: start; }
   .preview.show { grid-template-columns: 1fr 1fr; }
   .top .btn.ghost { display: none; }
+  .plans { grid-template-columns: 1fr; }
+  .gifts { grid-template-columns: repeat(3, 1fr); }
   .slide { flex-basis: 140px; }
   .carousel-head p { display: none; }
   .logo { font-size: 1.75rem; gap: .35rem; }
@@ -357,6 +398,14 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     </div>
   </section>
 
+  <section class="block wrap" id="prices">
+    <div class="intro">
+      <h2>Бесплатно и с VIP</h2>
+      <p>Знакомиться, смотреть анкеты и считать совместимость можно бесплатно. VIP-статус и монеты открывают дополнительные возможности. Оплата картой или через СБП в Робокассе.</p>
+    </div>
+    <div class="pricing" id="pricing"></div>
+  </section>
+
   <section class="block wrap" id="join">
     <div class="reg">
       <div>
@@ -403,6 +452,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 
 <main id="app" class="wrap">
   <div class="me" id="me"></div>
+  <div class="wallet" id="wallet"></div>
   <section class="myphotos" aria-labelledby="mpTitle">
     <div class="mp-head">
       <h3 id="mpTitle">Мои фото</h3><span class="count" id="mpCount"></span>
@@ -417,7 +467,10 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     <button role="tab" aria-selected="true" data-tab="feed">Подобрано для вас</button>
     <button role="tab" aria-selected="false" data-tab="likes">Мне понравились<span class="count" id="cLikes"></span></button>
     <button role="tab" aria-selected="false" data-tab="matches">Взаимно<span class="count" id="cMatches"></span></button>
+    <button role="tab" aria-selected="false" data-tab="admirers">Вас лайкнули<span class="count" id="cAdmirers"></span></button>
+    <button role="tab" aria-selected="false" data-tab="guests">Гости<span class="count" id="cGuests"></span></button>
   </div>
+  <p class="limit-note" id="limitNote"></p>
   <div class="filters" id="filters">
     <div class="field"><label for="fMin">Совместимость от <b id="minOut">60</b>%</label><input type="range" id="fMin" min="0" max="95" step="5" value="60"></div>
     <div class="field"><label for="fAgeFrom">Возраст от</label><input type="number" id="fAgeFrom" min="18" max="80" value="18"></div>
@@ -431,6 +484,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   <footer>
     <span>Любовь в цифрах. Демо-версия: анкеты и их фото сгенерированы, ваши данные и фото хранятся только в вашем браузере.</span>
     <span>Расчёты носят развлекательный характер.</span>
+    <span><a href="oferta.html">Оферта, оплата и возврат</a></span>
     <p class="legal">Разработчик: Жеребцов Сергей Владимирович. ИНН 667807174690. © 2026</p>
   </footer>
 </div>
@@ -680,6 +734,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     $('#navJoin').textContent = 'Выйти'; $('#navJoin').href = '#';
     renderMe();
     renderPhotos();
+    renderWallet();
     window.scrollTo(0, 0);
     render();
   }
@@ -690,6 +745,146 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
         <div class="facts"><span class="chip">${esc(u.city)}</span><span class="chip">${f.z.glyph} ${f.z.name}</span><span class="chip">Число ${f.life}</span><span class="chip">${f.e.name}</span><span class="chip">Аркан ${f.arc}, ${ARCANA[f.arc][0]}</span></div></div>
       <button class="btn" id="editBtn" type="button">Изменить анкету</button>`;
     $('#editBtn').onclick = () => { fillForm(u); leaveApp(); location.hash = 'join'; };
+  }
+
+  /* ---------- VIP, монеты, подарки и оплата через Робокассу ---------- */
+  // Цены должны совпадать с CATALOG в netlify/lib/robokassa.mjs: сумму к оплате задаёт сервер.
+  const SHOP = {
+    vip_3d: { title: 'VIP на 3 дня', price: 199, vipDays: 3 },
+    vip_1m: { title: 'VIP на 30 дней', price: 599, vipDays: 30, hit: true },
+    vip_3m: { title: 'VIP на 90 дней', price: 1290, vipDays: 90 },
+    coins_100: { title: '100 монет', price: 99, coins: 100 },
+    coins_550: { title: '550 монет', price: 449, coins: 550, hit: true },
+    coins_1200: { title: '1200 монет', price: 890, coins: 1200 }
+  };
+  const VIP_PERKS = ['Видно, кто вас лайкнул', 'Видно гостей анкеты', 'Симпатии без лимита', 'Режим невидимки', 'Можно скрыть возраст', 'Значок VIP в анкете'];
+  const FREE_LIKES = 30, BOOST_COST = 50, DAY = 86400000;
+  const GIFTS = [['rose', '🌹', 'Роза', 10], ['coffee', '☕', 'Кофе', 15], ['heart', '💝', 'Сердце', 20], ['bear', '🧸', 'Мишка', 40], ['star', '⭐', 'Звезда', 50]];
+  // Покупки хранятся в этом браузере; в боевой версии их хранит сервер после уведомления Робокассы.
+  const wallet = () => ({ coins: 0, vipUntil: 0, boostUntil: 0, invisible: false, hideAge: false, paid: [], ...store.get('wallet', {}) });
+  const saveWallet = w => store.set('wallet', w);
+  const isVip = () => wallet().vipUntil > Date.now();
+  const rub = n => `${n.toLocaleString('ru-RU')}\u00a0₽`;
+  const dateRu = t => new Date(t).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  const today = () => new Date().toISOString().slice(0, 10);
+  const likesUsed = () => { const l = store.get('likesToday', {}); return l.d === today() ? l.n : 0; };
+  const sentGifts = store.get('gifts', {});
+
+  function renderWallet() {
+    const w = wallet(), vip = isVip(), boosted = w.boostUntil > Date.now();
+    $('#wallet').innerHTML = `
+      ${vip ? `<span class="vip-badge">VIP</span><span class="chip">VIP до ${dateRu(w.vipUntil)}</span>` : `<span class="chip">Обычный аккаунт</span>`}
+      <span class="chip">Монеты: <b>${w.coins}</b></span>
+      <button class="btn rose" type="button" data-shop="vip">${vip ? 'Продлить VIP' : 'Подключить VIP'}</button>
+      <button class="btn" type="button" data-shop="coins">Купить монеты</button>
+      ${boosted ? `<span class="chip">Анкета поднята до ${new Date(w.boostUntil).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</span>`
+        : `<button class="btn" type="button" id="boostBtn">Поднять анкету за ${BOOST_COST} монет</button>`}
+      ${vip ? `<label class="switch"><input type="checkbox" id="swInvisible" ${w.invisible ? 'checked' : ''}> Невидимка</label>
+        <label class="switch"><input type="checkbox" id="swHideAge" ${w.hideAge ? 'checked' : ''}> Скрыть возраст</label>` : ''}`;
+    const boost = $('#boostBtn');
+    if (boost) boost.onclick = () => {
+      const w2 = wallet();
+      if (w2.coins < BOOST_COST) return openShop('coins', `Для поднятия анкеты нужно ${BOOST_COST} монет, у вас ${w2.coins}.`);
+      w2.coins -= BOOST_COST; w2.boostUntil = Date.now() + DAY; saveWallet(w2);
+      toast('Анкета поднята: сутки она показывается первой в поиске.'); renderWallet();
+    };
+    ['swInvisible', 'swHideAge'].forEach(id => {
+      const el = $('#' + id); if (!el) return;
+      el.onchange = () => {
+        const w2 = wallet(); w2[id === 'swInvisible' ? 'invisible' : 'hideAge'] = el.checked; saveWallet(w2);
+        toast(id === 'swInvisible' ? (el.checked ? 'Режим невидимки включён: вы смотрите анкеты, не попадая в гости.' : 'Режим невидимки выключен.') : (el.checked ? 'Возраст скрыт в вашей анкете.' : 'Возраст снова виден в анкете.'));
+      };
+    });
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-shop]'); if (b && !b.closest('#dlg')) openShop(b.dataset.shop); });
+
+  const planCard = (key, perDay) => {
+    const it = SHOP[key];
+    return `<div class="plan${it.hit ? ' hit' : ''}"><span class="t">${it.title}</span><span class="p">${rub(it.price)}</span>
+      <span class="d">${perDay ? `${Math.round(it.price / it.vipDays)} ₽ в день` : `${(it.price / it.coins).toFixed(2).replace('.', ',')} ₽ за монету`}</span>
+      <button class="btn rose" type="button" data-buy="${key}" aria-label="Оплатить ${it.title} за ${rub(it.price)}">Оплатить</button></div>`;
+  };
+  function openShop(focus, note) {
+    const w = wallet();
+    $('#dlgBody').innerHTML = `
+      <div class="head"><div><h3 style="font-size:1.6rem">VIP и монеты</h3><div style="color:var(--muted)">${isVip() ? `VIP до ${dateRu(w.vipUntil)}, ` : ''}монет: ${w.coins}</div></div>
+        <button class="x" type="button" aria-label="Закрыть" data-close>×</button></div>
+      ${note ? `<div class="pay-msg">${note}</div>` : ''}
+      <div class="shop">
+        <section id="shopVip"><h4>VIP-статус</h4><ul class="perks">${VIP_PERKS.map(x => `<li>${x}</li>`).join('')}</ul></section>
+        <div class="plans">${['vip_3d', 'vip_1m', 'vip_3m'].map(k => planCard(k, true)).join('')}</div>
+        <section id="shopCoins"><h4>Монеты</h4><ul class="perks"><li>Поднять анкету на сутки: ${BOOST_COST} монет</li><li>Подарки: от 10 монет</li></ul></section>
+        <div class="plans">${['coins_100', 'coins_550', 'coins_1200'].map(k => planCard(k)).join('')}</div>
+        <div id="payMsg" aria-live="polite"></div>
+        <p class="fine">Оплата проходит на защищённой странице Робокассы: банковские карты, СБП, электронные кошельки. VIP не продлевается автоматически. Нажимая «Оплатить», вы принимаете <a href="oferta.html" target="_blank">условия оферты</a>.</p>
+      </div>`;
+    showDialog(null);
+    if (focus === 'coins') $('#shopCoins').scrollIntoView({ block: 'start' });
+  }
+  // Демо-начисление без оплаты: только пока Робокасса не настроена или сайт открыт локально.
+  const demoAllowed = () => location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || payState.notConfigured;
+  const payState = { notConfigured: false };
+  async function startPayment(key, btn) {
+    const box = $('#payMsg'); box.innerHTML = '';
+    btn.disabled = true; const label = btn.textContent; btn.textContent = 'Переходим к оплате…';
+    try {
+      const r = await fetch('/api/pay', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ product: key }) });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.url) { store.set('pendingPay', { key, invId: data.invId, at: Date.now() }); location.href = data.url; return; }
+      if (data.error === 'not_configured') payState.notConfigured = true;
+      throw new Error(data.error || 'http_' + r.status);
+    } catch (err) {
+      btn.disabled = false; btn.textContent = label;
+      const notReady = payState.notConfigured || location.protocol === 'file:' || /^http_404$/.test(err.message) || err instanceof TypeError;
+      box.innerHTML = `<div class="pay-msg">${notReady
+        ? 'Оплата пока не подключена: владельцу сайта нужно указать данные магазина Робокассы в настройках Netlify.'
+        : 'Не удалось перейти к оплате. Проверьте интернет и попробуйте ещё раз.'}
+        ${notReady && demoAllowed() ? `<button class="btn" type="button" data-demo="${key}">Начислить в демо-режиме, без оплаты</button>` : ''}</div>`;
+      box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+  function grant(key, invId) {
+    const it = SHOP[key], w = wallet();
+    if (!it || (invId && w.paid.includes(invId))) return false;
+    if (it.vipDays) w.vipUntil = Math.max(Date.now(), w.vipUntil) + it.vipDays * DAY;
+    if (it.coins) w.coins += it.coins;
+    if (invId) w.paid.push(invId);
+    saveWallet(w);
+    return true;
+  }
+  $('#dlg').addEventListener('click', e => {
+    const buy = e.target.closest('[data-buy]'), demo = e.target.closest('[data-demo]');
+    if (buy) startPayment(buy.dataset.buy, buy);
+    if (demo) { grant(demo.dataset.demo); $('#dlg').close(); toast(`Начислено в демо-режиме: ${SHOP[demo.dataset.demo].title}.`); afterWalletChange(); }
+  });
+  function afterWalletChange() { if (document.body.classList.contains('in-app')) { renderWallet(); render(); } }
+
+  // Возврат с Робокассы: SuccessURL приносит подпись, сервер проверяет её паролем #1.
+  async function handlePaymentReturn() {
+    const q = new URLSearchParams(location.search);
+    const clean = () => history.replaceState(null, '', location.pathname + location.hash);
+    if (q.get('pay') === 'fail') { clean(); store.del('pendingPay'); toast('Оплата не завершена, деньги не списаны. Можно попробовать ещё раз.'); return; }
+    if (!q.has('InvId') || !q.has('SignatureValue')) return;
+    try {
+      const r = await fetch('/api/pay-confirm', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.fromEntries(q)) });
+      const data = await r.json();
+      if (!r.ok || !data.ok) throw new Error(data.error);
+      const fresh = grant(data.product, data.invId);
+      toast(fresh ? `Оплата прошла: ${SHOP[data.product].title}. Спасибо!` : 'Эта оплата уже зачислена.');
+      store.del('pendingPay');
+      afterWalletChange();
+    } catch { toast('Не удалось подтвердить оплату. Если деньги списались, напишите нам, указав номер заказа ' + q.get('InvId') + '.'); }
+    clean();
+  }
+
+  function renderPricing() {
+    $('#pricing').innerHTML = `
+      <article><h3>Бесплатно</h3><ul><li>Анкета, до 10 фото</li><li>Подбор по дате рождения и разбор совместимости</li><li>${FREE_LIKES} симпатий в день</li><li>Просмотр анкет, фото и видео</li><li>Переписка при взаимной симпатии</li></ul></article>
+      <article><h3>VIP-статус</h3><ul>${VIP_PERKS.map(x => `<li>${x}</li>`).join('')}</ul>
+        <div class="rows">${['vip_3d', 'vip_1m', 'vip_3m'].map(k => `<div><span>${SHOP[k].title}</span><b>${rub(SHOP[k].price)}</b></div>`).join('')}</div></article>
+      <article><h3>Монеты</h3><ul><li>Поднять анкету в поиске на сутки: ${BOOST_COST} монет</li><li>Подарки: ${GIFTS.map(g => `${g[1]} ${g[3]}`).join(', ')} монет</li></ul>
+        <div class="rows">${['coins_100', 'coins_550', 'coins_1200'].map(k => `<div><span>${SHOP[k].title}</span><b>${rub(SHOP[k].price)}</b></div>`).join('')}</div></article>
+      <article><h3>Как оплатить</h3><ul><li>Оплата через Робокассу: карты, СБП, кошельки</li><li>Чек приходит на почту</li><li>VIP не продлевается автоматически</li></ul><a class="btn rose" href="#join" style="justify-self:start">Зарегистрироваться</a><a href="oferta.html">Оферта, оплата и возврат</a></article>`;
   }
 
   /* ---------- мои фото: до 10 штук, хранятся в IndexedDB этого браузера ---------- */
@@ -776,7 +971,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   $('#previewMe').addEventListener('click', () => {
     const u = store.get('user'), f = factsOf(u.birth);
     $('#dlgBody').innerHTML = `
-      <div class="head"><div><h3 style="font-size:1.6rem">${esc(u.name)}, ${ageOf(u.birth)}</h3><div style="color:var(--muted)">${esc(u.city)}</div></div>
+      <div class="head"><div><h3 style="font-size:1.6rem">${esc(u.name)}${wallet().hideAge && isVip() ? '' : `, ${ageOf(u.birth)}`} ${isVip() ? '<span class="vip-badge">VIP</span>' : ''}</h3><div style="color:var(--muted)">${esc(u.city)}${wallet().boostUntil > Date.now() ? ', анкета поднята' : ''}</div></div>
         <button class="x" type="button" aria-label="Закрыть" data-close>×</button></div>
       ${myPhotos.length ? galleryHtml(myPhotos.map(ph => ({ type: 'photo', src: ph.src }))) : '<div class="empty">Фото пока нет. Анкеты с фото чаще получают симпатии.</div>'}
       ${u.about ? `<p class="about">${esc(u.about)}</p>` : ''}
@@ -814,29 +1009,44 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const all = candidates();
     $('#cLikes').textContent = likes.size || '';
     $('#cMatches').textContent = matches.size || '';
+    // демо: «лайкнули» те, кто ответит взаимностью, «гости» — часть остальных
+    const admirers = all.filter(p => p.likesYou < .22 && !matches.has(p.id));
+    const guests = all.filter(p => p.likesYou >= .22 && p.likesYou < .4);
+    $('#cAdmirers').textContent = admirers.length || '';
+    $('#cGuests').textContent = guests.length || '';
     $('#filters').style.display = tab === 'feed' ? '' : 'none';
+    const left = Math.max(0, FREE_LIKES - likesUsed());
+    $('#limitNote').textContent = isVip() || tab !== 'feed' ? '' : `Осталось симпатий сегодня: ${left} из ${FREE_LIKES}. С VIP без ограничений.`;
     let list;
     if (tab === 'feed') {
       const min = +$('#fMin').value, from = +$('#fAgeFrom').value || 18, to = +$('#fAgeTo').value || 99, city = $('#fCityF').value;
       list = all.filter(p => !likes.has(p.id) && !passes.has(p.id) && p.res.total >= min && p.age >= from && p.age <= to && (!city || p.city === city));
     } else if (tab === 'likes') list = all.filter(p => likes.has(p.id) && !matches.has(p.id));
+    else if (tab === 'admirers') list = admirers;
+    else if (tab === 'guests') list = guests;
     else list = all.filter(p => matches.has(p.id));
 
     const feed = $('#feed');
+    const locked = (tab === 'admirers' || tab === 'guests') && !isVip();
+    feed.classList.toggle('locked', locked);
     if (!list.length) {
       const msg = {
         feed: ['Под эти фильтры никто не подходит.', 'Снизьте порог совместимости или выберите «Любой» город.', '<button class="btn" type="button" id="relax">Сбросить фильтры</button>'],
         likes: ['Вы ещё никого не отметили.', 'Откройте анкету в подборке и нажмите «Нравится».', ''],
-        matches: ['Взаимных симпатий пока нет.', 'Когда человек ответит на ваш лайк, он появится здесь и можно будет написать.', '']
+        matches: ['Взаимных симпатий пока нет.', 'Когда человек ответит на ваш лайк, он появится здесь и можно будет написать.', ''],
+        admirers: ['Новых симпатий пока нет.', 'Добавьте фото и поднимите анкету, чтобы вас замечали чаще.', ''],
+        guests: ['Вашу анкету ещё никто не открывал.', 'Поднимите анкету, чтобы её чаще показывали в поиске.', '']
       }[tab];
       feed.innerHTML = `<div class="empty"><p style="margin-inline:auto;color:var(--ink);font-weight:600">${msg[0]}</p><p style="margin-inline:auto">${msg[1]}</p>${msg[2]}</div>`;
       const r = $('#relax'); if (r) r.onclick = () => { $('#fMin').value = 0; $('#minOut').textContent = 0; $('#fAgeFrom').value = 18; $('#fAgeTo').value = 80; $('#fCityF').value = ''; render(); };
       return;
     }
-    feed.innerHTML = list.slice(0, 60).map(p => {
+    const wall = locked ? `<div class="paywall"><div><h3>${tab === 'admirers' ? `Вас лайкнули ${list.length} человек` : `Вашу анкету смотрели ${list.length} человек`}</h3>
+      <p>Подключите VIP-статус, чтобы увидеть, кто это.</p></div><button class="btn" type="button" data-shop="vip">Подключить VIP</button></div>` : '';
+    feed.innerHTML = wall + list.slice(0, locked ? 8 : 60).map(p => {
       const f = factsOf(p.birth);
       const photos = p.media.filter(m => m.type === 'photo').length, hasVideo = p.media.some(m => m.type === 'video');
-      return `<button class="person" type="button" data-id="${p.id}" aria-label="${p.name}, ${p.age}, совместимость ${p.res.total}%, ${photos} фото${hasVideo ? ' и видео' : ''}">
+      return `<button class="person" type="button" data-id="${p.id}" ${locked ? 'tabindex="-1" aria-hidden="true"' : ''} aria-label="${p.name}, ${p.age}, совместимость ${p.res.total}%, ${photos} фото${hasVideo ? ' и видео' : ''}">
         <div class="cover"><img src="${p.media[0].src}" alt="" loading="lazy">
           <span class="badges"><span class="badge">${ICON_CAM}${photos}</span>${hasVideo ? `<span class="badge">${ICON_PLAY}видео</span>` : ''}</span></div>
         <div class="body">
@@ -869,6 +1079,12 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       <div style="display:flex;align-items:baseline;gap:.6rem"><span style="font-family:var(--font-display);font-size:3rem;line-height:1">${res.total}%</span><span style="color:var(--muted)">${verdictOf(res.total)}</span></div>
       <div class="breakdown">${res.parts.map(x => `<div class="item"><span class="t">${x.t}</span><span class="v">${x.v}</span><span class="meter"><i style="width:${x.v}%;background:${x.c}"></i></span><span class="why">${x.why}</span></div>`).join('')}</div>
       <div class="arcana"><div class="num">${res.pairArcanum}</div><div><b>Аркан вашей пары: ${res.arc[0]}</b><p style="color:var(--muted);font-size:.93rem">${res.arc[1]}</p></div></div>
+      ${guestBirth ? '' : `<div class="giftbox">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:1rem"><b>Подарок</b><span style="color:var(--muted);font-size:.9rem">Монет: ${wallet().coins}</span></div>
+        ${sentGifts[id] ? `<p style="color:var(--muted);font-size:.9rem">Вы подарили: <span class="sent-gifts">${sentGifts[id].map(g => GIFTS.find(x => x[0] === g)[1]).join('')}</span></p>` : ''}
+        <div class="gifts" style="margin-top:.5rem">${GIFTS.map(g => `<button class="gift" type="button" data-gift="${g[0]}" aria-label="Подарить: ${g[2]}, ${g[3]} монет"><span class="g">${g[1]}</span>${g[3]} монет</button>`).join('')}</div>
+      </div>`}
+      <div id="likeMsg" aria-live="polite"></div>
       <div class="actions">
         ${guestBirth ? `<a class="btn rose" href="#join" data-act="join">Зарегистрироваться, чтобы познакомиться</a>` : matched ? `<button class="btn rose" type="button" data-act="write">Написать сообщение</button>` :
           liked ? `<button class="btn" type="button" disabled>Симпатия отправлена</button>` :
@@ -877,6 +1093,11 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
     const dlg = $('#dlg');
     showDialog(act => {
       if (act === 'like') {
+        if (!isVip() && likesUsed() >= FREE_LIKES) {
+          $('#likeMsg').innerHTML = `<div class="pay-msg">Сегодня вы уже отправили ${FREE_LIKES} симпатий. Завтра лимит обновится, а с VIP-статусом ограничений нет.<button class="btn rose" type="button" data-shop-in="vip" style="justify-self:start">Подключить VIP</button></div>`;
+          return;
+        }
+        if (!isVip()) store.set('likesToday', { d: today(), n: likesUsed() + 1 });
         likes.add(id);
         // демо: человек отвечает взаимностью с вероятностью, растущей с совместимостью
         if (p.likesYou < res.total / 100 - .15) { matches.add(id); toast(`Взаимно! ${p.name} тоже отметил(а) вас. Можно написать первым.`); }
@@ -886,6 +1107,16 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       else if (act === 'write') { toast('Чат появится в следующей версии.'); }
       else if (act === 'join') { dlg.close(); }
     });
+    $('#dlgBody').onclick = e => {
+      if (e.target.closest('[data-shop-in]')) return openShop(e.target.closest('[data-shop-in]').dataset.shopIn);
+      const gb = e.target.closest('[data-gift]'); if (!gb) return;
+      const g = GIFTS.find(x => x[0] === gb.dataset.gift), w = wallet();
+      if (w.coins < g[3]) return openShop('coins', `Для подарка «${g[2]}» нужно ${g[3]} монет, у вас ${w.coins}.`);
+      w.coins -= g[3]; saveWallet(w);
+      (sentGifts[id] = sentGifts[id] || []).push(g[0]); store.set('gifts', sentGifts);
+      toast(`Подарок «${g[2]}» отправлен. ${p.name} увидит его в своей анкете.`);
+      openPerson(id); renderWallet();
+    };
   }
 
   /* ---------- карусель анкет на главной ---------- */
@@ -960,7 +1191,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
       if (act && onAct) onAct(act);
     };
     if ($('#gStage')) showMedia(0);
-    dlg.showModal();
+    if (!dlg.open) dlg.showModal();
     dlg.scrollTop = 0;
   }
   $('#dlg').addEventListener('keydown', e => {
@@ -990,6 +1221,8 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
   $('#home').addEventListener('click', e => { e.preventDefault(); window.scrollTo(0, 0); });
 
   updateHero();
+  renderPricing();
+  handlePaymentReturn();
   if (store.get('user')) idb.get('photos').then(ph => { myPhotos = Array.isArray(ph) ? ph : []; enterApp(); });
 })();
 </script>
