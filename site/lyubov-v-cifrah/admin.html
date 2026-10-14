@@ -127,7 +127,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const when = t => t ? new Date(t).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
   const REASONS = { fake: 'Фейковая анкета', scam: 'Мошенничество', rude: 'Грубость', photos: 'Неприемлемые фото', minor: 'Несовершеннолетний', other: 'Другое' };
-  const ERRORS = { bad_email: 'Проверьте адрес почты.', too_often: 'Код уже отправлен, подождите минуту.', bad_code: 'Неверный код.', code_expired: 'Код устарел, запросите новый.', too_many_attempts: 'Слишком много попыток, запросите новый код.', mail_failed: 'Не удалось отправить письмо, проверьте настройки почты.', rate_limited: 'Слишком много запросов, подождите.' };
+  const ERRORS = { bad_email: 'Проверьте адрес почты.', too_often: 'Код уже отправлен, подождите минуту.', bad_code: 'Неверный код.', code_expired: 'Код устарел, запросите новый.', too_many_attempts: 'Слишком много попыток, запросите новый код.', mail_failed: 'Не удалось отправить письмо, проверьте настройки почты.', rate_limited: 'Слишком много запросов, подождите.', robokassa_unavailable: 'Робокасса сейчас не отвечает, попробуйте позже.', not_configured: 'Робокасса не настроена на сервере.', not_paid: 'Счёт не оплачен — возвращать нечего.' };
 
   let queue = null, tab = 'photos', thread = null, email = '';
   const STATUS = { new: 'не оплачен', paid: 'оплачен', refunded: 'возврат' };
@@ -393,7 +393,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
       if (act === 'ban' || act === 'dismiss') await api('POST', '/api/admin/report', { id: Number(id), action: act });
       if (act === 'unban') await api('POST', '/api/admin/unban', { userId: id });
       await refresh();
-    } catch (err) { b.disabled = false; alert('Не получилось: ' + err.message); }
+    } catch (err) { b.disabled = false; alert('Не получилось: ' + (ERRORS[err.message] || err.message)); }
   });
 
   $('#view').addEventListener('submit', async e => {
