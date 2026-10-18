@@ -137,6 +137,7 @@ export const TYPES = {
   '.m4a': 'audio/mp4',
   '.mp3': 'audio/mpeg',
   '.woff2': 'font/woff2',
+  '.glb': 'model/gltf-binary',
   '.pdf': 'application/pdf',
 };
 
