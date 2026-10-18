@@ -1754,7 +1754,8 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
     fillCityLists();
     // лента сразу по своему городу, если там есть анкеты, иначе — весь мир
     $('#fCityF').value = PEOPLE.some(p => p.city === user.city) ? user.city : '';
-    enterApp();
+    // как в приложениях знакомств: новичок сразу видит колоду анкет
+    enterApp('likes');
   }
 
   /* ---------- приложение ---------- */
