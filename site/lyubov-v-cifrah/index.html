@@ -1062,7 +1062,7 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
     <div class="t-hero-copy">
       <h1 id="brandTitle">Любовь<br>в цифрах</h1>
       <p class="t-lead">Свайпайте анкеты, а мы покажем, насколько вы совпадаете по дате рождения.</p>
-      <div class="t-actions"><a class="t-btn grad" href="#join" id="heroCta">Создать анкету</a></div>
+      <div class="t-actions"><a class="t-btn grad" href="#join" id="heroCta" data-cta>Создать анкету</a></div>
     </div>
   </section>
 
@@ -1074,7 +1074,7 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
       <figure class="story" data-d1="1988-07-07" data-d2="1986-03-21"><img src="media/couple-3.webp" alt="" loading="lazy" decoding="async" width="600" height="900"><figcaption></figcaption></figure>
       <figure class="story" data-d1="1996-09-30" data-d2="1993-01-08"><img src="media/couple-4.webp" alt="" loading="lazy" decoding="async" width="600" height="900"><figcaption></figcaption></figure>
     </div>
-    <div class="t-actions"><a class="t-btn grad" href="#join">Создать анкету</a><a class="t-btn ghost" href="#how">Как мы считаем</a></div>
+    <div class="t-actions"><a class="t-btn grad" href="#join" data-cta>Создать анкету</a><a class="t-btn ghost" href="#how">Как мы считаем</a></div>
   </section>
 
   <section class="t-seo home-only" aria-labelledby="seoTitle">
@@ -2084,7 +2084,8 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
     $('#navJoin').href = u ? '#' : '#join';
     $('#navView').hidden = !u;
     $('#navView').textContent = inApp ? 'Главная' : 'Моя анкета';
-    $('#heroCta').textContent = u ? 'Мои совпадения' : 'Создать анкету';
+    // кто уже зарегистрирован, тому кнопки главной открывают кабинет, а не регистрацию
+    document.querySelectorAll('[data-cta]').forEach(a => { a.textContent = u ? 'Мои совпадения' : 'Создать анкету'; });
     $('#regForm button[type=submit]').textContent = u ? 'Сохранить анкету' : 'Показать мои совпадения';
     // зарегистрированным не предлагаем регистрацию снова: вместо формы — переход в анкету, форма только для правки
     $('#joined').hidden = !u || editing;
@@ -2113,7 +2114,7 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
     window.scrollTo(0, 0);
   }
   $('#navView').addEventListener('click', () => document.body.classList.contains('in-app') ? showHome() : enterApp());
-  $('#heroCta').addEventListener('click', e => { if (store.get('user')) { e.preventDefault(); enterApp(); } });
+  document.querySelectorAll('[data-cta]').forEach(a => a.addEventListener('click', e => { if (store.get('user')) { e.preventDefault(); enterApp(); } else if (loginMode) setLoginMode(false); }));
 
   /* Главная — первый экран, пары и подвал; калькулятор, расчёт, города и цены — на странице «Как это работает» (#how, #calc…).
      Регистрация и вход открываются окном поверх страницы по ссылке #join. */
@@ -3847,7 +3848,6 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
     showStep(1);
   }
   $('#loginLink').addEventListener('click', () => setLoginMode(!loginMode));
-  $('#heroCta').addEventListener('click', () => { if (loginMode) setLoginMode(false); });
   // Метрика ставит cookie и передаёт Яндексу IP-адрес, поэтому включается только после «Принять».
   function loadMetrika(id) {
     if (!/^\d+$/.test(String(id))) return;
