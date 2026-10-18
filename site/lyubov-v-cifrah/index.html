@@ -1690,8 +1690,8 @@ body.in-app .cupids, body.in-app .cupid-toggle { display: none; }
     const load = () => {
       if (loading) return;
       loading = true;
-      import('./3d/scene.js?v=1')
-        .then(m => m.start(cv, { modelUrl: '3d/robot.glb', onReady: () => stage.classList.add('ready') }))
+      import('./3d/scene.js?v=3')
+        .then(m => m.start(cv, { photos: [1, 2, 3].map(n => ({ src: `media/hero-${n}.webp` })), onReady: () => stage.classList.add('ready') }))
         .then(a => { api = a; if (!visible) a.pause(); })
         .catch(e => console.warn('3D', e));
     };
@@ -1700,7 +1700,7 @@ body.in-app .cupids, body.in-app .cupid-toggle { display: none; }
       if (visible) { (window.requestIdleCallback || setTimeout)(load, { timeout: 1500 }); api?.resume(); } else api?.pause();
     }).observe(stage);
     document.addEventListener('visibilitychange', () => document.hidden ? api?.pause() : visible && api?.resume());
-    $('#heroCta').addEventListener('pointerenter', () => api?.dance());
+    $('#heroCta').addEventListener('pointerenter', () => api?.fan());
   })();
   function fillForm(u) {
     $('#fName').value = u.name; $('#fBirth').value = u.birth; $('#fCity').value = cityName(u.city); $('#fAbout').value = u.about || '';
