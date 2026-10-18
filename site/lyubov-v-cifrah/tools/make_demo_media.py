@@ -47,28 +47,82 @@ def finish(img, name, blur=0):
 S = lambda v: int(v * SS)  # noqa: E731
 
 
-# ---------- портреты-силуэты (главное фото анкеты) ----------
+# ---------- иллюстрированные портреты (главное фото анкеты) ----------
 PORTRAITS = [
     ("#f6c8b6", "#d93a63", "#3b1f3f"), ("#bfe3dd", "#24857d", "#173634"),
     ("#ffe1a8", "#e8a21f", "#4a2c0b"), ("#d9ccf5", "#7a4fd1", "#2a1a4d"),
     ("#ffd0d8", "#c2456b", "#3a1424"), ("#cfe0f7", "#3d6fb6", "#13284a"),
 ]
+SKIN = ["#f6d2bd", "#e9b896", "#c98e68", "#f3c9a8", "#a8714f", "#ecc3a2"]
+HAIR = ["#3b2416", "#7a4a26", "#1d1410", "#c98a3c", "#2a1a12", "#8c3b23"]
+CLOTH = ["#ffffff", "#ffe8a3", "#f7f1ea", "#fff3f6", "#e9f4ff", "#fdf0d8"]
+
+
+def shade(h, k):
+    r, g, b = hexrgb(h)
+    return tuple(max(0, min(255, int(c * k))) for c in (r, g, b))
 
 
 def portrait(i, gender):
+    """Рисованный портрет: лицо, причёска, одежда. Без реальных людей."""
     bg, mid, ink = PORTRAITS[i]
+    j = (i + (3 if gender == "m" else 0)) % 6
+    skin, hair = SKIN[j], HAIR[(i * 5 + (1 if gender == "m" else 0)) % 6]
     img = canvas([(0, bg), (1, mid)])
     d = ImageDraw.Draw(img)
     cx = W * SS // 2
-    # мягкое пятно света за головой
-    d.ellipse([cx - S(230), S(120), cx + S(230), S(580)], fill=bg)
-    if gender == "f":  # длинные волосы
-        d.rounded_rectangle([cx - S(150), S(200), cx + S(150), S(620)], radius=S(140), fill=ink)
-    d.ellipse([cx - S(250), S(560), cx + S(250), S(1100)], fill=ink)  # плечи
-    d.rectangle([cx - S(48), S(440), cx + S(48), S(600)], fill=ink)  # шея
-    d.ellipse([cx - S(110), S(220), cx + S(110), S(480)], fill=ink)  # голова
-    if gender == "m":
-        d.chord([cx - S(118), S(205), cx + S(118), S(400)], 180, 360, fill=ink)
+    d.ellipse([cx - S(250), S(110), cx + S(250), S(610)], fill=shade(bg, 1.04))  # ореол
+    long_hair = gender == "f" and i % 3 != 2
+    if long_hair:  # волосы сзади
+        d.rounded_rectangle([cx - S(165), S(190), cx + S(165), S(660 if i % 2 else 600)], radius=S(150), fill=hair)
+    elif gender == "f":  # каре
+        d.rounded_rectangle([cx - S(150), S(190), cx + S(150), S(500)], radius=S(120), fill=hair)
+    # одежда и плечи
+    d.ellipse([cx - S(270), S(600), cx + S(270), S(1150)], fill=mid if i % 2 else ink)
+    d.polygon([(cx - S(70), S(600)), (cx + S(70), S(600)), (cx, S(700))], fill=CLOTH[i])  # вырез
+    d.rectangle([cx - S(46), S(460), cx + S(46), S(620)], fill=shade(skin, 0.9))  # шея
+    d.polygon([(cx - S(46), S(590)), (cx + S(46), S(590)), (cx, S(660))], fill=shade(skin, 0.9))
+    # уши и лицо
+    for sx in (-1, 1):
+        d.ellipse([cx + sx * S(118) - S(22), S(330), cx + sx * S(118) + S(22), S(400)], fill=shade(skin, 0.95))
+    d.ellipse([cx - S(120), S(210), cx + S(120), S(500)], fill=skin)
+    # причёска спереди
+    if gender == "f":
+        d.chord([cx - S(132), S(185), cx + S(132), S(390)], 180, 360, fill=hair)
+        side = -1 if i % 2 else 1  # чёлка набок
+        d.pieslice([cx - S(40) * side - S(140), S(200), cx - S(40) * side + S(140), S(400)],
+                   200 if side > 0 else 270, 270 if side > 0 else 340, fill=hair)
+        if i % 3 == 2:  # пучок
+            d.ellipse([cx - S(60), S(130), cx + S(60), S(240)], fill=hair)
+    else:
+        d.chord([cx - S(128), S(190), cx + S(128), S(360)], 180, 360, fill=hair)
+        d.rectangle([cx - S(124), S(270), cx - S(108), S(350)], fill=hair)  # виски
+        d.rectangle([cx + S(108), S(270), cx + S(124), S(350)], fill=hair)
+        if i % 3 == 1:  # борода
+            d.chord([cx - S(118), S(330), cx + S(118), S(515)], 0, 180, fill=hair)
+            d.ellipse([cx - S(70), S(395), cx + S(70), S(470)], fill=skin)
+    # брови и глаза
+    ey = S(355)
+    for sx in (-1, 1):
+        ex = cx + sx * S(48)
+        d.arc([ex - S(26), ey - S(48), ex + S(26), ey - S(18)], 200, 340, fill=shade(hair, 0.8), width=S(7))
+        d.ellipse([ex - S(15), ey - S(15), ex + S(15), ey + S(15)], fill="#ffffff")
+        d.ellipse([ex - S(10), ey - S(11), ex + S(10), ey + S(11)], fill="#2b1d1a")
+        d.ellipse([ex - S(1), ey - S(8), ex + S(6), ey - S(1)], fill="#ffffff")
+        if gender == "f":  # ресницы
+            d.arc([ex - S(16), ey - S(17), ex + S(16), ey + S(15)], 200, 340, fill="#2b1d1a", width=S(4))
+        d.ellipse([ex - S(26), ey + S(30), ex + S(4) if sx < 0 else ex + S(26), ey + S(52)],
+                  fill=shade(skin, 0.93) if gender == "m" else "#f2a3a3")  # румянец
+    if i % 4 == 3:  # очки
+        for sx in (-1, 1):
+            ex = cx + sx * S(48)
+            d.rounded_rectangle([ex - S(32), ey - S(26), ex + S(32), ey + S(26)], radius=S(14), outline=ink, width=S(6))
+        d.line([cx - S(16), ey - S(4), cx + S(16), ey - S(4)], fill=ink, width=S(6))
+    # нос и улыбка
+    d.arc([cx - S(14), S(380), cx + S(14), S(420)], 20, 160, fill=shade(skin, 0.75), width=S(5))
+    lips = "#c8506a" if gender == "f" else shade(skin, 0.6)
+    d.chord([cx - S(38), S(415), cx + S(38), S(468)], 0, 180, fill=lips)
+    d.chord([cx - S(30), S(420), cx + S(30), S(450)], 0, 180, fill="#ffffff")
     finish(img, f"portrait-{gender}-{i + 1}.jpg")
 
 
