@@ -1,0 +1,23 @@
+# Любовь в цифрах
+
+Сайт знакомств по дате рождения: `site/lyubov-v-cifrah/index.html` (один файл: разметка, стили, скрипт), сервер `server/` (Node 22, SQLite, `npm test`).
+
+## Дизайн
+
+Подключены скиллы в `.claude/skills/`:
+- `taste-skill` (design-taste-frontend) — дизайн главной и других публичных страниц. Направление выбрано: «один мотив» — два круга (розовый — вы, мятный — партнёр, белое или зелёное пересечение — совместимость), один шрифт Golos Text, плоские поля цвета, квадратные плитки, круглые кнопки. Токены — переменные `--t-*` в конце `<style>`.
+- `motion-react`, `motion-react-guide`, `motion` — справочники по анимациям Motion для React. Сайт на чистом JS, поэтому из них берём правила (уменьшенное движение, только transform и opacity, сдержанность), а не код.
+
+Ограничения проекта сильнее рекомендаций скиллов:
+- Шрифты только со своего сервера (`site/lyubov-v-cifrah/fonts/`), без Google Fonts и Fontshare: персональные данные посетителей не уходят третьим лицам (152-ФЗ), CSP разрешает скрипты и стили только с `'self'`.
+- Без внешних картинок (picsum и т. п.): все фото лежат в `site/lyubov-v-cifrah/media/`.
+- Кабинет (`#app`) — это интерфейс приложения, правила taste-skill к нему не применяются.
+- Новые тексты интерфейса добавляйте в словарь `EN` в `index.html`.
+
+Проверка главной инструментами скилла (в облачной среде Chrome запускается от root, нужен `--no-sandbox`):
+
+```sh
+printf '#!/bin/sh\nexec /opt/pw-browsers/chromium-1194/chrome-linux/chrome --no-sandbox "$@"\n' > /tmp/chrome.sh && chmod +x /tmp/chrome.sh
+node .claude/skills/taste-skill/scripts/lint.mjs site/lyubov-v-cifrah/index.html
+CHROME_PATH=/tmp/chrome.sh node .claude/skills/taste-skill/scripts/inspect.mjs http://127.0.0.1:8790/
+```
