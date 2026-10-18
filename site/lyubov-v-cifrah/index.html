@@ -33,10 +33,10 @@
   --muted: #6d6380;
   --line: #ddd6e8;
   --rose: #d93a63;      /* вы */
-  --sea: #24857d;       /* партнёр */
+  --sea: #2f6fd6;       /* партнёр */
   --sun: #e8a21f;       /* числа */
   --plum: #7a4fd1;
-  --good: #24857d;
+  --good: #2f6fd6;
   --font-display: "Prata", Georgia, serif;
   --font-script: "Great Vibes", "Segoe Script", cursive;
   --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
@@ -46,13 +46,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #17111f; --bg-pink: #3b1631; --bg-mid: #24183a; --bg-blue: #122a4c; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
-    --rose: #f0638a; --sea: #4fb8ae; --sun: #f2b84a; --plum: #a283f0; --good: #4fb8ae;
+    --rose: #f0638a; --sea: #6fa8ff; --sun: #f2b84a; --plum: #a283f0; --good: #6fa8ff;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #17111f; --bg-pink: #3b1631; --bg-mid: #24183a; --bg-blue: #122a4c; --card: #211a2d; --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45;
-  --rose: #f0638a; --sea: #4fb8ae; --sun: #f2b84a; --plum: #a283f0; --good: #4fb8ae;
+  --rose: #f0638a; --sea: #6fa8ff; --sun: #f2b84a; --plum: #a283f0; --good: #6fa8ff;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -629,11 +629,11 @@ body.in-app .cupids { display: none; }
   .how-more { display: inline-flex; margin-top: 1rem; }
 }
 
-/* ===== Главная в стиле «один мотив»: два круга — две даты рождения. Розовый — вы, мятный — партнёр, их пересечение — совместимость.
+/* ===== Главная в стиле «один мотив»: два круга — две даты рождения. Розовый — вы, голубой — партнёр, их пересечение — совместимость.
    Плоские поля цвета, один шрифт, квадратные плитки и круглые кнопки; без градиентов, теней и рамок. ===== */
 :root {
   --t-bg: #f8f8f8; --t-surface: #eeeeee; --t-paper: #ffffff; --t-ink: #0a0a0a; --t-muted: #5c5c5c;
-  --t-accent: #1f6b3a; --t-accent-ink: #ffffff; --t-pink: #f8c7c9; --t-mint: #c3edce; --t-field-ink: #0a0a0a;
+  --t-accent: #1f5fbf; --t-accent-ink: #ffffff; --t-pink: #f8c7c9; --t-blue: #c6dcfb; --t-field-ink: #0a0a0a;
   --t-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
   --t-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
   --t-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
@@ -648,12 +648,12 @@ body.in-app .cupids { display: none; }
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --t-bg: #101010; --t-surface: #1c1c1c; --t-paper: #181818; --t-ink: #f3f3f3; --t-muted: #a6a6a6; --t-accent: #8fe0a8; --t-accent-ink: #0a0a0a;
+    --t-bg: #101010; --t-surface: #1c1c1c; --t-paper: #181818; --t-ink: #f3f3f3; --t-muted: #a6a6a6; --t-accent: #9cc4ff; --t-accent-ink: #0a0a0a;
     --paper: #101010; --card: #1c1c1c; --ink: #f3f3f3; --muted: #a6a6a6; --line: #2c2c2c;
   }
 }
 :root[data-theme="dark"] {
-  --t-bg: #101010; --t-surface: #1c1c1c; --t-paper: #181818; --t-ink: #f3f3f3; --t-muted: #a6a6a6; --t-accent: #8fe0a8; --t-accent-ink: #0a0a0a;
+  --t-bg: #101010; --t-surface: #1c1c1c; --t-paper: #181818; --t-ink: #f3f3f3; --t-muted: #a6a6a6; --t-accent: #9cc4ff; --t-accent-ink: #0a0a0a;
   --paper: #101010; --card: #1c1c1c; --ink: #f3f3f3; --muted: #a6a6a6; --line: #2c2c2c;
 }
 body { background: var(--t-bg); color: var(--t-ink); }
@@ -664,7 +664,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .logo { font: 700 var(--t-lead)/1 var(--font-display); letter-spacing: -0.02em; color: var(--t-ink); }
 .logo svg circle { stroke: none; }
 .logo svg circle:first-child { fill: var(--t-pink); }
-.logo svg circle:last-child { fill: var(--t-mint); }
+.logo svg circle:last-child { fill: var(--t-blue); }
 .logo svg { isolation: isolate; }
 .top nav .btn { border: 0; background: none; padding: .55rem .8rem; font-size: var(--t-body); color: var(--t-ink); letter-spacing: 0; transition: background-color .2s; }
 .top nav .btn:hover { background: var(--t-surface); }
@@ -697,7 +697,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .t-orbs { position: absolute; inset: 0; isolation: isolate; pointer-events: none; }
 .orb { position: absolute; display: block; border-radius: 50%; }
 .orb.you { background: var(--t-pink); }
-.orb.them { background: var(--t-mint); overflow: hidden; }
+.orb.them { background: var(--t-blue); overflow: hidden; }
 /* пересечение кругов — общая часть двух дат: копия розового круга внутри мятного */
 .orb.them::before { content: ""; position: absolute; border-radius: 50%; background: var(--lens, #ffffff); width: var(--lw); height: var(--lh); left: var(--lx); top: var(--ly); }
 .t-orbs .you { width: 118vh; height: 118vh; left: 50%; top: -24vh; animation: orbIn 1.2s var(--t-ease) both, orbDrift 16s ease-in-out 1.2s infinite alternate; }
@@ -713,7 +713,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .t-calc .field input { background: var(--t-paper); border: 0; border-radius: 999px; padding: .85rem 1.1rem; min-height: 3.2rem; color: var(--t-ink); }
 .t-calc .field input:focus { outline: 3px solid var(--t-ink); outline-offset: 2px; }
 .t-calc .you label::before { background: var(--t-pink); width: .75rem; height: .75rem; }
-.t-calc .them label::before { background: var(--t-mint); width: .75rem; height: .75rem; }
+.t-calc .them label::before { background: var(--t-blue); width: .75rem; height: .75rem; }
 .t-calc .legend { grid-template-columns: 1fr 1fr; gap: .6rem 2rem; margin-top: 1.8rem; font-size: var(--t-body); }
 .t-calc .legend li { border: 0; padding: 0; }
 .t-calc .legend .sw { display: none; }
@@ -749,7 +749,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 /* как считаем: много кругов сжимаются в ленту и выстраиваются рядами */
 .t-many { display: block; width: 100%; height: auto; }
 .t-many .you { fill: var(--t-pink); }
-.t-many .them { fill: var(--t-mint); }
+.t-many .them { fill: var(--t-blue); }
 .t-many .done { fill: var(--t-accent); }
 .t-flow { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
 .t-flow b { display: block; font-size: var(--t-lead); margin-bottom: .4rem; }
@@ -772,7 +772,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .wall .tile b { font: 700 var(--t-display)/1 var(--font-display); letter-spacing: -0.06em; }
 .wall .tile span { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-weight: 600; font-size: var(--t-small); }
 .f-pink { background: var(--t-pink); }
-.f-mint { background: var(--t-mint); }
+.f-blue { background: var(--t-blue); }
 .f-paper { background: var(--t-paper); color: var(--t-ink) !important; }
 .f-accent { background: var(--t-accent); color: var(--t-accent-ink) !important; }
 .wall .tile.photo { background: var(--t-surface); }
@@ -813,7 +813,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .t .pricing article { border: 0; border-radius: 0; box-shadow: none; background: none; padding: 0; text-align: left; align-items: stretch; justify-items: start; }
 .t .pricing .plan { min-height: min(80svh, 720px); padding: clamp(24px, 3vw, 40px); display: flex; flex-direction: column; gap: 1.2rem; color: var(--t-field-ink); }
 .t .pricing .plan.free { background: var(--t-pink); }
-.t .pricing .plan.vip { background: var(--t-mint); }
+.t .pricing .plan.vip { background: var(--t-blue); }
 .t .pricing .plan h3 { font-size: var(--t-head); line-height: 1; }
 .t .pricing .plan p { color: var(--t-field-ink); }
 .t .pricing .who { font-size: var(--t-lead); max-width: 22ch; line-height: 1.3; }
@@ -854,7 +854,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .t-mark { display: flex; align-items: center; gap: clamp(1rem, 3vw, 3rem); flex-wrap: wrap; }
 .t-mark svg { height: clamp(140px, 30svh, 300px); width: auto; max-width: 100%; isolation: isolate; flex: none; }
 .t-mark .you { fill: var(--t-pink); }
-.t-mark .them { fill: var(--t-mint); }
+.t-mark .them { fill: var(--t-blue); }
 .t-mark .lens { fill: var(--t-accent); }
 .t-mark b { color: var(--t-ink); font: 700 var(--t-display)/.9 var(--font-display); letter-spacing: -0.05em; max-width: 8ch; }
 .t-foot-text { margin-top: 3.5rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 3rem; font-size: var(--t-body); color: var(--t-ink); }
@@ -1009,14 +1009,14 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
     </div>
     <div class="wall" id="couplesRow">
       <div class="tile f-pink"><b>1</b><span>Лидер</span></div>
-      <div class="tile f-mint"><b>2</b><span>Дипломат</span></div>
+      <div class="tile f-blue"><b>2</b><span>Дипломат</span></div>
       <figure class="tile photo"><img src="media/couple-1.webp" alt="Пара целуется на берегу моря на закате" loading="lazy" decoding="async" width="600" height="900"></figure>
       <div class="tile f-paper"><b>3</b><span>Творец</span></div>
       <figure class="tile photo"><img src="media/hero-1.webp" alt="Девушка в розовом платье с перьями у светлой стены" loading="lazy" decoding="async" width="600" height="900"></figure>
       <div class="tile f-accent"><b>4</b><span>Строитель</span></div>
       <div class="tile f-pink"><b>5</b><span>Искатель</span></div>
       <figure class="tile photo"><img src="media/couple-2.webp" alt="Мужчина и женщина вот-вот поцелуются" loading="lazy" decoding="async" width="600" height="900"></figure>
-      <div class="tile f-mint"><b>6</b><span>Хранитель</span></div>
+      <div class="tile f-blue"><b>6</b><span>Хранитель</span></div>
       <figure class="tile photo"><img src="media/hero-2.webp" alt="Девушка в голубом на фоне неонового сердца" loading="lazy" decoding="async" width="600" height="900"></figure>
       <div class="tile f-paper"><b>7</b><span>Мыслитель</span></div>
       <div class="tile f-accent"><b>8</b><span>Стратег</span></div>
@@ -1504,7 +1504,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
     return list;
   })();
   const ageTxt = p => p.hideAge ? '' : `, ${ageOf(p.birth)}`;
-  const EL_COLOR = { 'огонь': '#d9534a', 'воздух': '#7a4fd1', 'вода': '#24857d', 'земля': '#a8741a' };
+  const EL_COLOR = { 'огонь': '#d9534a', 'воздух': '#7a4fd1', 'вода': '#2f6fd6', 'земля': '#a8741a' };
   const avatar = (p, big, photo) => photo
     ? `<img class="ava${big ? ' big' : ''}" src="${photo}" alt="">`
     : `<div class="ava${big ? ' big' : ''}" style="background:${EL_COLOR[zodiac(parse(p.birth)).el]}" aria-hidden="true">${esc(p.name[0])}</div>`;
@@ -2327,7 +2327,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
         <div class="actions"><button class="btn" type="button" data-mf="close">Продолжить</button><button class="btn rose" type="button" data-mf="write">Написать</button></div>
       </div>`;
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const colors = ['#d93a63', '#f0638a', '#7a4fd1', '#24857d', '#e8a21f'];
+      const colors = ['#d93a63', '#f0638a', '#7a4fd1', '#2f6fd6', '#e8a21f'];
       for (let i = 0; i < 28; i++) {
         const h = document.createElement('span'); h.className = 'fx-heart'; h.textContent = i % 4 ? '♥' : '❤'; h.setAttribute('aria-hidden', 'true');
         h.style.cssText = `left:${Math.random() * 100}%;--s:${14 + Math.random() * 26}px;--c:${colors[i % colors.length]};--d:${2.6 + Math.random() * 2}s;--delay:${Math.random() * .9}s;--x:${(Math.random() - .5) * 160}px;--r:${(Math.random() - .5) * 120}deg`;
