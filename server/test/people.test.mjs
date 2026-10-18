@@ -192,3 +192,25 @@ test('монеты: поднятие анкеты и подарки', async () =
   assert.deepEqual(pb.gifts.map(x => x.kind).sort(), ['bear', 'rose']);
   assert.equal(pb.gifts[0].from, a.id);
 });
+
+test('подробности анкеты: цель, интересы, рост, дети, курение', async () => {
+  const a = await srv.user('details@example.ru', { goal: 'rel', interests: ['Кино', 'Горы', 'Кино', '<b>x</b>'], height: 172, kids: 'want', smoke: 'no' });
+  const b = await srv.user('details-viewer@example.ru', { g: 'm' });
+  const me = (await a.get('/api/me')).body.user;
+  assert.equal(me.goal, 'rel');
+  assert.deepEqual(me.interests, ['Кино', 'Горы']);
+  assert.equal(me.height, 172);
+  const seen = await person(b, a.id);
+  assert.deepEqual([seen.goal, seen.kids, seen.smoke, seen.height], ['rel', 'want', 'no', 172]);
+  assert.deepEqual(seen.interests, ['Кино', 'Горы']);
+  // неизвестные значения не сохраняются, а запрос без этих полей их не стирает
+  const base = { name: 'Тест', birth: '1990-05-01', g: 'f', seek: 'a', city: 'Москва', about: '' };
+  await a.put('/api/profile', base);
+  assert.equal((await a.get('/api/me')).body.user.goal, 'rel');
+  await a.put('/api/profile', { ...base, goal: 'hack', height: 999, kids: 'x', smoke: '', interests: 'Кино' });
+  const cleared = (await a.get('/api/me')).body.user;
+  assert.deepEqual([cleared.goal, cleared.height, cleared.kids, cleared.smoke, cleared.interests], [null, null, null, null, []]);
+  // выгрузка данных содержит подробности анкеты
+  await a.put('/api/profile', { ...base, goal: 'friends' });
+  assert.equal((await a.get('/api/account/export')).body.profile.goal, 'friends');
+});

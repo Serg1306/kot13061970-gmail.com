@@ -1,5 +1,6 @@
 // Общие правила: как отдавать анкеты, кто кого видит, кто кому может писать.
 import crypto from 'node:crypto';
+import { detailsOut } from './options.mjs';
 
 export const SUPPORT = 'support';
 export const DAY = 24 * 3600 * 1000;
@@ -30,7 +31,7 @@ export function userOut(u) {
     hideAge: Boolean(u.hide_age) && vip, invisible: Boolean(u.invisible) && vip,
     notifyEmail: Boolean(u.notify_email), notifyPush: Boolean(u.notify_push),
     consentAt: u.consent_at, consentPublicAt: u.consent_public_at ?? null, consentVersion: u.consent_version ?? null,
-    createdAt: u.created_at,
+    createdAt: u.created_at, ...detailsOut(u),
   };
 }
 
@@ -110,7 +111,7 @@ export function peopleOut(db, users, viewerId, now = Date.now()) {
       verified: u.verify_status === 'approved', hideAge: Boolean(u.hide_age) && vip, vip,
       boosted: u.boost_until > now,
       online: !(u.invisible && vip) && now - u.last_seen < ONLINE_MS,
-      media: media.get(u.id) || [], gifts: giftMap.get(u.id) || [],
+      media: media.get(u.id) || [], gifts: giftMap.get(u.id) || [], ...detailsOut(u),
     };
   });
 }

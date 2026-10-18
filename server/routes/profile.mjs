@@ -2,6 +2,7 @@
 import { fail } from '../http.mjs';
 import { decodeImage, removeFile, saveFile } from '../media.mjs';
 import { isVip, myPhotos, userOut } from '../model.mjs';
+import { parseDetails } from '../options.mjs';
 
 const MAX_PHOTOS = 10;
 const invalid = field => fail(400, 'invalid', { field });
@@ -26,6 +27,7 @@ export function validateProfile(body) {
   const p = {
     name: oneLine(body.name), birth: str(body.birth), g: body.g, seek: body.seek,
     city: oneLine(body.city), about: str(body.about), lang: body.lang === 'en' ? 'en' : 'ru',
+    ...parseDetails(body),
   };
   if (!NAME_RE.test(p.name)) fail(400, 'bad_name');
   checkBirth(p.birth);
@@ -50,6 +52,11 @@ export default function profileRoutes(route) {
     db.tx(() => {
       db.run('UPDATE users SET name = ?, birth = ?, g = ?, seek = ?, city = ?, about = ?, lang = ? WHERE id = ?',
         p.name, p.birth, p.g, p.seek, p.city, p.about, body.lang ? p.lang : user.lang, user.id);
+      // подробности анкеты необязательны: старый клиент без этих полей их не стирает
+      if (['goal', 'interests', 'height', 'kids', 'smoke'].some(k => k in body)) {
+        db.run('UPDATE users SET goal = ?, interests = ?, height = ?, kids = ?, smoke = ? WHERE id = ?',
+          p.goal, JSON.stringify(p.interests), p.height, p.kids, p.smoke, user.id);
+      }
       if (fresh) {
         db.run('UPDATE users SET consent_at = COALESCE(consent_at, ?), consent_public_at = COALESCE(consent_public_at, ?), consent_version = ?, consent_ip = ? WHERE id = ?',
           now, now, app.config.consentVersion, String(ip || '').slice(0, 64), user.id);

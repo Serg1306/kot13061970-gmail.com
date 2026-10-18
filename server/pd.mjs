@@ -1,6 +1,7 @@
 // Персональные данные (152-ФЗ): удаление аккаунта с записью в журнал уничтожения,
 // запрет повторной регистрации забаненных, выгрузка данных по запросу субъекта (ст. 14).
 import crypto from 'node:crypto';
+import { detailsOut } from './options.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { CATALOG } from '../netlify/lib/robokassa.mjs';
@@ -100,6 +101,7 @@ export function exportUser(app, u) {
       id: u.id, email: u.email, name: u.name, birth: u.birth, g: u.g, seek: u.seek, city: u.city, about: u.about, lang: u.lang,
       createdAt: u.created_at, lastSeen: u.last_seen, verifyStatus: u.verify_status, hideAge: Boolean(u.hide_age),
       invisible: Boolean(u.invisible), notifyEmail: Boolean(u.notify_email), notifyPush: Boolean(u.notify_push), banned: Boolean(u.banned),
+      ...detailsOut(u),
     },
     consents: { processingAt: u.consent_at, publicAt: u.consent_public_at, version: u.consent_version, ip: u.consent_ip },
     wallet: { coins: u.coins, vipUntil: u.vip_until, boostUntil: u.boost_until },
