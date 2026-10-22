@@ -1,6 +1,7 @@
 // Логотип «Любовь в цифрах»: вращающийся 3D-шар инь-ян (WebGL).
 // <canvas data-logo3d> — шар без свечения (шапка), <canvas data-logo3d="hero"> — со свечением и искрами.
 // Без WebGL холст заменяется картинкой из data-fallback; при «уменьшенном движении» — один неподвижный кадр.
+// window.LVCLogo(size) рисует такой же шар вне страницы — для видео-карточки сторис в index.html.
 (() => {
   const FRAG = `
 precision highp float;
@@ -149,10 +150,12 @@ void main(){
     cv.replaceWith(img);
   }
 
-  function setup(cv) {
+  // fixed — размер холста вне страницы (карточка для сторис): без замены картинкой и без общего цикла
+  function setup(cv, fixed) {
     const hero = cv.dataset.logo3d === 'hero';
-    const gl = cv.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false });
-    if (!gl || !gl.getExtension('OES_standard_derivatives')) return fallback(cv);
+    const fail = () => (fixed ? null : fallback(cv));
+    const gl = cv.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false, preserveDrawingBuffer: Boolean(fixed) });
+    if (!gl || !gl.getExtension('OES_standard_derivatives')) return fail();
     const sh = (type, src) => {
       const s = gl.createShader(type);
       gl.shaderSource(s, (type === gl.FRAGMENT_SHADER ? '#extension GL_OES_standard_derivatives : enable\n' : '') + src);
@@ -160,10 +163,10 @@ void main(){
       return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
     };
     const vs = sh(gl.VERTEX_SHADER, VERT), fs = sh(gl.FRAGMENT_SHADER, FRAG);
-    if (!vs || !fs) return fallback(cv);
+    if (!vs || !fs) return fail();
     const pr = gl.createProgram();
     gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
-    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return fallback(cv);
+    if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return fail();
     gl.useProgram(pr);
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
@@ -175,7 +178,7 @@ void main(){
     const uRes = gl.getUniformLocation(pr, 'res'), uT = gl.getUniformLocation(pr, 't');
     const it = { cv, gl, visible: true, size: 0, hero };
     it.draw = (time) => {
-      const px = Math.round(cv.clientWidth * Math.min(devicePixelRatio || 1, hero ? 1.5 : 2));
+      const px = fixed || Math.round(cv.clientWidth * Math.min(devicePixelRatio || 1, hero ? 1.5 : 2));
       if (px && px !== it.size) { it.size = cv.width = cv.height = px; gl.viewport(0, 0, px, px); }
       gl.uniform2f(uRes, cv.width, cv.height);
       gl.uniform1f(uT, time);
@@ -183,12 +186,15 @@ void main(){
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
+    if (fixed) return it;
     if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { it.visible = e.isIntersecting; }).observe(cv);
     cv.addEventListener('webglcontextlost', (e) => { e.preventDefault(); items.splice(items.indexOf(it), 1); fallback(cv); });
     items.push(it);
   }
 
-  document.querySelectorAll('canvas[data-logo3d]').forEach(setup);
+  // Шар для карточки сторис: LVCLogo(360) → { cv, draw(t) } или null без WebGL.
+  window.LVCLogo = size => { const cv = document.createElement('canvas'); cv.dataset.logo3d = 'hero'; return setup(cv, size); };
+  document.querySelectorAll('canvas[data-logo3d]').forEach(cv => setup(cv));
   if (!items.length) return;
 
   const t0 = performance.now();
