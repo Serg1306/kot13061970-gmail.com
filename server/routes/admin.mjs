@@ -51,6 +51,10 @@ function stats(db) {
     paidToday: db.get("SELECT COUNT(*) AS n FROM orders WHERE status = 'paid' AND paid_at >= ?", dayStartMsk(now)).n,
     messagesToday: db.get('SELECT COUNT(*) AS n FROM messages WHERE t >= ?', dayStartMsk(now)).n,
     banned: db.get('SELECT COUNT(*) AS n FROM users WHERE banned = 1').n,
+    // Регистрации по рекламным меткам: всего, за 30 дней и сколько из них платили.
+    sources: db.all(`SELECT COALESCE(src, 'без метки') AS src, COUNT(*) AS users, SUM(created_at >= :since) AS month,
+        SUM(EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id AND o.status = 'paid')) AS payers
+      FROM users u GROUP BY COALESCE(src, 'без метки') ORDER BY users DESC LIMIT 50`, { since: now - 30 * 864e5 }),
   };
 }
 

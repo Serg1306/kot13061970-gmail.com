@@ -55,6 +55,11 @@ textarea { min-height: 5rem; resize: vertical; }
 .msg .t { display: block; font-size: .75rem; opacity: .75; }
 .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr)); gap: .8rem; }
 .stat b { display: block; font-family: "Prata", Georgia, serif; font-size: 2rem; font-weight: 400; }
+.sources { margin-top: 1rem; overflow-x: auto; }
+.sources h2 { font-size: 1.2rem; margin: 0 0 .3rem; }
+.sources table { width: 100%; border-collapse: collapse; margin-top: .6rem; }
+.sources th, .sources td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); }
+.sources td:not(:first-child), .sources th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
 .totals { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); gap: .6rem; margin-bottom: .8rem; }
 .totals .stat b { font-size: 1.4rem; }
 .filters { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; margin-bottom: .8rem; }
@@ -338,7 +343,13 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
       const s = queue.stats;
       const tiles = [['Анкет', s.users], ['Новых сегодня', s.today], ['Онлайн сейчас', s.online], ['Сообщений сегодня', s.messagesToday],
         ['Оплат всего', s.paid], ['Оплат сегодня', s.paidToday], ['Выручка, ₽', Number(s.revenue).toLocaleString('ru-RU')], ['Забанено', s.banned]];
-      return `<div class="stats">${tiles.map(([k, v]) => `<div class="card stat"><span class="muted">${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>`;
+      const src = s.sources || [];
+      return `<div class="stats">${tiles.map(([k, v]) => `<div class="card stat"><span class="muted">${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>
+        <div class="card sources"><h2>Откуда приходят</h2>
+          <p class="muted">Метки из ссылки рекламы: источник / тип / кампания, например <code>?utm_source=vk&amp;utm_medium=cpc&amp;utm_campaign=osen</code>.</p>
+          ${src.length ? `<table><thead><tr><th>Метка</th><th>Регистраций</th><th>За 30 дней</th><th>Платили</th></tr></thead>
+          <tbody>${src.map(r => `<tr><td>${esc(r.src)}</td><td>${esc(r.users)}</td><td>${esc(r.month || 0)}</td><td>${esc(r.payers || 0)}</td></tr>`).join('')}</tbody></table>` : '<p class="muted">Пока нет регистраций.</p>'}
+        </div>`;
     },
   };
 

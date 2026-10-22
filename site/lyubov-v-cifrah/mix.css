@@ -199,6 +199,10 @@
 .mx .mx-bpola:nth-of-type(3) { right: 6%; top: 8%; transform: translate(calc((1 - var(--e)) * 30vw), calc(var(--p, 1) * -16vh)) rotate(calc(8deg + var(--x) * 20deg)); }
 .mx .mx-bpola:nth-of-type(4) { right: 12%; bottom: 5%; transform: translate(calc((1 - var(--e)) * 30vw), calc(var(--p, 1) * -24vh + 10vh)) rotate(calc(-5deg + var(--x) * -18deg)); }
 .mx .mx-booth[data-scene] .mx-why { position: relative; z-index: 2; margin-top: 210px; opacity: clamp(0, calc((var(--p, 1) - .78) / .06), 1); font-size: 18px; }
+.mx .mx-booth .mx-share { position: relative; z-index: 2; border: 0; border-radius: 999px; padding: 14px 26px; background: #ffc2d4; color: #3b0a18; font-family: inherit; font-weight: 600; font-size: 16px; line-height: 1; cursor: pointer; transition: transform .2s var(--ease), background-color .2s; }
+.mx .mx-booth .mx-share:hover { background: #fff; transform: translateY(-2px); }
+.mx .mx-booth .mx-share:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.mx .mx-booth[data-scene] .mx-share { opacity: clamp(0, calc((var(--p, 1) - .8) / .06), 1); }
 .rm .mx .mx-booth[data-scene] { height: auto; --t: 1; --b: 1; --c: 1; --fl: 0; --o: 1; --x: 0; --p: .8 !important; }
 .rm .mx .mx-booth[data-scene] .mx-stage { position: relative; height: auto; padding: 100px var(--gutter) 80px; }
 .rm .mx .mx-count { display: none; }
