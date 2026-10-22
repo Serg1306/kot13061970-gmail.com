@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Любовь в цифрах — вариант «Премьера»</title>
+<meta name="description" content="Сайт знакомств, который подбирает пару по дате рождения. Вариант главной «Премьера».">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2e0611">
+<link rel="icon" href="../icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="base.css">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+:root { --gold: #f2b8c6; }
+.display { font-family: 'Forum', serif; font-weight: 400; letter-spacing: .01em; line-height: .92; margin: 0; }
+.kicker { font-size: 13px; letter-spacing: .28em; text-transform: uppercase; color: var(--blush-2); }
+
+/* ---------- 1. Занавес и сцена ---------- */
+.hero { height: 380vh; background: var(--wine-950); }
+.hero .stage { display: grid; place-items: center; }
+.spot { position: absolute; inset: 0; background: radial-gradient(ellipse 46% 60% at 50% 46%, rgb(255 79 139 / .16), transparent 70%); opacity: calc(min(1, var(--p, 0) * 4)); }
+.prosc { position: relative; height: min(84svh, 160vw); aspect-ratio: 9 / 16; max-width: 92vw; border-radius: 50% 50% 18px 18px / 26% 26% 18px 18px; overflow: hidden; box-shadow: 0 0 0 1px rgb(246 228 232 / .18), 0 40px 120px rgb(0 0 0 / .6); }
+.prosc canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.prosc::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(31 4 11 / 0) 40%, rgb(31 4 11 / .55)); opacity: calc(.4 + .6 * var(--p, 0)); pointer-events: none; }
+
+.curtain { position: absolute; top: 0; bottom: 0; width: 51%; z-index: 4;
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / .35), transparent 18%, transparent 80%, rgb(0 0 0 / .45)),
+    repeating-linear-gradient(90deg, #3d0816 0, #6e1230 2.2%, #8d1a3a 3.6%, #5a0d22 5.4%, #3d0816 7%);
+  transition: transform .1s linear; }
+.curtain.l { left: 0; transform: translateX(calc(-102% * min(1, var(--p, 0) * 3.4))) skewX(calc(-4deg * min(1, var(--p, 0) * 3.4))); transform-origin: 0 0; }
+.curtain.r { right: 0; transform: translateX(calc(102% * min(1, var(--p, 0) * 3.4))) skewX(calc(4deg * min(1, var(--p, 0) * 3.4))); transform-origin: 100% 0; }
+.valance { position: absolute; z-index: 5; inset: 0 0 auto; height: 9vh; background: repeating-radial-gradient(circle at 50% -40%, #5e0e25 0 30%, #2e0611 31% 34%) 0 0 / 120px 100%, #4a0b1d; box-shadow: 0 10px 30px rgb(0 0 0 / .5); }
+
+.marquee { position: absolute; z-index: 6; inset: 0; display: grid; place-content: center; text-align: center; padding: 0 var(--gutter); pointer-events: none;
+  opacity: calc(1 - min(1, var(--p, 0) * 6)); transform: translateY(calc(var(--p, 0) * -40vh)); }
+.marquee h1 { font-size: clamp(64px, 13vw, 220px); text-shadow: 0 6px 40px rgb(0 0 0 / .5); }
+.marquee .kicker { margin: 22px 0 0; }
+.scrollcue { margin-top: 34px; font-size: 14px; color: var(--blush-2); }
+.scrollcue::after { content: ""; display: block; width: 1px; height: 46px; margin: 12px auto 0; background: linear-gradient(var(--blush), transparent); animation: cue 1.8s var(--ease) infinite; transform-origin: top; }
+@keyframes cue { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); opacity: 1; } 100% { opacity: 0; } }
+
+/* выноски — программка спектакля */
+.pin { position: absolute; z-index: 3; opacity: 0; transition: opacity .5s var(--ease), transform .6s var(--ease); transform: translateY(10px); }
+.pin.on { opacity: 1; transform: none; }
+.pin span { display: block; padding: 10px 14px; border-radius: 4px; background: rgb(31 4 11 / .82); box-shadow: inset 0 0 0 1px rgb(246 228 232 / .2); font-size: 14px; line-height: 1.35; white-space: nowrap; }
+.pin b { display: block; font: 400 20px/1.1 'Forum', serif; color: #fff; }
+.frame { position: relative; --fw: calc(min(84svh, 160vw) * 9 / 16); }
+.dim { position: absolute; inset: 0; background: rgb(31 4 11 / .78); opacity: 0; transition: opacity .6s var(--ease); }
+.dim.on { opacity: 1; }
+/* выноски по бокам арки, линия тянется к человеку в кадре */
+.pin.him { right: calc(100% + 28px); top: 66%; }
+.pin.her { left: calc(100% + 28px); top: 72%; }
+.pin.him::after, .pin.her::after { content: ""; position: absolute; top: 50%; height: 1px; background: var(--blush); transform-origin: left; transform: scaleX(var(--q, 0)); }
+.pin.him::after { left: 100%; width: calc(28px + var(--fw) * .36); }
+.pin.her::after { right: 100%; width: calc(28px + var(--fw) * .34); transform-origin: right; }
+.pin.him::before, .pin.her::before { content: ""; position: absolute; top: calc(50% - 6px); width: 12px; height: 12px; border-radius: 50%; background: var(--blush); box-shadow: 0 0 0 6px rgb(246 228 232 / .2); }
+.pin.him::before { left: calc(100% + 28px + var(--fw) * .36 - 6px); }
+.pin.her::before { right: calc(100% + 28px + var(--fw) * .34 - 6px); }
+.pin.him::after, .pin.her::after { transform: scaleX(min(1, calc(var(--q, 0) * 6))); }
+.pin.el { right: calc(100% + 28px); top: 22%; text-align: right; }
+.pin.east { left: calc(100% + 28px); top: 34%; }
+
+.finale { position: absolute; z-index: 7; inset: 0; display: grid; place-content: center; text-align: center; gap: 14px; padding: 0 var(--gutter); opacity: 0; transform: scale(.96); transition: opacity .6s var(--ease), transform .8s var(--ease); pointer-events: none; }
+.finale.on { opacity: 1; transform: none; pointer-events: auto; }
+.finale p { margin: 0; }
+.finale .num { font: 400 clamp(110px, 20vw, 230px)/.85 'Forum', serif; color: #fff; text-shadow: 0 10px 40px rgb(0 0 0 / .45); }
+.finale .num small { font-size: .32em; position: relative; top: -1.45em; margin-left: .05em; }
+.acts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 26px; border-radius: 999px; transition: transform .25s var(--ease), background-color .2s; }
+.btn.main { background: var(--blush); color: var(--wine-900); }
+.btn.main:hover { background: #fff; transform: translateY(-2px); }
+.btn.line { box-shadow: inset 0 0 0 1px rgb(246 228 232 / .5); }
+.btn.line:hover { background: rgb(246 228 232 / .1); }
+
+/* ---------- 2. Действующие лица: прожектор ---------- */
+.cast { height: 240vh; background: var(--wine-900); }
+.cast .stage { display: grid; align-content: center; gap: 40px; }
+.cast header { padding: 0 var(--gutter); display: flex; justify-content: space-between; align-items: end; gap: 20px; flex-wrap: wrap; }
+.cast h2 { font-size: clamp(44px, 7vw, 104px); }
+.cast .rail { overflow: hidden; padding: 0 var(--gutter); }
+.cast .track { display: flex; gap: clamp(12px, 2vw, 28px); width: max-content; will-change: transform; }
+.actor { position: relative; width: clamp(180px, 17vw, 260px); aspect-ratio: 3 / 4.2; margin: 0; filter: grayscale(.85) brightness(.45); transition: filter .6s var(--ease); }
+.actor:nth-child(even) { margin-top: 48px; }
+.actor img { width: 100%; height: 100%; object-fit: cover; border-radius: 120px 120px 6px 6px; }
+.actor figcaption { position: absolute; left: 0; right: 0; bottom: -54px; text-align: center; opacity: 0; transform: translateY(-8px); transition: opacity .5s, transform .5s var(--ease); }
+.actor figcaption b { display: block; font: 400 26px/1 'Forum', serif; }
+.actor figcaption span { font-size: 13px; color: var(--blush-2); }
+.actor.on, .actor.past { filter: none; }
+.actor.on figcaption, .actor.past figcaption { opacity: 1; transform: none; }
+.cast .beam { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 18vw 70vh at calc(10% + var(--p, 0) * 80%) 0%, rgb(255 236 242 / .10), transparent 70%); }
+
+/* ---------- 3. Антракт: четыре системы ---------- */
+.systems { padding: clamp(110px, 16vh, 180px) var(--gutter); background: var(--wine-700); display: grid; gap: clamp(48px, 8vh, 90px); justify-items: center; text-align: center; }
+.systems h2 { font-size: clamp(40px, 6.4vw, 96px); max-width: 14ch; }
+.boxes { display: flex; align-items: end; justify-content: center; gap: clamp(14px, 3vw, 46px); flex-wrap: wrap; }
+.box { display: grid; justify-items: center; gap: 14px; }
+.box .orb { width: calc(var(--w) * 5.2vw + 70px); aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; font: 400 clamp(28px, 3.4vw, 50px)/1 'Forum', serif; color: var(--wine-950);
+  background: radial-gradient(circle at 34% 30%, rgb(255 255 255 / .28), transparent 42%), var(--c); box-shadow: inset 0 -12px 30px rgb(0 0 0 / .35), 0 18px 50px rgb(0 0 0 / .3); }
+.box span { font-size: 15px; color: var(--blush-2); }
+.js .box[data-reveal] { transform: translateY(60px) scale(.7); }
+.js .box[data-reveal].in { transform: none; }
+
+/* ---------- 4. Ваш выход: билеты-калькулятор ---------- */
+.calc { padding: clamp(100px, 14vh, 160px) var(--gutter); background: var(--wine-950); display: grid; gap: 40px; justify-items: center; }
+.calc h2 { font-size: clamp(40px, 6vw, 88px); text-align: center; }
+.tickets { display: grid; grid-template-columns: repeat(2, minmax(0, 300px)) auto; gap: 18px; align-items: stretch; }
+.ticket { position: relative; padding: 22px 26px; border-radius: 10px; background: var(--blush); color: var(--wine-900); display: grid; gap: 6px;
+  -webkit-mask: radial-gradient(circle 12px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 12px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 12px at 0 50%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 12px at 100% 50%, #0000 98%, #000) right / 51% 100% no-repeat; }
+.ticket label { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; }
+.ticket input { border: 0; background: none; font: 400 30px/1.1 'Forum', serif; padding: 0; width: 100%; color: var(--wine-900); }
+.result { min-width: 190px; display: grid; place-content: center; text-align: center; border-radius: 10px; box-shadow: inset 0 0 0 1px rgb(246 228 232 / .3); padding: 14px 20px; }
+.result output { font: 400 72px/.9 'Forum', serif; color: #fff; }
+.result output::after { content: "%"; font-size: .4em; position: relative; top: -1.1em; }
+.calc .why { min-height: 1.5em; color: var(--blush-2); text-align: center; }
+.calc form.done output { animation: pop .6s var(--ease); }
+@keyframes pop { 0% { transform: scale(.7); opacity: .3; } 100% { transform: none; opacity: 1; } }
+@media (max-width: 760px) { .tickets { grid-template-columns: 1fr; width: min(100%, 360px); } }
+
+/* ---------- 5. Билет: отрыв контроля ---------- */
+.finalact { height: 200vh; background: var(--wine-800); }
+.finalact .stage { display: grid; place-items: center; }
+.bigticket { position: relative; display: grid; grid-template-columns: 1fr auto; width: min(860px, 92vw); filter: drop-shadow(0 30px 60px rgb(0 0 0 / .4)); }
+.bigticket .main { background: var(--blush); color: var(--wine-900); border-radius: 14px 0 0 14px; padding: clamp(28px, 5vw, 56px); display: grid; gap: 18px; align-content: center; }
+.bigticket .main .display { font-size: clamp(40px, 6vw, 80px); }
+.bigticket .main .btn.main { background: var(--wine-800); color: var(--blush); justify-self: start; }
+.bigticket .main .btn.main:hover { background: var(--wine-600); }
+.stub { width: clamp(90px, 14vw, 170px); background: var(--blush); color: var(--wine-900); border-radius: 0 14px 14px 0; border-left: 2px dashed rgb(46 6 17 / .35); display: grid; place-items: center; writing-mode: vertical-rl; font: 400 clamp(22px, 3vw, 36px)/1 'Forum', serif; letter-spacing: .1em;
+  transform-origin: 0 100%; transform: translate(calc(min(1, max(0, var(--p, 0) - .3) * 2.2) * 60px), calc(min(1, max(0, var(--p, 0) - .3) * 2.2) * 40vh)) rotate(calc(min(1, max(0, var(--p, 0) - .3) * 2.2) * 28deg)); }
+
+.rm .curtain, .rm .marquee { display: none; }
+.rm .pin, .rm .finale { opacity: 1; transform: none; }
+.rm .finale { position: static; padding: 40px var(--gutter); }
+.rm .hero { height: auto; }
+.rm .hero .stage { position: relative; height: auto; padding: 100px 0 40px; gap: 30px; }
+.rm .stub { transform: none; }
+.rm .actor { filter: none; } .rm .actor figcaption { opacity: 1; transform: none; }
+
+@media (max-width: 760px) {
+  .pin span { font-size: 12.5px; padding: 8px 10px; }
+  .pin b { font-size: 17px; }
+  .pin.him { right: auto; left: 3%; top: 44%; } .pin.her { left: auto; right: 3%; top: 56%; }
+  .pin.el { right: auto; left: 50%; top: 11%; transform: translate(-50%, 10px); text-align: center; } .pin.el.on { transform: translate(-50%, 0); }
+  .pin.east { left: 50%; top: 24%; transform: translate(-50%, 10px); text-align: center; } .pin.east.on { transform: translate(-50%, 0); }
+  .pin.him::after, .pin.her::after, .pin.him::before, .pin.her::before { display: none; }
+  .actor { width: 62vw; }
+  .bigticket { grid-template-columns: 1fr; }
+  .bigticket .main { border-radius: 14px 14px 0 0; }
+  .stub { width: auto; height: 90px; writing-mode: horizontal-tb; border-radius: 0 0 14px 14px; border-left: 0; border-top: 2px dashed rgb(46 6 17 / .35); }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="../index.html"><canvas data-logo3d data-fallback="../icons/logo-3d-256.png" width="60" height="60" aria-hidden="true"></canvas>Любовь в цифрах</a>
+  <a class="enter" href="../index.html#join">Войти</a>
+</header>
+
+<main>
+  <section class="hero" data-scene aria-labelledby="h1">
+    <div class="stage">
+      <div class="spot" aria-hidden="true"></div>
+      <div class="frame">
+      <div class="prosc">
+        <canvas data-frames="frames/f%03d.webp" data-count="96" data-from="0.1" data-to="0.9" aria-label="Пара на носу лодки подплывает к причалу"></canvas>
+        <div class="dim" data-range=".8 1"></div>
+      </div>
+        <div class="pin him" data-range=".2 .8"><span><b>Он · 17.02.1988</b>Водолей · число судьбы 9</span></div>
+        <div class="pin her" data-range=".3 .8"><span><b>Она · 24.03.1992</b>Овен · число судьбы 3</span></div>
+        <div class="pin el" data-range=".46 .8"><span><b>Огонь и воздух</b>стихии усиливают друг друга</span></div>
+        <div class="pin east" data-range=".58 .8"><span><b>Обезьяна и Дракон</b>союзники по восточному кругу</span></div>
+      </div>
+      <div class="valance" aria-hidden="true"></div>
+      <div class="curtain l" aria-hidden="true"></div>
+      <div class="curtain r" aria-hidden="true"></div>
+      <div class="marquee">
+        <h1 class="display" id="h1">Любовь<br>в цифрах</h1>
+        <p class="kicker">Премьера вашей истории</p>
+        <p class="scrollcue">Листайте — занавес откроется</p>
+      </div>
+      <div class="finale" data-range=".8 1">
+        <p class="kicker">Аркан пары — Солнце</p>
+        <p class="num">93<small>%</small></p>
+        <p>совместимость по датам рождения</p>
+        <div class="acts"><a class="btn main" href="../index.html#join">Создать анкету</a><a class="btn line" href="#vyhod">Проверить свои даты</a></div>
+        <p class="note-demo">Пример расчёта для дат 24.03.1992 и 17.02.1988</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cast" data-scene data-hscroll aria-labelledby="castTitle">
+    <div class="stage">
+      <div class="beam" aria-hidden="true"></div>
+      <header>
+        <h2 class="display" id="castTitle">Действующие лица</h2>
+        <p class="note-demo">Анкеты-примеры</p>
+      </header>
+      <div class="rail">
+        <div class="track">
+          <figure class="actor" data-range=".05 .26"><img src="../media/hero-1.webp" alt="Алина" width="600" height="900" loading="lazy" decoding="async"><figcaption><b>Алина, 29</b><span>Близнецы · число 8</span></figcaption></figure>
+          <figure class="actor" data-range=".22 .43"><img src="../media/man-2.webp" alt="Максим" width="600" height="900" loading="lazy" decoding="async"><figcaption><b>Максим, 34</b><span>Скорпион · число 7</span></figcaption></figure>
+          <figure class="actor" data-range=".39 .6"><img src="../media/hero-3.webp" alt="Вероника" width="600" height="900" loading="lazy" decoding="async"><figcaption><b>Вероника, 31</b><span>Водолей · число 8</span></figcaption></figure>
+          <figure class="actor" data-range=".56 .77"><img src="../media/man-4.webp" alt="Илья" width="600" height="900" loading="lazy" decoding="async"><figcaption><b>Илья, 37</b><span>Дева · число 8</span></figcaption></figure>
+          <figure class="actor" data-range=".73 .96"><img src="../media/hero-2.webp" alt="Дарья" width="600" height="900" loading="lazy" decoding="async"><figcaption><b>Дарья, 32</b><span>Овен · число 9</span></figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="systems" aria-labelledby="sysTitle">
+    <p class="kicker" data-reveal>Антракт</p>
+    <h2 class="display" id="sysTitle" data-reveal>Четыре системы. Один процент.</h2>
+    <div class="boxes">
+      <div class="box" data-reveal style="--w:3;--c:#ff4f8b"><div class="orb">30</div><span>Число судьбы</span></div>
+      <div class="box" data-reveal style="--w:2.5;--c:#c2436b"><div class="orb">25</div><span>Знак и стихия</span></div>
+      <div class="box" data-reveal style="--w:2.5;--c:#4f7cff"><div class="orb">25</div><span>Восточный год</span></div>
+      <div class="box" data-reveal style="--w:2;--c:#7d5cd6"><div class="orb">20</div><span>Аркан пары</span></div>
+    </div>
+  </section>
+
+  <section class="calc" id="vyhod" aria-labelledby="calcTitle">
+    <p class="kicker" data-reveal>Ваш выход</p>
+    <h2 class="display" id="calcTitle" data-reveal>Две даты на сцену</h2>
+    <form data-calc data-reveal>
+      <div class="tickets">
+        <div class="ticket"><label for="d1">Ваша дата</label><input id="d1" type="date" value="1992-03-24" required></div>
+        <div class="ticket"><label for="d2">Дата партнёра</label><input id="d2" type="date" value="1988-02-17" required></div>
+        <div class="result"><output data-out for="d1 d2">93</output><span class="note-demo">совместимость</span></div>
+      </div>
+    </form>
+    <p class="why" data-why aria-live="polite"></p>
+  </section>
+
+  <section class="finalact" data-scene aria-labelledby="finTitle">
+    <div class="stage">
+      <div class="bigticket">
+        <div class="main">
+          <p class="kicker" style="color:inherit;opacity:.7">Вход в зал</p>
+          <h2 class="display" id="finTitle">Ваша премьера — сегодня</h2>
+          <a class="btn main" href="../index.html#join">Создать анкету</a>
+        </div>
+        <div class="stub" aria-hidden="true">Контроль</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>© Любовь в цифрах · 18+</span>
+  <span><a href="../privacy.html">Конфиденциальность</a> · <a href="../terms.html">Правила</a> · <a href="../oferta.html">Оферта</a></span>
+</footer>
+
+<nav class="variants" aria-label="Варианты главной"><span>Вариант:</span><a href="premiera.html" aria-current="page">Премьера</a><a href="kalendar.html">Календарь</a><a href="fotobudka.html">Фотобудка</a></nav>
+
+<script src="compat.js" defer></script>
+<script src="scroll.js" defer></script>
+<script src="../logo3d.js" defer></script>
+</body>
+</html>
