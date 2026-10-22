@@ -1867,7 +1867,7 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     // фото и видео: главное фото-портрет, 2–6 сюжетных снимков, у части анкет короткое видео
     list.forEach((p, i) => {
       const q = rng(7000 + i), scenes = [...SCENES].sort(() => q() - .5);
-      const media = [{ type: 'photo', src: `media/portrait-${p.g}-${1 + Math.floor(q() * 6)}.jpg` }];
+      const media = [{ type: 'photo', src: `media/avatar-${p.g}-${1 + Math.floor(q() * 4)}.jpg` }];
       scenes.slice(0, 2 + Math.floor(q() * 5)).forEach(n => media.push({ type: 'photo', src: `media/${n}.jpg` }));
       if (q() < .45) {
         const v = VIDEOS[Math.floor(q() * VIDEOS.length)];
