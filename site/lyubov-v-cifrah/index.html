@@ -845,8 +845,17 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .t-list .slide .info span ~ span::before { content: ", "; }
 .t-list .slide .pct { position: static; grid-column: 3; grid-row: 1 / span 2; background: none; padding: 0; font: 700 var(--t-lead)/1 var(--font-display); }
 .t-list .city-more { margin-top: 2rem; border: 0; background: var(--t-surface); }
-.city-preview { grid-column: 2 !important; grid-row: 2 / span 5; position: sticky; top: 12vh; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: var(--t-pink); }
-.city-preview img { width: 100%; height: 100%; object-fit: cover; object-position: center 25%; opacity: 0; transition: opacity .24s ease-out; }
+.city-preview { grid-column: 2 !important; grid-row: 2 / span 5; position: sticky; top: 12vh; aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
+.city-preview canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.city-preview img { position: relative; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: center 25%; opacity: 0; transform: scale(.9); transition: opacity .24s ease-out, transform .3s var(--t-ease); }
+.city-preview.on img { transform: none; }
+/* «Анкеты по городам»: кнопки городов волной, строки анкет выезжают по очереди (globe.js ставит .wave сразу и .in при появлении) */
+.t-list.wave:not(.in) .city-chips > * { opacity: 0; transform: translateY(14px) scale(.9); }
+.t-list.wave.in .city-chips > * { animation: chipIn .5s var(--t-ease) both; animation-delay: min(calc(var(--n, 0) * 35ms), 700ms); }
+.t-list.wave.in .city-grid > .slide { animation: rowIn .6s var(--t-ease) both; animation-delay: min(calc(var(--n, 0) * 60ms), 720ms); }
+@keyframes chipIn { from { opacity: 0; transform: translateY(14px) scale(.9); } to { opacity: 1; transform: none; } }
+@keyframes rowIn { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+.rm .t-list .city-chips > *, .rm .t-list .city-grid > .slide { opacity: 1; transform: none; animation: none !important; }
 .city-preview.on img { opacity: 1; }
 .t-list:not(:has(.slide)) .city-preview { display: none; }
 
@@ -928,7 +937,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
   .wall { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   .t-list { grid-template-columns: 1fr; }
   .t-list .city-grid { grid-template-columns: 1fr; }
-  .city-preview { display: none; }
+  .city-preview { grid-column: 1 !important; grid-row: 2; position: relative; top: 0; justify-self: center; width: min(78vw, 340px); margin: 0 0 1.5rem; }
   .t .pricing { grid-template-columns: 1fr; }
   .t .pricing .plan { min-height: 70svh; }
   .t .pricing .plan.vip { order: -1; }
@@ -1197,10 +1206,10 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
       <div class="mx-stage">
       <h2 id="mxBTitle" data-reveal>Каждый снимок —<br><span class="mx-hand">чья-то дата<i class="mx-ul" aria-hidden="true"></i></span></h2>
       <div class="mx-strips">
-        <div class="mx-pstrip" style="--i:0;--r:-4deg"><img style="--f:0" src="media/hero-1.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><img src="media/hero-1.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:1;object-position:50% 20%"><img src="media/hero-1.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:2;object-position:50% 80%"><p class="mx-mono">12.06.1997 · ♊ · 8</p></div>
-        <div class="mx-pstrip" style="--i:1;--r:3deg"><img style="--f:0" src="media/man-2.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><img src="media/man-2.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/man-2.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">03.11.1991 · ♏ · 7</p></div>
-        <div class="mx-pstrip" style="--i:2;--r:-2deg"><img style="--f:0" src="media/hero-3.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><img src="media/hero-3.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/hero-3.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">28.01.1995 · ♒ · 8</p></div>
-        <div class="mx-pstrip" style="--i:3;--r:5deg"><img style="--f:0" src="media/man-4.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><img src="media/man-4.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/man-4.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">17.09.1989 · ♍ · 8</p></div>
+        <div class="mx-pstrip" style="--i:0;--r:-4deg"><img style="--f:0" src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 20%"><img src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 80%"><p class="mx-mono">12.06.1997 · ♊ · 8</p></div>
+        <div class="mx-pstrip" style="--i:1;--r:3deg"><img style="--f:0" src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">03.11.1991 · ♏ · 7</p></div>
+        <div class="mx-pstrip" style="--i:2;--r:-2deg"><img style="--f:0" src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">28.01.1995 · ♒ · 8</p></div>
+        <div class="mx-pstrip" style="--i:3;--r:5deg"><img style="--f:0" src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">17.09.1989 · ♍ · 8</p></div>
       </div>
       <p class="mx-note-demo">Анкеты-примеры</p>
       </div>
@@ -1212,16 +1221,16 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
           <div class="mx-track">
             <h2 class="mx-lead" id="mxMTitle">Двенадцать<br>месяцев<br>любви</h2>
             <div class="mx-month"><span class="mx-n">01</span><span class="mx-m">январь</span></div>
-            <div class="mx-month mx-ph"><img src="media/couple-1.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="mx-m">февраль · закат у моря</span></div>
+            <div class="mx-month mx-ph"><img src="media/pair-1.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">февраль</span></div>
             <div class="mx-month"><span class="mx-n">03</span><span class="mx-m">март</span></div>
-            <div class="mx-month"><span class="mx-n">04</span><span class="mx-m">апрель</span></div>
-            <div class="mx-month mx-ph"><img src="media/hero-3.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="mx-m">май</span></div>
+            <div class="mx-month mx-ph"><img src="media/pair-4.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">апрель</span></div>
+            <div class="mx-month mx-ph"><img src="media/pair-2.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">май</span></div>
             <div class="mx-month"><span class="mx-n">06</span><span class="mx-m">июнь</span></div>
-            <div class="mx-month"><span class="mx-n">07</span><span class="mx-m">июль</span></div>
-            <div class="mx-month mx-ph"><img src="media/man-5.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="mx-m">август</span></div>
+            <div class="mx-month mx-ph"><img src="media/pair-6.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">июль</span></div>
+            <div class="mx-month mx-ph"><img src="media/pair-7.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">август</span></div>
             <div class="mx-month"><span class="mx-n">09</span><span class="mx-m">сентябрь</span></div>
-            <div class="mx-month mx-ph"><img src="media/couple-4.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="mx-m">октябрь · листопад</span></div>
-            <div class="mx-month"><span class="mx-n">11</span><span class="mx-m">ноябрь</span></div>
+            <div class="mx-month mx-ph"><img src="media/pair-5.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">октябрь</span></div>
+            <div class="mx-month mx-ph"><img src="media/pair-9.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">ноябрь</span></div>
             <div class="mx-month"><span class="mx-n">12</span><span class="mx-m">декабрь</span></div>
           </div>
         </div>
@@ -1232,8 +1241,8 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     <section class="mx-match" data-scene aria-labelledby="mxMaTitle">
       <div class="mx-stage">
         <h2 class="mx-sr" id="mxMaTitle">Совпадение</h2>
-        <figure class="mx-pola mx-a"><img src="media/hero-2.webp" alt="Она" width="600" height="900" loading="lazy" decoding="async"><figcaption class="mx-hand">21.10 · Весы</figcaption></figure>
-        <figure class="mx-pola mx-b"><img src="media/man-4.webp" alt="Он" width="600" height="900" loading="lazy" decoding="async"><figcaption class="mx-hand">07.04 · Овен</figcaption></figure>
+        <figure class="mx-pola mx-a"><img src="media/avatar-f-13.jpg" alt="Она" width="600" height="800" loading="lazy" decoding="async"><figcaption class="mx-hand">21.10 · Весы</figcaption></figure>
+        <figure class="mx-pola mx-b"><img src="media/avatar-m-2.jpg" alt="Он" width="600" height="800" loading="lazy" decoding="async"><figcaption class="mx-hand">07.04 · Овен</figcaption></figure>
         <div class="mx-verdict" data-range=".58 1">
           <div class="mx-heart"><b>91%</b></div>
           <p class="mx-hand" style="margin:0">аркан «Влюблённые»</p>
@@ -1367,7 +1376,7 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     </div>
     <div class="city-grid" id="cityGrid"></div>
     <button class="btn city-more" type="button" id="cityMore" hidden>Показать ещё</button>
-    <div class="city-preview" id="cityPreview" aria-hidden="true"><img alt="" id="cityPreviewImg"></div>
+    <div class="city-preview" id="cityPreview" aria-hidden="true"><canvas id="cityGlobe"></canvas><img alt="" id="cityPreviewImg"></div>
   </section>
 
   <section class="more-only t-price" id="prices" aria-labelledby="pricesTitle">
@@ -3465,6 +3474,8 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
       </button>`;
     }).join('');
     $('#cityMore').hidden = list.length <= homeShown;
+    $('#homeCities').querySelectorAll(':scope > *').forEach((el, i) => el.style.setProperty('--n', i));
+    $('#cityGrid').querySelectorAll('.slide').forEach((el, i) => el.style.setProperty('--n', i));
   }
   $('#homeCities').addEventListener('click', e => { const b = e.target.closest('[data-city]'); if (!b) return; homeCity = b.dataset.city; store.set('homeCity', homeCity); homeShown = 12; renderCities(); });
   // «Анкеты в моём городе» на первом экране: город из анкеты, иначе последний выбранный; без него — список всех городов на выбор
@@ -4244,5 +4255,6 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
 <script src="compat.js" defer></script>
 <script src="scroll.js" defer></script>
 <script src="logo3d.js" defer></script>
+<script src="globe.js" defer></script>
 </body>
 </html>
