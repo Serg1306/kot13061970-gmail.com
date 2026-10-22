@@ -1101,6 +1101,19 @@ body.more:not(.in-app) .top { background: #2e0611; box-shadow: 0 0 0 100vmax #2e
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23f6e4e8' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right .6rem center / 10px; }
 .top nav select.lang option { color: #1f040b; background: #fff; }
 /* кабинет на том же бордовом фоне, что и главная (в обеих темах): карточки — тёмно-винные, текст светлый */
+/* логотип в шапке вдвое крупнее (просьба владельца, 2026-10): шар и надпись */
+.top .logo { font-size: calc(var(--t-lead) * 2); gap: .75rem; }
+.top .logo .logo-ball, .top .logo svg { width: 60px; height: 60px; }
+/* если пункты меню не помещаются рядом с крупным логотипом, они переносятся на вторую строку справа */
+.top nav { justify-content: flex-end; }
+@media (max-width: 720px) {
+  .top .logo { font-size: 2.2rem; gap: .5rem; }
+  .top .logo .logo-ball, .top .logo svg { width: 44px; height: 44px; }
+}
+@media (max-width: 420px) {
+  .top .logo { font-size: 1.75rem; }
+  .top .logo .logo-ball, .top .logo svg { width: 40px; height: 40px; }
+}
 html:has(body.in-app) { background: #470a1b; }
 :root:root:root body.in-app {
   --t-bg: #470a1b; --t-surface: #5e0e25; --t-paper: #5e0e25; --t-ink: #f6e4e8; --t-muted: #dcbcc4;

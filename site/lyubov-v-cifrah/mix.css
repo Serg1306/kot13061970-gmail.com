@@ -39,7 +39,7 @@
 
 /* ---------- 1. Отрывной календарь + видео ---------- */
 .mx .mx-hero { height: 460vh; }
-.mx .mx-hero .mx-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(20px, 5vw, 80px); padding: 80px var(--gutter) 70px; }
+.mx .mx-hero .mx-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(20px, 5vw, 80px); padding: 130px var(--gutter) 50px; }
 .mx .mx-pad { position: relative; justify-self: end; width: min(440px, 36vw); aspect-ratio: 3 / 4; }
 .mx .mx-pad::before { content: ""; position: absolute; inset: auto 6% -10px 6%; height: 30px; border-radius: 4px; background: repeating-linear-gradient(180deg, #e9d9d6 0 2px, #fbefec 2px 4px); }
 .mx .mx-rings { position: absolute; z-index: 20; inset: -16px 18% auto; display: flex; justify-content: space-between; }
@@ -167,7 +167,7 @@
 .rm .mx .mx-people { height: auto; } .rm .mx .mx-people .mx-stage { position: relative; height: auto; padding: 80px 0; overflow-x: auto; }
 .rm .mx .mx-sticky { opacity: 1; transform: rotate(var(--r)); }
 .rm .mx .mx-big { transform: none; }
-.rm .mx .mx-hero { height: auto; } .rm .mx .mx-hero .mx-stage { position: relative; height: auto; padding: 110px var(--gutter) 60px; }
+.rm .mx .mx-hero { height: auto; } .rm .mx .mx-hero .mx-stage { position: relative; height: auto; padding: 150px var(--gutter) 60px; }
 .rm .mx .mx-months { height: auto; } .rm .mx .mx-months .mx-stage { position: relative; height: auto; padding: 80px 0; } .rm .mx .mx-months .mx-rail { overflow-x: auto; }
 
 
@@ -203,7 +203,7 @@
 }
 
 /* на главной первый экран ниже шапки */
-@media (max-width: 760px) { .mx .mx-hero .mx-stage { padding-top: 104px; } }
+@media (max-width: 760px) { .mx .mx-hero .mx-stage { padding-top: 132px; } }
 /* кнопка «Анкеты в моём городе» внизу первого экрана */
 .mx .mx-city { position: absolute; z-index: 30; left: 50%; bottom: 22px; translate: -50% 0; display: inline-flex; align-items: center; gap: 8px; padding: 13px 22px; border-radius: 999px; background: var(--blush); color: var(--wine-900); font: 600 15px/1 var(--ui); text-decoration: none; white-space: nowrap; box-shadow: 0 10px 30px rgb(0 0 0 / .3); transition: background-color .2s, transform .2s var(--ease); }
 .mx .mx-city:hover { background: #fff; transform: translateY(-2px); }
