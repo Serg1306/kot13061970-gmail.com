@@ -161,14 +161,59 @@
 .mx form.done .mx-print { animation: printout .9s var(--ease); }
 @keyframes printout { 0% { transform: translateY(-40px) rotate(0); opacity: 0; } 100% { transform: rotate(3deg); opacity: 1; } }
 .mx .mx-booth .mx-why { margin: 0; color: var(--blush-2); text-align: center; min-height: 1.5em; }
-/* фотобудка при прокрутке (--p от alive.js): шторка в окошке поднимается, вспышка, снимок печатается */
-.mx .mx-booth[data-progress] { --c: clamp(0, calc((var(--p, 1) - .3) / .2), 1); --fl: clamp(0, calc(1 - max((var(--p, 1) - .5) * 14, (.5 - var(--p, 1)) * 14)), 1); }
+/* фотобудка — скролл-сцена: заголовок пишется, будка выезжает, поля заполняются, отсчёт 3-2-1, шторка, вспышка,
+   из щели печатается полоска с парой и процентом; вокруг плывут фото */
+.mx .mx-booth[data-scene] { height: 400vh; padding: 0; display: block; overflow: clip;
+  --t: clamp(0, calc(var(--p, 1) / .12), 1);
+  --b: clamp(0, calc((var(--p, 1) - .04) / .16), 1); --be: calc(var(--b) * (2 - var(--b)));
+  --c: clamp(0, calc((var(--p, 1) - .46) / .05), 1);
+  --fl: clamp(0, calc(1 - max((var(--p, 1) - .52) * 16, (.52 - var(--p, 1)) * 16)), 1);
+  --o: clamp(0, calc((var(--p, 1) - .55) / .2), 1);
+  --x: clamp(0, calc((var(--p, 1) - .86) / .14), 1); }
+.mx .mx-booth[data-scene] .mx-stage { width: 100%; display: grid; align-content: center; justify-items: center; gap: clamp(16px, 3vh, 30px); padding: 40px var(--gutter); }
+.mx .mx-booth[data-scene] h2 { position: relative; z-index: 2; clip-path: inset(-20% calc((1 - var(--t)) * 100%) -20% 0); transform: translateY(calc(var(--x) * -60px)); }
+.mx .mx-booth[data-scene] .mx-cabin { position: relative; z-index: 2; transform: translateY(calc((1 - var(--be)) * 70vh + var(--x) * -40px)) scale(calc(.85 + var(--be) * .15)); }
+.mx .mx-booth[data-scene] .mx-stage::after { content: ""; position: absolute; inset: 0; background: #fff; opacity: calc(var(--fl) * .9); pointer-events: none; z-index: 5; }
+.mx .mx-booth[data-scene] .mx-fields > * { --f: clamp(0, calc((var(--p, 1) - .16 - var(--k) * .035) / .06), 1); opacity: var(--f); transform: translateX(calc((1 - var(--f)) * -40px)); }
 .mx .mx-win { position: relative; overflow: hidden; }
 .mx .mx-curtain { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #5e0e25 0 10px, #470a1b 10px 20px); box-shadow: inset 0 -8px 0 #2e0611; transform: translateY(calc(var(--c, 1) * -102%)); }
-.mx .mx-booth[data-progress] .mx-cabin { position: relative; }
-.mx .mx-booth[data-progress] .mx-cabin::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: calc(var(--fl) * .85); pointer-events: none; }
-.mx .mx-booth[data-progress] h2 { transform: rotate(calc((1 - var(--c)) * -4deg)) scale(calc(.9 + var(--c) * .1)); }
-.rm .mx .mx-booth[data-progress] { --c: 1; --fl: 0; }
+.mx .mx-booth[data-scene] .mx-print { transform: rotate(calc(3deg - var(--o) * 3deg)); }
+/* щель и полоска, которая печатается вниз */
+.mx .mx-slot { position: absolute; left: 50%; top: 100%; width: min(420px, 86%); translate: -50% 0; height: 200px; overflow: hidden; pointer-events: none; }
+.mx .mx-slot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; border-radius: 0 0 6px 6px; background: #0d0105; z-index: 1; }
+.mx .mx-outstrip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px 8px 22px; background: var(--strip); box-shadow: 0 20px 40px rgb(0 0 0 / .35); transform: translateY(calc((1 - var(--o)) * -102%)) rotate(calc(var(--x) * -3deg)); transform-origin: 50% 0; }
+.mx .mx-outstrip > * { aspect-ratio: 1; width: 100%; object-fit: cover; --d: clamp(0, calc((var(--p, 1) - .62 - var(--k) * .05) / .06), 1); opacity: var(--d); transform: scale(calc(1.15 - var(--d) * .15)); }
+.mx .mx-frame-pct { display: grid; place-content: center; background: var(--pink); color: var(--wine-950); }
+.mx .mx-frame-pct b { font: 400 clamp(26px, 3vw, 40px)/1 var(--mono); }
+.mx .mx-frame-pct b::after { content: "%"; font-size: .5em; }
+/* отсчёт */
+.mx .mx-count { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; pointer-events: none; }
+.mx .mx-count i { grid-area: 1 / 1; font: 600 clamp(160px, 30vw, 380px)/1 var(--cal); font-style: normal; color: #fff; text-shadow: 0 10px 60px rgb(255 79 139 / .6); opacity: 0; }
+.mx .mx-count i.on { opacity: calc(1 - max(0, var(--q) * 2 - 1)); transform: scale(calc(1.5 - var(--q) * .5)); }
+/* фото вокруг: влетают, медленно плывут, на выходе разлетаются */
+.mx .mx-bpola { position: absolute; z-index: 1; margin: 0; width: clamp(110px, 13vw, 190px); padding: 8px 8px 30px; background: var(--strip); box-shadow: 0 24px 50px rgb(0 0 0 / .4);
+  --e: clamp(0, calc((var(--p, 1) - .02 - var(--k) * .04) / .14), 1); opacity: var(--e); }
+.mx .mx-bpola img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; }
+.mx .mx-bpola:nth-of-type(1) { left: 5%; top: 10%; transform: translate(calc((1 - var(--e)) * -30vw), calc(var(--p, 1) * -12vh)) rotate(calc(-9deg + var(--x) * -20deg)); }
+.mx .mx-bpola:nth-of-type(2) { left: 12%; bottom: 6%; transform: translate(calc((1 - var(--e)) * -30vw), calc(var(--p, 1) * -22vh + 10vh)) rotate(calc(6deg + var(--x) * 18deg)); }
+.mx .mx-bpola:nth-of-type(3) { right: 6%; top: 8%; transform: translate(calc((1 - var(--e)) * 30vw), calc(var(--p, 1) * -16vh)) rotate(calc(8deg + var(--x) * 20deg)); }
+.mx .mx-bpola:nth-of-type(4) { right: 12%; bottom: 5%; transform: translate(calc((1 - var(--e)) * 30vw), calc(var(--p, 1) * -24vh + 10vh)) rotate(calc(-5deg + var(--x) * -18deg)); }
+.mx .mx-booth[data-scene] .mx-why { position: relative; z-index: 2; margin-top: 210px; opacity: clamp(0, calc((var(--p, 1) - .78) / .06), 1); font-size: 18px; }
+.rm .mx .mx-booth[data-scene] { height: auto; --t: 1; --b: 1; --c: 1; --fl: 0; --o: 1; --x: 0; --p: .8 !important; }
+.rm .mx .mx-booth[data-scene] .mx-stage { position: relative; height: auto; padding: 100px var(--gutter) 80px; }
+.rm .mx .mx-count { display: none; }
+@media (max-width: 760px) {
+  .mx .mx-booth[data-scene] .mx-stage { gap: 14px; padding: 20px 16px; }
+  .mx .mx-booth[data-scene] .mx-cabin { padding: 16px; gap: 14px; }
+  .mx .mx-booth[data-scene] .mx-fields input { padding: 10px 12px; font-size: 18px; }
+  .mx .mx-booth[data-scene] .mx-print { width: 120px; }
+  .mx .mx-booth[data-scene] .mx-print output { font-size: 40px; }
+  .mx .mx-slot { height: 150px; }
+  .mx .mx-bpola { width: 80px; padding: 5px 5px 16px; }
+  .mx .mx-bpola:nth-of-type(1) { left: -10px; top: 4%; } .mx .mx-bpola:nth-of-type(3) { right: -10px; top: 3%; }
+  .mx .mx-bpola:nth-of-type(2) { left: -14px; bottom: 3%; } .mx .mx-bpola:nth-of-type(4) { right: -14px; bottom: 2%; }
+  .mx .mx-booth[data-scene] .mx-why { margin-top: 140px; font-size: 15px; }
+}
 /* «Сегодня»: число перелистывается (alive.js), на выходе лист отрывается и улетает */
 .mx .mx-big .mx-d.flip { animation: flipNum .12s ease-out; }
 @keyframes flipNum { from { transform: rotateX(80deg); opacity: .3; } to { transform: none; opacity: 1; } }

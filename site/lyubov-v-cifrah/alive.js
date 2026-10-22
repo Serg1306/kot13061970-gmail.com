@@ -1,7 +1,7 @@
 // Оживление нижних блоков главной при прокрутке (без библиотек, CSP 'self').
 // [data-progress]  блок получает --p (0…1): 0 — верх блока у нижнего края окна, 1 — низ блока у верхнего края
 // «Сейчас на сайте»  анкеты влетают по очереди, проценты набираются от нуля
-// Фотобудка          при вспышке (--p ≈ .5) снимок печатается заново и процент набирается
+// Фотобудка          сцена в mix.css; здесь после вспышки снимок печатается и проценты набираются
 // «Сегодня»          число перелистывается, как на табло, когда лист появляется
 // При уменьшенном движении всё показывается сразу, без набора и перелистывания.
 (() => {
@@ -39,17 +39,30 @@
   addEventListener('scroll', req, { passive: true });
   addEventListener('resize', () => { blocks.forEach(b => (b.last = -1)); req(); });
 
-  /* ---------- фотобудка: вспышка печатает снимок ---------- */
-  const booth = at('.mx-booth');
-  if (booth) {
-    const form = booth.el.querySelector('form[data-calc]'), out = form && form.querySelector('[data-out]');
-    let fired = false;
-    booth.hooks.push(p => {
-      if (fired || p < .5 || !out) return;
-      fired = true;
-      form.classList.remove('done'); void form.offsetWidth; form.classList.add('done');
-      count(out, parseInt(out.textContent, 10) || 0);
-    });
+  /* ---------- фотобудка (скролл-сцена): после вспышки снимок печатается, процент набирается ---------- */
+  const boothEl = document.querySelector('.mx-booth[data-scene]');
+  if (boothEl) {
+    const form = boothEl.querySelector('form[data-calc]'), out = form.querySelector('[data-out]'), copy = form.querySelector('[data-out-copy]');
+    const sync = () => { if (copy && !copy.dataset.busy) copy.textContent = out.textContent; };
+    new MutationObserver(sync).observe(out, { childList: true, characterData: true, subtree: true });
+    let flash = false, strip = false;
+    const check = () => {
+      const r = boothEl.getBoundingClientRect(), span = r.height - innerHeight;
+      if (r.bottom < 0 || r.top > innerHeight) return;
+      const p = span > 0 ? clamp(-r.top / span) : 1;
+      if (!flash && p >= .52) {
+        flash = true;
+        form.classList.remove('done'); void form.offsetWidth; form.classList.add('done');
+        count(out, parseInt(out.textContent, 10) || 0);
+      }
+      if (!strip && p >= .72 && copy) {
+        strip = true; copy.dataset.busy = 1;
+        count(copy, parseInt(out.textContent, 10) || 0);
+        setTimeout(() => { delete copy.dataset.busy; sync(); }, 1200);
+      }
+    };
+    addEventListener('scroll', check, { passive: true });
+    check();
   }
 
   /* ---------- «Сегодня»: число перелистывается ---------- */
