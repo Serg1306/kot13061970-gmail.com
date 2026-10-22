@@ -1101,18 +1101,24 @@ body.more:not(.in-app) .top { background: #2e0611; box-shadow: 0 0 0 100vmax #2e
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23f6e4e8' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right .6rem center / 10px; }
 .top nav select.lang option { color: #1f040b; background: #fff; }
 /* кабинет на том же бордовом фоне, что и главная (в обеих темах): карточки — тёмно-винные, текст светлый */
-/* логотип в шапке вдвое крупнее (просьба владельца, 2026-10): шар и надпись */
-.top .logo { font-size: calc(var(--t-lead) * 2); gap: .75rem; }
-.top .logo .logo-ball, .top .logo svg { width: 60px; height: 60px; }
-/* если пункты меню не помещаются рядом с крупным логотипом, они переносятся на вторую строку справа */
-.top nav { justify-content: flex-end; }
+/* логотип в шапке вчетверо крупнее прежнего (просьба владельца, 2026-10): шар 120 px, надпись уменьшается на узких экранах, чтобы влезть.
+   Меню переносится на вторую строку справа. Высота шапки (--head-h) меряется скриптом, по ней опускается первый экран. */
+.top { flex-wrap: wrap; row-gap: .4rem; }
+.top .logo { font-size: min(calc(var(--t-lead) * 4), 6.6vw); gap: 1rem; letter-spacing: -0.035em; }
+.top .logo .logo-ball, .top .logo svg { width: min(120px, 9vw); height: min(120px, 9vw); }
+.top nav { justify-content: flex-end; margin-left: auto; }
 @media (max-width: 720px) {
-  .top .logo { font-size: 2.2rem; gap: .5rem; }
-  .top .logo .logo-ball, .top .logo svg { width: 44px; height: 44px; }
+  .top .logo { font-size: 9.4vw; gap: .5rem; }
+  .top .logo .logo-ball, .top .logo svg { width: 15vw; height: 15vw; }
 }
-@media (max-width: 420px) {
-  .top .logo { font-size: 1.75rem; }
-  .top .logo .logo-ball, .top .logo svg { width: 40px; height: 40px; }
+:is(.rm, html) .mx .mx-hero .mx-stage { padding-top: calc(var(--head-h, 200px) + 24px); }
+/* календарь уменьшается целиком (масштабом, --pad-s считает скрипт), если под крупной шапкой ему не хватает высоты */
+.mx .mx-pad { transform: scale(var(--pad-s, 1)); transform-origin: 100% 0; align-self: start; margin-top: 30px; }
+.mx .mx-film { height: min(720px, 100svh - var(--head-h, 200px) - 90px); }
+@media (max-width: 760px) {
+  .mx .mx-hero .mx-stage { padding-top: calc(var(--head-h, 150px) + 12px); }
+  .mx .mx-pad { transform: none; align-self: auto; margin-top: -6px; }
+  .mx .mx-film { height: calc(100svh - var(--head-h, 150px) - 90px); }
 }
 html:has(body.in-app) { background: #470a1b; }
 :root:root:root body.in-app {
@@ -4202,6 +4208,26 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
   renderPricing();
   boot();
 })();
+</script>
+<script>
+  // высота шапки с крупным логотипом: по ней первый экран опускается ниже шапки
+  (() => {
+    const top = document.querySelector('.top'), logo = top.querySelector('.logo');
+    // длинное название (на некоторых языках) уменьшаем, пока не влезет в ширину шапки
+    const fit = () => {
+      logo.style.fontSize = '';
+      let fs = parseFloat(getComputedStyle(logo).fontSize);
+      const room = () => top.getBoundingClientRect().right - parseFloat(getComputedStyle(top).paddingRight);
+      const over = () => logo.getBoundingClientRect().right > Math.min(room(), document.documentElement.clientWidth - 8);
+      while (over() && fs > 14) logo.style.fontSize = (fs -= 1) + 'px';
+      const root = document.documentElement, pad = document.querySelector('.mx .mx-pad');
+      root.style.setProperty('--head-h', top.offsetHeight + 'px');
+      if (pad) root.style.setProperty('--pad-s', Math.min(1, (innerHeight - top.offsetHeight - 170) / pad.offsetHeight).toFixed(3));
+    };
+    addEventListener('resize', fit);
+    fit(); new ResizeObserver(fit).observe(top);
+    new MutationObserver(fit).observe(logo, { childList: true, subtree: true, characterData: true });
+  })();
 </script>
 <script>
   // лист «Сегодня» на главной показывает настоящую дату
