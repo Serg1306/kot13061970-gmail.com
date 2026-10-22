@@ -85,6 +85,37 @@
 .mx .mx-pstrip:nth-child(2) { margin-top: 80px; } .mx .mx-pstrip:nth-child(4) { margin-top: 50px; }
 .js .mx .mx-pstrip[data-reveal] { transform: translateY(-70vh) rotate(calc(var(--r) * -3)); opacity: 1; transition: transform 1.1s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(var(--i) * 130ms); }
 .js .mx .mx-pstrip[data-reveal].in { transform: rotate(var(--r)); }
+/* доска как скролл-сцена: полоски падают, кадры проявляются по одному, дата пропечатывается, на выходе полоски разъезжаются */
+.mx .mx-board[data-scene] { height: 320vh; padding: 0; overflow: clip; --sw: clamp(96px, min(13vw, (100svh - 250px) / 3.1), 200px); }
+.mx .mx-board[data-scene] .mx-stage { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: clamp(24px, 4vw, 64px); padding: 40px var(--gutter); }
+.mx .mx-board[data-scene] h2 { margin: 0; font-size: clamp(40px, 5.2vw, 96px); --x: clamp(0, calc((var(--p, .79) - .8) / .16), 1); }
+.js .mx .mx-board[data-scene] h2.in { transform: translateY(calc(var(--x) * -200px)); opacity: calc(1 - var(--x)); transition-duration: .3s; transition-delay: 0s; }
+.mx .mx-board[data-scene] .mx-hand { position: relative; display: inline-block; }
+.mx .mx-ul { position: absolute; left: 0; right: 0; bottom: -.04em; height: .08em; border-radius: 99px; background: currentColor; transform-origin: 0 50%; transform: scaleX(clamp(0, calc(var(--p, .79) / .22), 1)); }
+.mx .mx-board[data-scene] .mx-strips { gap: clamp(12px, 2.4vw, 40px); }
+.mx .mx-board[data-scene] .mx-pstrip { width: var(--sw); flex: none;
+  --s: clamp(0, calc((var(--p, .79) - .04 - var(--i) * .07) / .2), 1);
+  --e: calc(var(--s) * (2 - var(--s)));
+  --x: clamp(0, calc((var(--p, .79) - .8) / .2), 1);
+  transform: translateY(calc((1 - var(--e)) * -115vh - var(--x) * (90px + var(--i) * 70px))) rotate(calc(var(--r) * (1 - (1 - var(--e)) * 4 + var(--x) * 1.5))); will-change: transform; }
+.mx .mx-board[data-scene] .mx-pstrip img {
+  --d: clamp(0, calc((var(--p, .79) - .3 - (var(--i) * 3 + var(--f)) * .03) / .06), 1);
+  opacity: var(--d); transform: scale(calc(1.18 - var(--d) * .18)); }
+.mx .mx-board[data-scene] .mx-pstrip .mx-mono {
+  --c: clamp(0, calc((var(--p, .79) - .42 - var(--i) * .09) / .05), 1);
+  opacity: var(--c); transform: scale(calc(1.6 - var(--c) * .6)); }
+.mx .mx-board[data-scene] .mx-note-demo { position: absolute; left: 0; right: 0; bottom: 22px; margin: 0; text-align: center; opacity: clamp(0, calc((var(--p, .79) - .68) / .08), 1); }
+.rm .mx .mx-board[data-scene] { height: auto; --p: .79 !important; }
+.rm .mx .mx-board[data-scene] .mx-stage { position: relative; height: auto; padding: 100px var(--gutter) 80px; }
+@media (max-width: 860px) {
+  .mx .mx-board[data-scene] { height: 260vh; --sw: calc((100vw - 2 * var(--gutter) - 3 * 10px) / 4); }
+  .mx .mx-board[data-scene] .mx-stage { grid-template-columns: 1fr; align-content: center; gap: 36px; }
+  .mx .mx-board[data-scene] h2 { font-size: clamp(36px, 11vw, 64px); }
+  .mx .mx-board[data-scene] .mx-strips { gap: 10px; overflow: visible; justify-content: center; padding: 0; }
+  .mx .mx-board[data-scene] .mx-pstrip { width: var(--sw); padding: 5px 5px 0; gap: 5px; }
+  .mx .mx-board[data-scene] .mx-pstrip:nth-child(2) { margin-top: 40px; } .mx .mx-board[data-scene] .mx-pstrip:nth-child(4) { margin-top: 24px; }
+  .mx .mx-board[data-scene] .mx-pstrip .mx-mono { font-size: 8px; padding: 3px 0 6px; white-space: nowrap; }
+}
 
 /* ---------- 3. Совпадение: два полароида ---------- */
 .mx .mx-match { height: 260vh; background: var(--wine-950); }
