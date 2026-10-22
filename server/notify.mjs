@@ -1,4 +1,6 @@
 // Уведомления: Web Push и письма. Всё отправляется в фоне и не задерживает ответ на запрос.
+import { textFor } from './langs.mjs';
+
 const EMAIL_GAP = 30 * 60 * 1000;
 
 const PUSH_TEXT = {
@@ -15,6 +17,48 @@ const PUSH_TEXT = {
     friend_req: n => ({ title: 'Friend request', body: `${n} wants to be friends` }),
     call: n => ({ title: 'Incoming call', body: `${n} is calling you` }),
     support: () => ({ title: 'Support', body: 'Love in Numbers support replied' }),
+  },
+  uk: {
+    message: n => ({ title: 'Нове повідомлення', body: `${n} написав(ла) вам` }),
+    match: n => ({ title: 'Взаємна симпатія!', body: `Ви сподобалися одне одному з ${n}` }),
+    friend_req: n => ({ title: 'Запит у друзі', body: `${n} хоче додати вас у друзі` }),
+    call: n => ({ title: 'Вхідний дзвінок', body: `${n} дзвонить вам` }),
+    support: () => ({ title: 'Підтримка', body: 'Відповідь від підтримки «Любов у цифрах»' }),
+  },
+  kk: {
+    message: n => ({ title: 'Жаңа хабар', body: `${n} сізге жазды` }),
+    match: n => ({ title: 'Өзара ұнату!', body: `Сіз бен ${n} бір-біріңізге ұнадыңыздар` }),
+    friend_req: n => ({ title: 'Достыққа өтінім', body: `${n} сізді досқа қосқысы келеді` }),
+    call: n => ({ title: 'Кіріс қоңырау', body: `${n} сізге қоңырау шалып жатыр` }),
+    support: () => ({ title: 'Қолдау', body: '«Махаббат сандарда» қолдау қызметінің жауабы' }),
+  },
+  uz: {
+    message: n => ({ title: 'Yangi xabar', body: `${n} sizga yozdi` }),
+    match: n => ({ title: 'Oʻzaro yoqtirish!', body: `Siz va ${n} bir-biringizga yoqdingiz` }),
+    friend_req: n => ({ title: 'Doʻstlik soʻrovi', body: `${n} sizni doʻstlarga qoʻshmoqchi` }),
+    call: n => ({ title: 'Kiruvchi qoʻngʻiroq', body: `${n} sizga qoʻngʻiroq qilyapti` }),
+    support: () => ({ title: 'Qoʻllab-quvvatlash', body: '«Sevgi raqamlarda» qoʻllab-quvvatlash xizmatidan javob' }),
+  },
+  de: {
+    message: n => ({ title: 'Neue Nachricht', body: `${n} hat dir geschrieben` }),
+    match: n => ({ title: 'Ein Match!', body: `Du und ${n} mögt euch` }),
+    friend_req: n => ({ title: 'Freundschaftsanfrage', body: `${n} möchte mit dir befreundet sein` }),
+    call: n => ({ title: 'Eingehender Anruf', body: `${n} ruft dich an` }),
+    support: () => ({ title: 'Support', body: 'Antwort vom Support von „Liebe in Zahlen“' }),
+  },
+  es: {
+    message: n => ({ title: 'Nuevo mensaje', body: `${n} te ha escrito` }),
+    match: n => ({ title: '¡Es un match!', body: `Tú y ${n} os habéis gustado` }),
+    friend_req: n => ({ title: 'Solicitud de amistad', body: `${n} quiere ser tu amigo` }),
+    call: n => ({ title: 'Llamada entrante', body: `${n} te está llamando` }),
+    support: () => ({ title: 'Soporte', body: 'Respuesta del soporte de «Amor en Números»' }),
+  },
+  fr: {
+    message: n => ({ title: 'Nouveau message', body: `${n} vous a écrit` }),
+    match: n => ({ title: "C'est un match !", body: `Vous et ${n} vous plaisez mutuellement` }),
+    friend_req: n => ({ title: "Demande d'ami", body: `${n} souhaite vous ajouter en ami` }),
+    call: n => ({ title: 'Appel entrant', body: `${n} vous appelle` }),
+    support: () => ({ title: 'Assistance', body: "Réponse de l'assistance « L'Amour en Chiffres »" }),
   },
 };
 
@@ -41,7 +85,7 @@ export function createNotifier(app) {
 
   function sendPush(to, kind, fromUser) {
     if (!push.publicKey || !to.notify_push) return;
-    const t = PUSH_TEXT[to.lang === 'en' ? 'en' : 'ru'][kind](fromUser?.name || '');
+    const t = textFor(PUSH_TEXT, to.lang)[kind](fromUser?.name || '');
     bg(pushTo(to.id, { ...t, url: URLS[kind](fromUser?.id) }));
   }
 

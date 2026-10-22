@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import net from 'node:net';
 import os from 'node:os';
 import tls from 'node:tls';
+import { textFor } from './langs.mjs';
 
 const TIMEOUT = 20000;
 const b64 = s => Buffer.from(s, 'utf8').toString('base64');
@@ -184,10 +185,124 @@ const TEXTS = {
     }),
     footer: 'You can turn off notifications in your profile settings.',
   },
+  uk: {
+    brand: 'Любов у цифрах',
+    code: v => ({
+      subject: `Код для входу: ${v.code}`,
+      lines: [`Ваш код для входу на сайт «Любов у цифрах»: ${v.code}`, 'Код дійсний 10 хвилин. Якщо ви не запитували код, просто проігноруйте цей лист.'],
+      big: v.code,
+    }),
+    match: v => ({
+      subject: `Взаємна симпатія: ${v.name}`,
+      lines: [`${v.name} теж відзначив(ла) вашу анкету. Це взаємна симпатія — можна починати листування.`],
+      link: { url: v.url, label: 'Відкрити сайт' },
+    }),
+    message: v => ({
+      subject: `Нове повідомлення від ${v.name}`,
+      lines: [`${v.name} написав(ла) вам на сайті «Любов у цифрах».`],
+      link: { url: v.url, label: 'Прочитати' },
+    }),
+    footer: 'Сповіщення можна вимкнути в налаштуваннях анкети.',
+  },
+  kk: {
+    brand: 'Махаббат сандарда',
+    code: v => ({
+      subject: `Кіру коды: ${v.code}`,
+      lines: [`«Махаббат сандарда» сайтына кіру кодыңыз: ${v.code}`, 'Код 10 минут жарамды. Егер код сұрамаған болсаңыз, бұл хатты елемеңіз.'],
+      big: v.code,
+    }),
+    match: v => ({
+      subject: `Өзара ұнату: ${v.name}`,
+      lines: [`${v.name} да сіздің анкетаңызды белгіледі. Бұл өзара ұнату — хат алмасуды бастауға болады.`],
+      link: { url: v.url, label: 'Сайтты ашу' },
+    }),
+    message: v => ({
+      subject: `Жаңа хабар, жіберуші: ${v.name}`,
+      lines: [`${v.name} сізге «Махаббат сандарда» сайтында жазды.`],
+      link: { url: v.url, label: 'Оқу' },
+    }),
+    footer: 'Хабарламаларды анкета баптауларында өшіруге болады.',
+  },
+  uz: {
+    brand: 'Sevgi raqamlarda',
+    code: v => ({
+      subject: `Kirish kodi: ${v.code}`,
+      lines: [`«Sevgi raqamlarda» saytiga kirish kodingiz: ${v.code}`, 'Kod 10 daqiqa amal qiladi. Agar kod soʻramagan boʻlsangiz, bu xatga eʼtibor bermang.'],
+      big: v.code,
+    }),
+    match: v => ({
+      subject: `Oʻzaro yoqtirish: ${v.name}`,
+      lines: [`${v.name} ham anketangizni belgiladi. Bu oʻzaro yoqtirish — yozishmani boshlash mumkin.`],
+      link: { url: v.url, label: 'Saytni ochish' },
+    }),
+    message: v => ({
+      subject: `Yangi xabar: ${v.name}`,
+      lines: [`${v.name} sizga «Sevgi raqamlarda» saytida yozdi.`],
+      link: { url: v.url, label: 'Oʻqish' },
+    }),
+    footer: 'Bildirishnomalarni anketa sozlamalarida oʻchirish mumkin.',
+  },
+  de: {
+    brand: 'Liebe in Zahlen',
+    code: v => ({
+      subject: `Dein Anmeldecode: ${v.code}`,
+      lines: [`Dein Anmeldecode für „Liebe in Zahlen“: ${v.code}`, 'Der Code ist 10 Minuten gültig. Wenn du ihn nicht angefordert hast, ignoriere diese E-Mail einfach.'],
+      big: v.code,
+    }),
+    match: v => ({
+      subject: `Ein Match: ${v.name}`,
+      lines: [`${v.name} mag dich auch. Ein Match — schreib einfach los!`],
+      link: { url: v.url, label: 'Seite öffnen' },
+    }),
+    message: v => ({
+      subject: `Neue Nachricht von ${v.name}`,
+      lines: [`${v.name} hat dir bei „Liebe in Zahlen“ geschrieben.`],
+      link: { url: v.url, label: 'Lesen' },
+    }),
+    footer: 'Benachrichtigungen kannst du in den Profileinstellungen ausschalten.',
+  },
+  es: {
+    brand: 'Amor en Números',
+    code: v => ({
+      subject: `Tu código de acceso: ${v.code}`,
+      lines: [`Tu código de acceso a «Amor en Números»: ${v.code}`, 'El código es válido durante 10 minutos. Si no lo has pedido, ignora este correo.'],
+      big: v.code,
+    }),
+    match: v => ({
+      subject: `Es un match: ${v.name}`,
+      lines: [`${v.name} también te ha dado me gusta. ¡Es un match, salúdale!`],
+      link: { url: v.url, label: 'Abrir el sitio' },
+    }),
+    message: v => ({
+      subject: `Nuevo mensaje de ${v.name}`,
+      lines: [`${v.name} te ha escrito en «Amor en Números».`],
+      link: { url: v.url, label: 'Leer' },
+    }),
+    footer: 'Puedes desactivar las notificaciones en los ajustes del perfil.',
+  },
+  fr: {
+    brand: "L'Amour en Chiffres",
+    code: v => ({
+      subject: `Votre code de connexion : ${v.code}`,
+      lines: [`Votre code de connexion à « L'Amour en Chiffres » : ${v.code}`, "Le code est valable 10 minutes. Si vous ne l'avez pas demandé, ignorez simplement cet e-mail."],
+      big: v.code,
+    }),
+    match: v => ({
+      subject: `C'est un match : ${v.name}`,
+      lines: [`${v.name} vous a aussi aimé. C'est un match : dites bonjour !`],
+      link: { url: v.url, label: 'Ouvrir le site' },
+    }),
+    message: v => ({
+      subject: `Nouveau message de ${v.name}`,
+      lines: [`${v.name} vous a écrit sur « L'Amour en Chiffres ».`],
+      link: { url: v.url, label: 'Lire' },
+    }),
+    footer: 'Vous pouvez désactiver les notifications dans les paramètres du profil.',
+  },
 };
 
 export function renderMail(kind, lang, vars) {
-  const t = TEXTS[lang === 'en' ? 'en' : 'ru'];
+  const t = textFor(TEXTS, lang);
   const m = t[kind](vars);
   const withFooter = kind !== 'code';
   const text = [...m.lines, ...(m.link?.url ? [m.link.url] : []), ...(withFooter ? ['', t.footer] : []), '', `— ${t.brand}`].join('\n');

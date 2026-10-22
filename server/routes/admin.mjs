@@ -1,6 +1,7 @@
 // Модерация: фото, проверка селфи, жалобы, поддержка, статистика. Доступ — только почтам из ADMIN_EMAILS.
 import path from 'node:path';
 import { fail, serveFile } from '../http.mjs';
+import { textFor } from '../langs.mjs';
 import { CATALOG } from '../../netlify/lib/robokassa.mjs';
 import { isSafeName } from '../media.mjs';
 import { ONLINE_MS, addEvent, dayStartMsk, messageOut, uploadSrc } from '../model.mjs';
@@ -11,6 +12,12 @@ import { normEmail } from './auth.mjs';
 const VERIFY_TEXT = {
   ru: { ok: 'Фото проверено: на анкете появился значок «фото проверено».', no: 'Проверка фото не пройдена. Попробуйте ещё раз: лицо должно быть хорошо видно, жест — как в задании.' },
   en: { ok: 'Photo verified: your profile now has the verified badge.', no: 'Photo verification failed. Please try again: your face must be clearly visible and the gesture must match.' },
+  uk: { ok: 'Фото перевірено: в анкеті з\'явився значок «фото перевірено».', no: 'Перевірку фото не пройдено. Спробуйте ще раз: обличчя має бути добре видно, жест — як у завданні.' },
+  kk: { ok: 'Сурет тексерілді: анкетада «сурет тексерілген» белгісі пайда болды.', no: 'Сурет тексеруден өтпеді. Қайталап көріңіз: бет анық көрінуі, ым тапсырмадағыдай болуы керек.' },
+  uz: { ok: 'Rasm tekshirildi: anketada «rasm tekshirilgan» belgisi paydo boʻldi.', no: 'Rasm tekshiruvdan oʻtmadi. Qayta urinib koʻring: yuz yaxshi koʻrinishi, imo-ishora topshiriqdagidek boʻlishi kerak.' },
+  de: { ok: 'Foto geprüft: Dein Profil hat jetzt das Abzeichen „Foto geprüft“.', no: 'Die Fotoprüfung ist fehlgeschlagen. Versuch es noch einmal: Das Gesicht muss gut zu sehen sein und die Geste der Aufgabe entsprechen.' },
+  es: { ok: 'Foto verificada: tu perfil ya tiene la insignia «foto verificada».', no: 'La verificación de la foto no se superó. Inténtalo de nuevo: la cara debe verse bien y el gesto debe ser como en la tarea.' },
+  fr: { ok: 'Photo vérifiée : votre profil porte désormais le badge « photo vérifiée ».', no: 'La vérification de la photo a échoué. Réessayez : le visage doit être bien visible et le geste conforme à la consigne.' },
 };
 
 const brief = u => (u ? { id: u.id, name: u.name, email: u.email, banned: Boolean(u.banned) } : null);
@@ -79,7 +86,7 @@ export default function adminRoutes(route) {
     const { db, config } = app;
     const u = userById(db, String(body.userId));
     if (!u) fail(404, 'not_found');
-    const t = VERIFY_TEXT[u.lang] || VERIFY_TEXT.ru;
+    const t = textFor(VERIFY_TEXT, u.lang);
     db.run('UPDATE users SET verify_status = ?, verify_file = NULL WHERE id = ?', body.approve ? 'approved' : 'rejected', u.id);
     addEvent(db, u.id, 'system', null, body.approve ? t.ok : t.no);
     destroySelfie(app, u, user.email);

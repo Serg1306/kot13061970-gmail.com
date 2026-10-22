@@ -6,7 +6,7 @@
      (личные данные и фото удалённых анкет не должны оседать в кэше).
    - Push: полезная нагрузка JSON { title, body, url } → уведомление; клик открывает или фокусирует вкладку.
    Чтобы обновить кэш у всех, увеличьте VERSION. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const STATIC = `lvc-static-${VERSION}`;
 const PAGES = `lvc-pages-${VERSION}`;
 const FONTS = `lvc-fonts-${VERSION}`;
@@ -77,6 +77,18 @@ async function cacheFirst(req) {
   return res;
 }
 
+// Словари языков (i18n/*.json) меняются вместе с сайтом: сначала сеть, без сети — копия из кэша.
+async function freshFirst(req) {
+  const cache = await caches.open(STATIC);
+  try {
+    const res = await fetch(req);
+    if (cacheable(res)) cache.put(req, res.clone());
+    return res;
+  } catch (e) {
+    return (await cache.match(req)) || Response.error();
+  }
+}
+
 async function staleWhileRevalidate(event) {
   const cache = await caches.open(FONTS);
   const hit = await cache.match(event.request);
@@ -101,6 +113,7 @@ self.addEventListener('fetch', event => {
   const isPage = req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
   if (isPage) { event.respondWith(networkFirst(event)); return; }
   if (url.pathname.endsWith('sw.js')) return;
+  if (url.pathname.includes('/i18n/')) { event.respondWith(freshFirst(req)); return; }
   event.respondWith(cacheFirst(req));
 });
 

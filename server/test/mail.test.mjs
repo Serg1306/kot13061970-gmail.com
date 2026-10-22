@@ -76,3 +76,10 @@ test('тексты писем на двух языках', () => {
   assert.match(en.html, /&lt;b&gt;Bob&lt;\/b&gt;/);
   assert.match(renderMail('code', 'en', { code: '123456' }).text, /Your sign-in code for Love in Numbers: 123456/);
 });
+
+test('письма на всех языках сайта, неизвестный язык — по-русски', () => {
+  for (const [lang, re] of [['uk', /^Код для входу/], ['kk', /^Кіру коды/], ['uz', /^Kirish kodi/], ['de', /^Dein Anmeldecode/], ['es', /^Tu código/], ['fr', /^Votre code/], [undefined, /^Код для входа/]]) {
+    assert.match(renderMail('code', lang, { code: '123456' }).subject, re);
+  }
+  assert.match(renderMail('message', 'es', { name: 'Ana', url: 'https://x' }).text, /Ana te ha escrito/);
+});
