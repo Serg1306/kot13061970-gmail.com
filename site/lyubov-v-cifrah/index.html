@@ -370,7 +370,7 @@ img.ava { object-fit: cover; }
 .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
 .plan { border: 1.5px solid var(--line); border-radius: 16px; padding: .9rem .8rem; display: grid; gap: .25rem; text-align: center; background: var(--paper); }
 .plan.hit { border-color: var(--rose); position: relative; }
-.plan.hit::before { content: "Выгоднее"; position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); background: var(--rose); color: #fff; font-size: .72rem; font-weight: 700; padding: .05rem .5rem; border-radius: 999px; }
+.plan.hit::before { content: var(--hit-label, "Выгоднее"); position: absolute; top: -.7rem; left: 50%; transform: translateX(-50%); background: var(--rose); color: #fff; font-size: .72rem; font-weight: 700; padding: .05rem .5rem; border-radius: 999px; }
 .plan .t { font-weight: 600; font-size: .92rem; }
 .plan .p { font-family: var(--font-display); font-size: 1.7rem; line-height: 1.1; }
 .plan .d { color: var(--muted); font-size: .8rem; }
@@ -1100,6 +1100,17 @@ body.more:not(.in-app) .top { background: #2e0611; box-shadow: 0 0 0 100vmax #2e
 .top nav select.lang { appearance: none; -webkit-appearance: none; cursor: pointer; font: inherit; font-weight: 600; padding-right: 1.7rem !important;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23f6e4e8' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right .6rem center / 10px; }
 .top nav select.lang option { color: #1f040b; background: #fff; }
+/* кабинет на том же бордовом фоне, что и главная (в обеих темах): карточки — тёмно-винные, текст светлый */
+html:has(body.in-app) { background: #470a1b; }
+:root:root:root body.in-app {
+  --t-bg: #470a1b; --t-surface: #5e0e25; --t-paper: #5e0e25; --t-ink: #f6e4e8; --t-muted: #dcbcc4;
+  --t-accent: #ff4f8b; --t-accent-ink: #1f040b; --t-field-ink: #f6e4e8;
+  --paper: #470a1b; --card: #5e0e25; --ink: #f6e4e8; --muted: #dcbcc4; --line: rgb(246 228 232 / .18);
+  --bg-mid: #470a1b; --bg-pink: #6e1430; --bg-blue: #3a1a4a;
+  --rose: #ff6f9c; --sea: #8fb4ff; --plum: #c9a2ff; --good: #8fb4ff;
+  background: #470a1b; color: #f6e4e8; color-scheme: dark;
+}
+body.in-app .top { background: #2e0611; box-shadow: 0 0 0 100vmax #2e0611; clip-path: inset(0 -100vmax); }
 body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E"); }
 </style>
 </head>
@@ -3646,6 +3657,8 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     if (!await loadDict(LANG)) LANG = 'ru';
     document.documentElement.lang = LANG;
     $('#langSel').value = LANG;
+    // надпись «Выгоднее» на тарифах рисует CSS, поэтому переводим её через переменную
+    document.documentElement.style.setProperty('--hit-label', JSON.stringify(LANG === 'ru' ? 'Выгоднее' : (DICT['Выгоднее'] || EN['Выгоднее'])));
     obs.disconnect(); restore(document.head); restore(document.body);
     if (LANG === 'ru') { document.title = RU_TITLE; return; }
     document.title = DICT['@title'] || EN['@title'];
