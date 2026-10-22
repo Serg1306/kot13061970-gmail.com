@@ -1,4 +1,4 @@
-// Скролл-сцены для вариантов главной. Без библиотек: CSP разрешает скрипты только со своего сервера.
+// Скролл-сцены главной (и черновых вариантов в redesign/). Без библиотек: CSP разрешает скрипты только со своего сервера.
 //
 // [data-scene]            высокая секция с липкой сценой внутри; получает --p (0…1) — прогресс прокрутки сцены
 // [data-range="a b"]      внутри сцены: класс .on, пока a ≤ p ≤ b, и --q — прогресс внутри диапазона (0…1)
@@ -36,7 +36,7 @@
     };
     let want = 0;
     const [fx, fy] = (cv.dataset.focus || '.5 .5').split(' ').map(Number);
-    const anchors = [...(cv.closest('.stage') || cv.parentElement).querySelectorAll('[data-anchor]')].map(el => ({ el, at: el.dataset.anchor.split(' ').map(Number) }));
+    const anchors = [...(cv.closest('.stage, .mx-stage') || cv.parentElement).querySelectorAll('[data-anchor]')].map(el => ({ el, at: el.dataset.anchor.split(' ').map(Number) }));
     let placed = '';
     function place(x, y, w, h) {
       if (!anchors.length) return;
@@ -95,7 +95,7 @@
       return { r, a, b };
     });
     const players = [...el.querySelectorAll('canvas[data-frames]')].map(frames);
-    const h = el.querySelector('[data-hscroll] .track') || (el.matches('[data-hscroll]') ? el.querySelector('.track') : null);
+    const h = el.querySelector('[data-hscroll] .track, [data-hscroll] .mx-track') || (el.matches('[data-hscroll]') ? el.querySelector('.track, .mx-track') : null);
     return { el, ranges, players, h, last: -1 };
   });
 

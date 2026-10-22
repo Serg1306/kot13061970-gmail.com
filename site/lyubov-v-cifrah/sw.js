@@ -6,7 +6,7 @@
      (личные данные и фото удалённых анкет не должны оседать в кэше).
    - Push: полезная нагрузка JSON { title, body, url } → уведомление; клик открывает или фокусирует вкладку.
    Чтобы обновить кэш у всех, увеличьте VERSION. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const STATIC = `lvc-static-${VERSION}`;
 const PAGES = `lvc-pages-${VERSION}`;
 const FONTS = `lvc-fonts-${VERSION}`;
@@ -14,7 +14,7 @@ const KEEP = [STATIC, PAGES, FONTS];
 
 const SCOPE = new URL(self.registration ? self.registration.scope : './', self.location).pathname; // например "/" или "/lyubov-v-cifrah/"
 const PRECACHE_PAGES = ['./', 'index.html', 'oferta.html', 'privacy.html', 'terms.html', 'consent.html'];
-const PRECACHE_STATIC = ['manifest.webmanifest', 'fonts/fonts.css', 'legal.css', 'legal.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'icons/apple-touch-icon.png', 'icons/favicon.svg', 'icons/logo-3d-256.png', 'logo3d.js'];
+const PRECACHE_STATIC = ['manifest.webmanifest', 'fonts/fonts.css', 'legal.css', 'legal.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'icons/apple-touch-icon.png', 'icons/favicon.svg', 'icons/logo-3d-256.png', 'logo3d.js', 'mix.css', 'scroll.js', 'compat.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
