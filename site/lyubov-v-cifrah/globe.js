@@ -1,4 +1,4 @@
-// Глобус в круге «Анкеты по городам»: сетка, точки городов и дуги от выбранного города к остальным.
+// Глобус в круге «Анкеты по городам»: Земля из космоса (карта, облака, атмосфера), точки городов и дуги от выбранного города к остальным.
 // Вращается при прокрутке; выбранный город (кнопка с aria-pressed="true" в #homeCities) поворачивается к зрителю.
 // При уменьшенном движении глобус стоит неподвижно и сразу повёрнут к городу.
 (() => {
@@ -18,8 +18,18 @@
     'Стамбул': [41.01, 28.98], 'Прага': [50.08, 14.44], 'Барселона': [41.39, 2.17], 'Рим': [41.9, 12.5]
   };
   const rad = Math.PI / 180;
+  // карта Земли (равнопромежуточная, по данным Natural Earth) и облака — media/earth*.webp
+  const off = document.createElement('canvas');
+  let tex = null, clouds = null;
+  const load = (src, done) => { const im = new Image(); im.decoding = 'async'; im.onload = () => {
+    const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+    const x = c.getContext('2d'); x.drawImage(im, 0, 0);
+    done({ w: im.width, h: im.height, d: x.getImageData(0, 0, im.width, im.height).data }); req();
+  }; im.src = src; };
+  let loaded = false;
+  const loadAll = () => { if (loaded) return; loaded = true; load('media/earth.webp', t => (tex = t)); load('media/earth-clouds.webp', t => (clouds = t)); };
   let cities = [], active = '', label = '';
-  let lon = 40, lat = 35, goalLon = 40, goalLat = 35, prog = 0, shown = 0, raf = 0;
+  let lon = 40, lat = 22, goalLon = 40, goalLat = 22, prog = 0, shown = 0, raf = 0;
 
   function read() {
     const chips = [...document.querySelectorAll('#homeCities [data-city]')];
@@ -28,7 +38,7 @@
     active = on && AT[on.dataset.city] ? on.dataset.city : '';
     label = active ? on.firstChild.textContent.trim() : '';
     const [la, lo] = AT[active] || AT['Москва'];
-    goalLat = Math.max(-10, Math.min(55, la - 10)); goalLon = lo;
+    goalLat = Math.max(-10, Math.min(22, la - 22)); goalLon = lo;
     if (still.matches) { lat = goalLat; lon = goalLon; }
     shown = 0;
     req();
@@ -62,7 +72,7 @@
     const dpr = Math.min(devicePixelRatio || 1, 2), W = cv.clientWidth;
     if (!W) return;
     if (cv.width !== Math.round(W * dpr)) { cv.width = cv.height = Math.round(W * dpr); }
-    const S = cv.width, cx = S / 2, cy = S / 2, r = S * .47;
+    const S = cv.width, cx = S / 2, cy = S / 2, r = S * .42;
     // плавно догоняем цель; прокрутка докручивает глобус
     const spin = still.matches ? 0 : (prog - .5) * 70;
     lon += (goalLon - lon) * (still.matches ? 1 : .08);
@@ -70,16 +80,45 @@
     shown = Math.min(1, shown + (still.matches ? 1 : .025));
     const rl = lon + spin;
     ctx.clearRect(0, 0, S, S);
-    // шар
-    const g = ctx.createRadialGradient(cx - r * .35, cy - r * .4, r * .1, cx, cy, r * 1.05);
-    g.addColorStop(0, '#7a1430'); g.addColorStop(1, '#1f040b');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(246,228,232,.35)'; ctx.lineWidth = S / 400; ctx.stroke();
-    // сетка
-    ctx.strokeStyle = 'rgba(246,228,232,.13)'; ctx.lineWidth = S / 600;
-    const line = pts => { ctx.beginPath(); let on = false; for (const [la, lo] of pts) { const [x, y, z] = proj(la, lo, r, cx, cy, rl); if (z > 0) { on ? ctx.lineTo(x, y) : ctx.moveTo(x, y); on = true; } else on = false; } ctx.stroke(); };
-    for (let la = -60; la <= 60; la += 30) line(Array.from({ length: 73 }, (_, i) => [la, i * 5 - 180]));
-    for (let lo = -180; lo < 180; lo += 30) line(Array.from({ length: 37 }, (_, i) => [i * 5 - 90, lo]));
+    // космос: тёмный круг и звёзды
+    ctx.fillStyle = '#03060f'; ctx.fillRect(0, 0, S, S);
+    for (let k = 0; k < 90; k++) {
+      const a = Math.sin(k * 12.9898) * 43758.5453, b = Math.sin(k * 78.233) * 12543.123;
+      const sx = (a - Math.floor(a)) * S, sy = (b - Math.floor(b)) * S, br = .3 + ((a * 7) - Math.floor(a * 7)) * .7;
+      ctx.fillStyle = `rgba(255,255,255,${(br * .8).toFixed(2)})`; ctx.fillRect(sx, sy, S / 400 * (1 + br), S / 400 * (1 + br));
+    }
+    // сияние атмосферы
+    const halo = ctx.createRadialGradient(cx, cy, r * .96, cx, cy, r * 1.16);
+    halo.addColorStop(0, 'rgba(120,190,255,.55)'); halo.addColorStop(.35, 'rgba(80,150,255,.18)'); halo.addColorStop(1, 'rgba(80,150,255,0)');
+    ctx.fillStyle = halo; ctx.fillRect(0, 0, S, S);
+    // сама Земля: каждая точка шара берёт цвет из карты, свет падает слева сверху
+    if (tex) {
+      const N = Math.min(420, Math.round(r * 2)), img = ctx.createImageData(N, N), px = img.data;
+      const φ0 = lat * rad, s0 = Math.sin(φ0), c0 = Math.cos(φ0), drift = still.matches ? 0 : prog * 50;
+      for (let j = 0; j < N; j++) {
+        const y = 1 - (j + .5) / N * 2;
+        for (let i = 0; i < N; i++) {
+          const x = (i + .5) / N * 2 - 1, q = x * x + y * y;
+          if (q > 1) continue;
+          const z = Math.sqrt(1 - q);
+          const la = Math.asin(y * c0 + z * s0), lo = rl * rad + Math.atan2(x, z * c0 - y * s0);
+          const u = ((lo / (2 * Math.PI) + .5) % 1 + 1) % 1, v = .5 - la / Math.PI;
+          const ti = ((v * tex.h | 0) * tex.w + (u * tex.w | 0)) * 4;
+          const cu = ((u + drift / 360) % 1 + 1) % 1, ci = ((v * tex.h | 0) * tex.w + (cu * tex.w | 0)) * 4;
+          const cl = clouds ? clouds.d[ci] / 255 * .85 : 0;
+          const light = Math.max(0, -.45 * x + .55 * y + .7 * z), sh = .28 + .82 * light, rim = Math.pow(1 - z, 3);
+          const o = (j * N + i) * 4;
+          px[o] = Math.min(255, (tex.d[ti] * (1 - cl) + 245 * cl) * sh + rim * 70);
+          px[o + 1] = Math.min(255, (tex.d[ti + 1] * (1 - cl) + 248 * cl) * sh + rim * 120);
+          px[o + 2] = Math.min(255, (tex.d[ti + 2] * (1 - cl) + 255 * cl) * sh + rim * 200);
+          px[o + 3] = q > .985 ? 255 * (1 - q) / .015 : 255;
+        }
+      }
+      off.width = off.height = N; off.getContext('2d').putImageData(img, 0, 0);
+      ctx.drawImage(off, cx - r, cy - r, r * 2, r * 2);
+    } else {
+      ctx.fillStyle = '#123f86'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    }
     // дуги от выбранного города (или от Москвы) к остальным
     const from = AT[active] || AT['Москва'];
     const targets = cities.filter(c => c !== (active || 'Москва')).slice(0, 14);
@@ -93,7 +132,7 @@
         if (z > -.15) { on ? ctx.lineTo(x, y) : ctx.moveTo(x, y); on = true; } else on = false;
       }
       const lg = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
-      lg.addColorStop(0, '#ff6fa0'); lg.addColorStop(1, '#7c9cff');
+      lg.addColorStop(0, '#ff6fa0'); lg.addColorStop(1, '#ffd36e');
       ctx.strokeStyle = lg; ctx.lineWidth = S / 160; ctx.shadowColor = '#ff4f8b'; ctx.shadowBlur = S / 60; ctx.stroke(); ctx.shadowBlur = 0;
     });
     // города
@@ -101,14 +140,15 @@
       const [x, y, z] = proj(...AT[c], r, cx, cy, rl);
       if (z <= 0) continue;
       const me = c === active;
-      ctx.fillStyle = me ? '#ff4f8b' : 'rgba(246,228,232,' + (.45 + z * .5).toFixed(2) + ')';
-      ctx.shadowColor = me ? '#ff4f8b' : 'transparent'; ctx.shadowBlur = me ? S / 30 : 0;
+      ctx.fillStyle = me ? '#ff4f8b' : 'rgba(255,214,120,' + (.6 + z * .4).toFixed(2) + ')';
+      ctx.shadowColor = me ? '#ff4f8b' : '#ffcf6a'; ctx.shadowBlur = me ? S / 30 : S / 90;
       ctx.beginPath(); ctx.arc(x, y, (me ? S / 55 : S / 110) * (.6 + z * .4), 0, Math.PI * 2); ctx.fill();
       ctx.shadowBlur = 0;
       if (me && label) {
         ctx.font = `600 ${Math.round(S / 22)}px "Golos Text", system-ui, sans-serif`;
-        ctx.fillStyle = '#f6e4e8'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.shadowColor = 'rgba(0,0,0,.8)'; ctx.shadowBlur = S / 80;
         ctx.fillText(label, x, y - S / 28);
+        ctx.shadowBlur = 0;
       }
     }
     if (!still.matches && (Math.abs(goalLon - lon) > .05 || Math.abs(goalLat - lat) > .05 || shown < 1)) req();
@@ -123,6 +163,9 @@
   }, { passive: true });
   addEventListener('resize', req);
   new MutationObserver(read).observe(document.getElementById('homeCities'), { childList: true, subtree: true, characterData: true });
-  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { box.classList.add('in'); shown = 0; req(); } }), { threshold: .2 }).observe(box);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { loadAll(); box.classList.add('in'); shown = 0; req(); } }), { threshold: .2 }).observe(box);
+    new IntersectionObserver(es => es.forEach(e => e.isIntersecting && loadAll()), { rootMargin: '600px 0px' }).observe(box);
+  } else loadAll();
   read();
 })();
