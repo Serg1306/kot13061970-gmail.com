@@ -1010,6 +1010,21 @@ body.more:not(.in-app) .top { position: static; background: #0d0d12; box-shadow:
 .t-stories .t-actions { margin-top: 2.5rem; }
 .t-seo h2 { font-size: var(--t-lead); }
 .t-seo p { color: var(--t-ink); max-width: 64ch; margin-top: 1rem; }
+/* текст о сервисе проявляется строка за строкой, как будто его читают (--p от alive.js) */
+.js .t-seo[data-progress] { --k: clamp(0, calc((var(--p, 1) - .15) / .5), 1); }
+.js .t-seo[data-progress] p { -webkit-mask-image: linear-gradient(180deg, #000 calc(var(--k) * 140% - 20%), rgb(0 0 0 / .18) calc(var(--k) * 140% + 10%)); mask-image: linear-gradient(180deg, #000 calc(var(--k) * 140% - 20%), rgb(0 0 0 / .18) calc(var(--k) * 140% + 10%)); }
+.js .t-seo[data-progress] p + p { --k: clamp(0, calc((var(--p, 1) - .35) / .5), 1); }
+.js .t-seo[data-progress] h2 { transform: translateX(calc((1 - min(1, var(--p, 1) * 3)) * -40px)); opacity: min(1, calc(var(--p, 1) * 3)); }
+.rm .t-seo[data-progress] p { -webkit-mask-image: none; mask-image: none; }
+.rm .t-seo[data-progress] h2 { transform: none; opacity: 1; }
+/* «Сейчас на сайте»: анкеты влетают по очереди (alive.js ставит .wave и .in), при прокрутке ряд чуть сдвигается */
+.t-show.wave:not(.in) .slide { opacity: 0; }
+.t-show.wave.in .slide { animation: showIn .7s var(--t-ease) both; animation-delay: min(calc(var(--n, 0) * 80ms), 800ms); }
+.t-show[data-progress] .slide { translate: calc((.5 - var(--p, .5)) * 90px) 0; }
+.t-show[data-progress] .slide:nth-child(even) img { translate: 0 calc((.5 - var(--p, .5)) * 26px); }
+@keyframes showIn { from { opacity: 0; transform: translateY(40px) scale(.7) rotate(-6deg); } to { opacity: 1; transform: none; } }
+.rm .t-show .slide { opacity: 1; animation: none !important; translate: none !important; }
+.rm .t-show .slide img { translate: none !important; }
 .foot-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem 3rem; }
 .foot-cols nav { display: grid; align-content: start; gap: .55rem; }
 .foot-cols h3 { font-size: var(--t-body); font-weight: 700; letter-spacing: 0; margin-bottom: .3rem; color: var(--t-ink); }
@@ -1251,7 +1266,7 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
       </div>
     </section>
   
-    <section class="mx-booth" aria-labelledby="mxBoTitle">
+    <section class="mx-booth" data-progress aria-labelledby="mxBoTitle">
       <h2 id="mxBoTitle" data-reveal>Сделайте снимок</h2>
       <form data-calc class="mx-cabin" data-reveal>
         <div class="mx-fields">
@@ -1259,7 +1274,7 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
           <label>Дата партнёра<input type="date" value="1988-02-17" required></label>
           <button type="submit">Щёлк!</button>
         </div>
-        <div class="mx-print" aria-live="polite"><div class="mx-win"><output data-out>93</output></div><p class="mx-mono">совпадение</p></div>
+        <div class="mx-print" aria-live="polite"><div class="mx-win"><output data-out>93</output><i class="mx-curtain" aria-hidden="true"></i></div><p class="mx-mono">совпадение</p></div>
       </form>
       <p class="mx-why" data-why aria-live="polite"></p>
     </section>
@@ -1283,7 +1298,7 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     </div>
   </section>
 
-  <section class="t-show carousel" aria-labelledby="carTitle">
+  <section class="t-show carousel" data-progress aria-labelledby="carTitle">
     <div class="t-head">
       <h2 id="carTitle">Сейчас на сайте</h2>
       <p>Процент на фото показывает совместимость с вашей датой из калькулятора.</p>
@@ -1402,7 +1417,7 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     </section>
   </div>
 
-  <section class="t-seo home-only" aria-labelledby="seoTitle">
+  <section class="t-seo home-only" data-progress aria-labelledby="seoTitle">
     <h2 id="seoTitle">Знакомства по дате рождения</h2>
     <p>Ищете серьёзные отношения, новую дружбу или просто интересного собеседника? «Любовь в цифрах» показывает анкеты людей рядом с вами и сразу считает, насколько вы совпадаете: по числу судьбы, знаку зодиака и стихии, восточному году и аркану пары. Чем выше процент, тем раньше человек окажется в вашей ленте.</p>
     <p>Создайте анкету за минуту, добавьте до 10 фото и свайпайте: вправо — симпатия, влево — дальше. Когда симпатия взаимная, откроется переписка, а в ней — голосовые сообщения и видеозвонки. Сайт для тех, кому есть 18 лет.</p>
@@ -4256,5 +4271,6 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
 <script src="scroll.js" defer></script>
 <script src="logo3d.js" defer></script>
 <script src="globe.js" defer></script>
+<script src="alive.js" defer></script>
 </body>
 </html>

@@ -161,6 +161,20 @@
 .mx form.done .mx-print { animation: printout .9s var(--ease); }
 @keyframes printout { 0% { transform: translateY(-40px) rotate(0); opacity: 0; } 100% { transform: rotate(3deg); opacity: 1; } }
 .mx .mx-booth .mx-why { margin: 0; color: var(--blush-2); text-align: center; min-height: 1.5em; }
+/* фотобудка при прокрутке (--p от alive.js): шторка в окошке поднимается, вспышка, снимок печатается */
+.mx .mx-booth[data-progress] { --c: clamp(0, calc((var(--p, 1) - .3) / .2), 1); --fl: clamp(0, calc(1 - max((var(--p, 1) - .5) * 14, (.5 - var(--p, 1)) * 14)), 1); }
+.mx .mx-win { position: relative; overflow: hidden; }
+.mx .mx-curtain { position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #5e0e25 0 10px, #470a1b 10px 20px); box-shadow: inset 0 -8px 0 #2e0611; transform: translateY(calc(var(--c, 1) * -102%)); }
+.mx .mx-booth[data-progress] .mx-cabin { position: relative; }
+.mx .mx-booth[data-progress] .mx-cabin::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #fff; opacity: calc(var(--fl) * .85); pointer-events: none; }
+.mx .mx-booth[data-progress] h2 { transform: rotate(calc((1 - var(--c)) * -4deg)) scale(calc(.9 + var(--c) * .1)); }
+.rm .mx .mx-booth[data-progress] { --c: 1; --fl: 0; }
+/* «Сегодня»: число перелистывается (alive.js), на выходе лист отрывается и улетает */
+.mx .mx-big .mx-d.flip { animation: flipNum .12s ease-out; }
+@keyframes flipNum { from { transform: rotateX(80deg); opacity: .3; } to { transform: none; opacity: 1; } }
+.mx .mx-today .mx-big { --t: clamp(0, calc((var(--p, 0) - .78) / .22), 1);
+  transform: translate(calc(var(--t) * 30vw), calc(var(--t) * -80vh)) rotate(calc((1 - min(1, var(--p, 0) * 2)) * -8deg + var(--t) * 24deg)) scale(calc(.55 + .45 * min(1, var(--p, 0) * 2))); transform-origin: 10% 0; }
+.rm .mx .mx-today .mx-big { transform: none; }
 
 
 /* ---------- 3. Двенадцать месяцев: горизонтальная лента ---------- */
