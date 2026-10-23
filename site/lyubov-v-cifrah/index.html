@@ -2029,6 +2029,10 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
       ...(editing ? readDetails() : {})
     };
     if (LIVE.on) return LIVE.register(user);
+    // демо-режим: анкета остаётся в браузере, на сайт уходит только отметка о новой регистрации
+    if (!editing && !store.get('user') && /^https?:$/.test(location.protocol))
+      fetch('/api/signup', { method: 'POST', keepalive: true, headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ src: store.get('src'), city, g: user.g }) }).catch(() => {});
     store.set('user', user);
     afterRegister(user);
   });
