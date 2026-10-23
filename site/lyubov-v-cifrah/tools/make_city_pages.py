@@ -32,9 +32,6 @@ SITE = os.path.normpath(os.path.join(HERE, ".."))
 OUT = os.path.join(SITE, "goroda")
 PLACEHOLDER = "https://ВАШ-ДОМЕН"
 BRAND = "Любовь в цифрах"
-DEV = "Жеребцов Сергей Владимирович"
-INN = "667807174690"
-EMAIL = "kot13061970@gmail.com"
 
 # (slug, название, «в …» предложный падеж, страна/регион, группа, вступление, идеи для свидания)
 CITIES = [
@@ -430,7 +427,7 @@ def footer(prefix):
     <a href="{prefix}oferta.html">Оферта, оплата и возврат</a>
   </nav>
   <p>{BRAND} — знакомства по дате рождения. Только для лиц старше 18 лет. Расчёты совместимости носят развлекательный характер.</p>
-  <p>Разработчик: {DEV}. ИНН {INN}. Почта: <a href="mailto:{EMAIL}">{EMAIL}</a>. © 2026</p>
+  <p>© 2026 Любовь в цифрах</p>
 </footer>
 </div>
 """
