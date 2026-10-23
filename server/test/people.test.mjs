@@ -155,6 +155,9 @@ test('настройки: невидимка и скрытие возраста 
   const r = await a.put('/api/settings', { notifyEmail: false, lang: 'en' });
   assert.equal(r.body.user.notifyEmail, false);
   assert.equal(r.body.user.lang, 'en');
+  assert.equal((await a.put('/api/settings', { lang: 'kk' })).body.user.lang, 'kk');
+  assert.equal((await a.put('/api/settings', { lang: 'xx' })).body.error, 'invalid');
+  await a.put('/api/settings', { lang: 'en' });
   setVip(srv.app, a.id);
   const v = await a.put('/api/settings', { invisible: true, hideAge: true });
   assert.equal(v.body.user.invisible, true);

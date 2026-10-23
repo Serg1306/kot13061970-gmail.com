@@ -6,7 +6,7 @@
      (личные данные и фото удалённых анкет не должны оседать в кэше).
    - Push: полезная нагрузка JSON { title, body, url } → уведомление; клик открывает или фокусирует вкладку.
    Чтобы обновить кэш у всех, увеличьте VERSION. */
-const VERSION = 'v1';
+const VERSION = 'v8';
 const STATIC = `lvc-static-${VERSION}`;
 const PAGES = `lvc-pages-${VERSION}`;
 const FONTS = `lvc-fonts-${VERSION}`;
@@ -14,7 +14,7 @@ const KEEP = [STATIC, PAGES, FONTS];
 
 const SCOPE = new URL(self.registration ? self.registration.scope : './', self.location).pathname; // например "/" или "/lyubov-v-cifrah/"
 const PRECACHE_PAGES = ['./', 'index.html', 'oferta.html', 'privacy.html', 'terms.html', 'consent.html'];
-const PRECACHE_STATIC = ['manifest.webmanifest', 'fonts/fonts.css', 'legal.css', 'legal.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'icons/apple-touch-icon.png'];
+const PRECACHE_STATIC = ['manifest.webmanifest', 'fonts/fonts.css', 'legal.css', 'legal.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'icons/apple-touch-icon.png', 'icons/favicon.svg', 'icons/logo-3d-256.png', 'logo3d.js', 'mix.css', 'scroll.js', 'compat.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
@@ -77,6 +77,18 @@ async function cacheFirst(req) {
   return res;
 }
 
+// Словари языков (i18n/*.json) меняются вместе с сайтом: сначала сеть, без сети — копия из кэша.
+async function freshFirst(req) {
+  const cache = await caches.open(STATIC);
+  try {
+    const res = await fetch(req);
+    if (cacheable(res)) cache.put(req, res.clone());
+    return res;
+  } catch (e) {
+    return (await cache.match(req)) || Response.error();
+  }
+}
+
 async function staleWhileRevalidate(event) {
   const cache = await caches.open(FONTS);
   const hit = await cache.match(event.request);
@@ -101,6 +113,7 @@ self.addEventListener('fetch', event => {
   const isPage = req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
   if (isPage) { event.respondWith(networkFirst(event)); return; }
   if (url.pathname.endsWith('sw.js')) return;
+  if (url.pathname.includes('/i18n/')) { event.respondWith(freshFirst(req)); return; }
   event.respondWith(cacheFirst(req));
 });
 

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Любовь в цифрах — вариант «Календарь»</title>
+<meta name="description" content="Сайт знакомств, который подбирает пару по дате рождения. Вариант главной «Отрывной календарь».">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#5e0e25">
+<link rel="icon" href="../icons/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="base.css">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+:root { --paper: #fff5f3; --ink: #1c0a0f; --red: #b3173f; --cal: 'Oswald', 'Golos Text', sans-serif; }
+body { background: var(--wine-700); }
+.cal { font-family: var(--cal); text-transform: uppercase; letter-spacing: .02em; margin: 0; }
+
+/* ---------- 1. Отрывной календарь + видео ---------- */
+.hero { height: 460vh; }
+.hero .stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(20px, 5vw, 80px); padding: 80px var(--gutter) 70px; }
+.pad { position: relative; justify-self: end; width: min(440px, 36vw); aspect-ratio: 3 / 4; }
+.pad::before { content: ""; position: absolute; inset: auto 6% -10px 6%; height: 30px; border-radius: 4px; background: repeating-linear-gradient(180deg, #e9d9d6 0 2px, #fbefec 2px 4px); }
+.rings { position: absolute; z-index: 20; inset: -16px 18% auto; display: flex; justify-content: space-between; }
+.rings i { width: 14px; height: 34px; border-radius: 8px; background: linear-gradient(90deg, #8c8c94, #e7e7ee 45%, #6f6f78); box-shadow: 0 3px 4px rgb(0 0 0 / .35); }
+.sheet { position: absolute; inset: 0; background: var(--paper); color: var(--ink); border-radius: 4px; padding: 26px 26px 22px; display: grid; grid-template-rows: auto 1fr auto; text-align: center; box-shadow: 0 1px 0 #e7d6d3, 0 24px 60px rgb(0 0 0 / .35);
+  transform-origin: 50% 0; transition: transform .9s var(--ease), opacity .9s; }
+.sheet::before { content: ""; position: absolute; inset: 0 0 auto; height: 22px; background: radial-gradient(circle at 50% 100%, var(--wine-700) 5px, transparent 5.5px) 0 0 / 22px 22px repeat-x; opacity: .9; }
+.sheet.past { transform: translate(-30%, 120vh) rotate(-28deg); opacity: 0; pointer-events: none; }
+.sheet .top { display: flex; justify-content: space-between; font-family: var(--cal); font-size: 15px; letter-spacing: .12em; color: var(--red); padding-top: 10px; }
+.sheet .day { font: 600 clamp(150px, 15vw, 230px)/.82 var(--cal); color: var(--red); align-self: center; letter-spacing: -.03em; }
+.sheet .mon { font: 500 clamp(26px, 2.6vw, 40px)/1 var(--cal); text-transform: uppercase; letter-spacing: .08em; }
+.sheet .who { border-top: 1px solid #e5cfcb; padding-top: 14px; font-size: 15px; color: #5b3a42; }
+.sheet .who b { color: var(--ink); }
+.sheet.cover { background: var(--red); color: var(--paper); }
+.sheet.cover .top { color: rgb(255 245 243 / .92); }
+.sheet.cover h1 { font: 600 clamp(56px, 6vw, 92px)/.9 var(--cal); text-transform: uppercase; align-self: center; letter-spacing: .01em; }
+.sheet.cover .who { border-color: rgb(255 245 243 / .3); color: rgb(255 245 243 / .85); }
+.sheet.final .day { font-size: clamp(120px, 12vw, 190px); }
+.sheet.final .day small { font-size: .38em; position: relative; top: -1.2em; }
+.sheet.final .go { display: inline-block; margin-top: 12px; text-decoration: none; font-weight: 600; padding: 13px 24px; border-radius: 999px; background: var(--red); color: #fff; font-size: 15px; }
+.sheet.final .go:hover { background: var(--wine-800); }
+
+.film { position: relative; justify-self: start; height: min(78svh, 720px); aspect-ratio: 9 / 16; border-radius: 22px; transform: rotate(2.5deg); box-shadow: 0 30px 80px rgb(0 0 0 / .45); }
+.film canvas { width: 100%; height: 100%; border-radius: 22px; }
+.sticky { position: absolute; z-index: 2; width: max-content; max-width: 230px; padding: 16px 16px 14px; background: #ffd7e3; color: var(--ink); font-size: 15px; line-height: 1.3; box-shadow: 0 10px 24px rgb(0 0 0 / .3); transform: rotate(var(--r, -3deg)) scale(.6); opacity: 0; transition: transform .5s cubic-bezier(.3, 1.6, .5, 1), opacity .3s; }
+.sticky::before { content: ""; position: absolute; left: 50%; top: -10px; width: 64px; height: 20px; translate: -50% 0; background: rgb(255 255 255 / .55); rotate: -4deg; }
+.sticky b { display: block; font: 600 22px/1.05 var(--cal); text-transform: uppercase; margin-bottom: 4px; color: var(--red); }
+.sticky.on { opacity: 1; transform: rotate(var(--r, -3deg)); }
+.sticky.n1 { right: -54%; top: 9%; --r: -5deg; }
+.sticky.n2 { right: -60%; top: 41%; --r: 4deg; background: #d9e3ff; }
+.sticky.n3 { right: -50%; bottom: 9%; --r: -2deg; background: #fff1b8; }
+.hint { position: absolute; left: 50%; bottom: 74px; translate: -50% 0; font-size: 14px; color: var(--blush-2); opacity: calc(1 - min(1, var(--p, 0) * 10)); }
+
+/* ---------- 2. Дни рождения: стена ---------- */
+.wall { padding: clamp(100px, 14vh, 160px) var(--gutter); background: var(--wine-800); }
+.wall h2 { font: 600 clamp(48px, 8vw, 128px)/.9 var(--cal); text-transform: uppercase; margin: 0 0 clamp(36px, 6vh, 64px); }
+.wall h2 span { color: var(--pink); }
+.bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: clamp(150px, 18vw, 260px); gap: clamp(10px, 1.4vw, 18px); }
+.tile { position: relative; margin: 0; overflow: hidden; border-radius: 6px; }
+.tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+.tile:hover img { transform: scale(1.04); }
+.tile.tall { grid-row: span 2; }
+.tile.wide { grid-column: span 2; }
+.tag { position: absolute; left: 12px; top: 12px; background: var(--paper); color: var(--ink); border-radius: 3px; padding: 8px 10px 7px; text-align: center; line-height: 1; box-shadow: 0 6px 16px rgb(0 0 0 / .25); }
+.tag b { display: block; font: 600 34px/1 var(--cal); color: var(--red); }
+.tag span { font: 500 12px/1 var(--cal); letter-spacing: .14em; text-transform: uppercase; }
+.tile figcaption { position: absolute; left: 12px; bottom: 10px; font-size: 14px; text-shadow: 0 1px 8px rgb(0 0 0 / .6); }
+.js .tile[data-reveal] { transform: scale(.85) translateY(40px); clip-path: inset(30% 0 0 0 round 6px); transition: transform 1s var(--ease), clip-path 1s var(--ease), opacity .6s; transition-delay: calc(var(--i, 0) * 80ms); }
+.js .tile[data-reveal].in { transform: none; clip-path: inset(0 round 6px); }
+
+/* ---------- 3. Двенадцать месяцев: горизонтальная лента ---------- */
+.months { height: 420vh; background: var(--wine-500); }
+.months .stage { display: grid; align-content: center; }
+.months .rail { overflow: hidden; }
+.months .track { display: flex; align-items: center; gap: clamp(30px, 5vw, 80px); width: max-content; padding: 0 var(--gutter); will-change: transform; }
+.month { flex: none; display: grid; gap: 10px; }
+.month .n { font: 600 clamp(140px, 22vw, 340px)/.8 var(--cal); color: rgb(255 245 243 / .14); -webkit-text-stroke: 1.5px rgb(255 245 243 / .7); }
+.month .m { font: 500 22px/1 var(--cal); text-transform: uppercase; letter-spacing: .14em; }
+.month.ph { width: clamp(240px, 26vw, 380px); }
+.month.ph img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 6px; }
+.months .lead { flex: none; font: 600 clamp(52px, 8vw, 120px)/.9 var(--cal); text-transform: uppercase; margin: 0 2vw 0 0; }
+.progress { position: absolute; left: var(--gutter); right: var(--gutter); bottom: 90px; height: 2px; background: rgb(255 245 243 / .2); }
+.progress::after { content: ""; position: absolute; inset: 0; background: var(--paper); transform-origin: left; transform: scaleX(var(--p, 0)); }
+
+/* ---------- 4. Две даты ---------- */
+.pair { padding: clamp(100px, 14vh, 160px) var(--gutter); background: var(--wine-900); display: grid; justify-items: center; gap: 40px; text-align: center; }
+.pair h2 { font: 600 clamp(44px, 7vw, 104px)/.9 var(--cal); text-transform: uppercase; margin: 0; }
+.duo { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0; width: min(900px, 100%); }
+.mini { background: var(--paper); color: var(--ink); border-radius: 4px; padding: 24px 22px; display: grid; gap: 8px; text-align: center; box-shadow: 0 24px 50px rgb(0 0 0 / .35); transition: transform .8s var(--ease); }
+.mini label { font: 500 14px/1 var(--cal); letter-spacing: .16em; text-transform: uppercase; color: var(--red); }
+.mini input { border: 0; background: none; font: 600 30px/1.1 var(--cal); text-align: center; width: 100%; color: var(--ink); }
+.mini.a { transform: rotate(-4deg) translateX(calc(var(--res, .5) * 30px)); }
+.mini.b { transform: rotate(4deg) translateX(calc(var(--res, .5) * -30px)); }
+.js .mini.a[data-reveal] { transform: translateX(-60vw) rotate(-20deg); }
+.js .mini.b[data-reveal] { transform: translateX(60vw) rotate(20deg); }
+.js .mini.a[data-reveal].in { transform: rotate(-4deg) translateX(calc(var(--res, .5) * 30px)); }
+.js .mini.b[data-reveal].in { transform: rotate(4deg) translateX(calc(var(--res, .5) * -30px)); }
+.seal { position: relative; z-index: 2; width: clamp(120px, 15vw, 170px); aspect-ratio: 1; margin: 0 -24px; border-radius: 50%; background: var(--pink); color: var(--wine-950); display: grid; place-content: center; box-shadow: 0 16px 40px rgb(0 0 0 / .35); }
+.seal output { font: 600 clamp(48px, 6vw, 70px)/.9 var(--cal); }
+.seal output::after { content: "%"; font-size: .45em; }
+.seal span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+form.done .seal { animation: thump .6s var(--ease); }
+@keyframes thump { 0% { transform: scale(.6); } 60% { transform: scale(1.08); } 100% { transform: none; } }
+.pair .why { color: var(--blush-2); min-height: 1.5em; margin: 0; }
+
+/* ---------- 5. Сегодня ---------- */
+.today { height: 190vh; background: var(--wine-700); }
+.today .stage { display: grid; place-items: center; }
+.big { width: min(520px, 86vw); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 34px 30px 30px; text-align: center; display: grid; gap: 12px; box-shadow: 0 40px 100px rgb(0 0 0 / .45);
+  transform: scale(calc(.55 + .45 * min(1, var(--p, 0) * 2))) rotate(calc((1 - min(1, var(--p, 0) * 2)) * -8deg)); }
+.big .top { display: flex; justify-content: space-between; font-family: var(--cal); letter-spacing: .12em; color: var(--red); font-size: 15px; }
+.big .d { font: 600 clamp(150px, 26vw, 240px)/.82 var(--cal); color: var(--red); }
+.big .m { font: 500 30px/1 var(--cal); text-transform: uppercase; letter-spacing: .08em; }
+.big p { margin: 6px 0 4px; color: #5b3a42; }
+.big a { justify-self: center; text-decoration: none; font-weight: 600; padding: 15px 28px; border-radius: 999px; background: var(--red); color: #fff; }
+.big a:hover { background: var(--wine-800); }
+
+.rm .sheet:not(.final) { display: none; }
+.rm .sticky { opacity: 1; transform: rotate(var(--r)); }
+.rm .big { transform: none; }
+.rm .hero { height: auto; } .rm .hero .stage { position: relative; height: auto; padding: 110px var(--gutter) 60px; }
+.rm .months { height: auto; } .rm .months .stage { position: relative; height: auto; padding: 80px 0; } .rm .months .rail { overflow-x: auto; }
+
+@media (max-width: 760px) {
+  .hero .stage { grid-template-columns: 1fr; grid-template-rows: auto 1fr; align-items: start; gap: 0; padding: 74px 16px 72px; }
+  .film { grid-row: 1 / 3; grid-column: 1; justify-self: center; height: calc(100svh - 160px); max-width: 100%; transform: rotate(1.5deg); }
+  .pad { grid-row: 1; grid-column: 1; z-index: 3; justify-self: start; width: 46vw; margin: -6px 0 0 -4px; }
+  .sheet { padding: 16px 12px 12px; }
+  .sheet .top { font-size: 12px; padding-top: 4px; }
+  .sheet .day { font-size: 26vw; }
+  .sheet .mon { font-size: 15px; }
+  .sheet .who { font-size: 12px; padding-top: 8px; }
+  .sheet.cover h1 { font-size: 10vw; }
+  .sheet.final .day { font-size: 20vw; }
+  .sheet.final .go { padding: 9px 12px; font-size: 12px; margin-top: 4px; }
+  .rings { inset: -10px 18% auto; } .rings i { width: 9px; height: 22px; }
+  .sticky { max-width: 170px; font-size: 13px; padding: 12px; }
+  .sticky b { font-size: 18px; }
+  .sticky.n1 { right: 4%; top: 8%; }
+  .sticky.n2 { right: auto; left: 4%; top: 52%; }
+  .sticky.n3 { right: 4%; bottom: 16%; }
+  .bento { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 44vw; }
+  .tile.wide { grid-column: span 2; }
+  .duo { grid-template-columns: 1fr; gap: 0; width: min(340px, 100%); }
+  .seal { margin: -18px auto; }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="../index.html"><canvas data-logo3d data-fallback="../icons/logo-3d-256.png" width="60" height="60" aria-hidden="true"></canvas>Любовь в цифрах</a>
+  <a class="enter" href="../index.html#join">Войти</a>
+</header>
+
+<main>
+  <section class="hero" data-scene aria-labelledby="h1">
+    <div class="stage">
+      <div class="pad">
+        <div class="rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="sheet final" data-range=".78 1">
+          <p class="top"><span>Аркан 19</span><span>Солнце</span></p>
+          <p class="cal day">93<small>%</small></p>
+          <div class="who">совместимость пары<br><a class="go" href="../index.html#join">Создать анкету</a></div>
+        </div>
+        <div class="sheet" data-range="0 .78">
+          <p class="top"><span>Аркан пары</span><span>24 + 17</span></p>
+          <p class="cal day">19</p>
+          <div class="who"><b>Солнце</b> — радость, лёгкость, много общих друзей</div>
+        </div>
+        <div class="sheet" data-range="0 .56">
+          <p class="top"><span>1988</span><span>среда</span></p>
+          <div><p class="cal day">17</p><p class="mon">февраля</p></div>
+          <div class="who"><b>Он</b> · Водолей · число судьбы 9</div>
+        </div>
+        <div class="sheet" data-range="0 .34">
+          <p class="top"><span>1992</span><span>вторник</span></p>
+          <div><p class="cal day">24</p><p class="mon">марта</p></div>
+          <div class="who"><b>Она</b> · Овен · число судьбы 3</div>
+        </div>
+        <div class="sheet cover" data-range="0 .12">
+          <p class="top"><span>Отрывной</span><span>календарь пары</span></p>
+          <h1 class="cal" id="h1">Любовь в&nbsp;цифрах</h1>
+          <div class="who">Две даты рождения — один процент</div>
+        </div>
+      </div>
+      <div class="film">
+        <canvas data-frames="../media/frames/f%03d.webp" data-count="96" data-from="0.04" data-to="0.96" aria-label="Пара на носу лодки подплывает к причалу"></canvas>
+        <div class="sticky n1" data-range=".22 1"><b>3 и 9</b>Числа судьбы из одной семьи: ритм жизни совпадает</div>
+        <div class="sticky n2" data-range=".44 1"><b>Огонь + воздух</b>Стихии усиливают друг друга</div>
+        <div class="sticky n3" data-range=".64 1"><b>Обезьяна + Дракон</b>Союзники по восточному кругу</div>
+      </div>
+      <p class="hint">Листайте, чтобы оторвать лист</p>
+    </div>
+  </section>
+
+  <section class="wall" aria-labelledby="wallTitle">
+    <h2 id="wallTitle" data-reveal>У каждого —<br><span>своя дата</span></h2>
+    <div class="bento">
+      <figure class="tile tall" data-reveal><img src="../media/hero-1.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><div class="tag"><b>12</b><span>июня</span></div><figcaption>Алина · Близнецы</figcaption></figure>
+      <figure class="tile wide" data-reveal><img src="../media/couple-2.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="object-position:50% 30%"><div class="tag"><b>91%</b><span>пара</span></div><figcaption>21.10.1993 + 07.04.1989</figcaption></figure>
+      <figure class="tile" data-reveal><img src="../media/man-1.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><div class="tag"><b>3</b><span>ноября</span></div><figcaption>Максим · Скорпион</figcaption></figure>
+      <figure class="tile tall" data-reveal><img src="../media/hero-2.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><div class="tag"><b>9</b><span>апреля</span></div><figcaption>Дарья · Овен</figcaption></figure>
+      <figure class="tile" data-reveal><img src="../media/man-3.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><div class="tag"><b>17</b><span>сентября</span></div><figcaption>Илья · Дева</figcaption></figure>
+      <figure class="tile wide" data-reveal><img src="../media/couple-3.webp" alt="" width="600" height="900" loading="lazy" decoding="async" style="object-position:50% 25%"><div class="tag"><b>70%</b><span>пара</span></div><figcaption>07.07.1988 + 21.03.1986</figcaption></figure>
+    </div>
+    <p class="note-demo" style="margin-top:18px">Анкеты и пары — примеры. Проценты посчитаны по нашей формуле для показанных дат.</p>
+  </section>
+
+  <section class="months" data-scene data-hscroll aria-labelledby="mTitle">
+    <div class="stage">
+      <div class="rail">
+        <div class="track">
+          <h2 class="lead" id="mTitle">Двенадцать<br>месяцев<br>любви</h2>
+          <div class="month"><span class="n">01</span><span class="m">январь</span></div>
+          <div class="month ph"><img src="../media/couple-1.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="m">февраль · закат у моря</span></div>
+          <div class="month"><span class="n">03</span><span class="m">март</span></div>
+          <div class="month"><span class="n">04</span><span class="m">апрель</span></div>
+          <div class="month ph"><img src="../media/hero-3.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="m">май</span></div>
+          <div class="month"><span class="n">06</span><span class="m">июнь</span></div>
+          <div class="month"><span class="n">07</span><span class="m">июль</span></div>
+          <div class="month ph"><img src="../media/man-5.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="m">август</span></div>
+          <div class="month"><span class="n">09</span><span class="m">сентябрь</span></div>
+          <div class="month ph"><img src="../media/couple-4.webp" alt="" width="600" height="900" loading="lazy" decoding="async"><span class="m">октябрь · листопад</span></div>
+          <div class="month"><span class="n">11</span><span class="m">ноябрь</span></div>
+          <div class="month"><span class="n">12</span><span class="m">декабрь</span></div>
+        </div>
+      </div>
+      <div class="progress" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <section class="pair" aria-labelledby="pTitle">
+    <h2 id="pTitle" data-reveal>Две даты</h2>
+    <form data-calc>
+      <div class="duo">
+        <div class="mini a" data-reveal><label for="d1">Ваша</label><input id="d1" type="date" value="1992-03-24" required></div>
+        <div class="seal"><output data-out for="d1 d2">93</output><span>совпадение</span></div>
+        <div class="mini b" data-reveal><label for="d2">Партнёра</label><input id="d2" type="date" value="1988-02-17" required></div>
+      </div>
+    </form>
+    <p class="why" data-why aria-live="polite"></p>
+  </section>
+
+  <section class="today" data-scene aria-labelledby="tTitle">
+    <div class="stage">
+      <div class="big">
+        <p class="top"><span id="tY">2026</span><span id="tW">сегодня</span></p>
+        <p class="cal d" id="tD">22</p>
+        <p class="m" id="tM">октября</p>
+        <h2 class="sr" id="tTitle">Сегодня</h2>
+        <p>Хороший день, чтобы познакомиться</p>
+        <a href="../index.html#join">Создать анкету</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>© Любовь в цифрах · 18+</span>
+  <span><a href="../privacy.html">Конфиденциальность</a> · <a href="../terms.html">Правила</a> · <a href="../oferta.html">Оферта</a></span>
+</footer>
+
+<nav class="variants" aria-label="Варианты главной"><span>Вариант:</span><a href="kombo.html">Микс</a><a href="kalendar.html" aria-current="page">Календарь</a><a href="fotobudka.html">Фотобудка</a><a href="premiera.html">Премьера</a></nav>
+
+<script>
+  // лист «Сегодня» показывает настоящую дату
+  (() => {
+    const d = new Date();
+    document.getElementById('tD').textContent = d.getDate();
+    document.getElementById('tM').textContent = d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' }).replace(/^\d+\s/, '');
+    document.getElementById('tY').textContent = d.getFullYear();
+    document.getElementById('tW').textContent = d.toLocaleDateString('ru-RU', { weekday: 'long' });
+  })();
+</script>
+<script src="../compat.js" defer></script>
+<script src="../scroll.js" defer></script>
+<script src="../logo3d.js" defer></script>
+</body>
+</html>

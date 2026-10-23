@@ -4,11 +4,18 @@ import {
   CATALOG, checkPaid, isConfigured, newInvId, opStateUrl, parseOpState, paymentUrl, settings,
 } from '../../netlify/lib/robokassa.mjs';
 import { fail, text } from '../http.mjs';
+import { textFor } from '../langs.mjs';
 import { DAY, addEvent, walletOf } from '../model.mjs';
 
 const PAID_TEXT = {
   ru: t => `Оплата получена: ${t}. Спасибо!`,
   en: t => `Payment received: ${t}. Thank you!`,
+  uk: t => `Оплату отримано: ${t}. Дякуємо!`,
+  kk: t => `Төлем алынды: ${t}. Рахмет!`,
+  uz: t => `Toʻlov qabul qilindi: ${t}. Rahmat!`,
+  de: t => `Zahlung erhalten: ${t}. Danke!`,
+  es: t => `Pago recibido: ${t}. ¡Gracias!`,
+  fr: t => `Paiement reçu : ${t}. Merci !`,
 };
 
 // Начислить оплаченный заказ. Возвращает true, если начислено сейчас, false — если уже было начислено раньше.
@@ -25,7 +32,7 @@ export function creditOrder(db, invId) {
     }
     if (product.coins) db.run('UPDATE users SET coins = coins + ? WHERE id = ?', product.coins, order.user_id);
     const lang = db.get('SELECT lang FROM users WHERE id = ?', order.user_id)?.lang;
-    addEvent(db, order.user_id, 'system', null, (PAID_TEXT[lang] || PAID_TEXT.ru)(product.title));
+    addEvent(db, order.user_id, 'system', null, textFor(PAID_TEXT, lang)(product.title));
     return true;
   });
 }
@@ -33,6 +40,12 @@ export function creditOrder(db, invId) {
 const REFUND_TEXT = {
   ru: t => `Покупка «${t}» отменена, деньги возвращаются на карту.`,
   en: t => `Purchase "${t}" was cancelled and refunded.`,
+  uk: t => `Покупку «${t}» скасовано, гроші повертаються на картку.`,
+  kk: t => `«${t}» сатып алуы тоқтатылды, ақша картаға қайтарылады.`,
+  uz: t => `«${t}» xaridi bekor qilindi, pul kartaga qaytariladi.`,
+  de: t => `Der Kauf „${t}“ wurde storniert, das Geld wird auf die Karte zurückerstattet.`,
+  es: t => `La compra «${t}» se ha cancelado y el dinero se devuelve a la tarjeta.`,
+  fr: t => `L'achat « ${t} » a été annulé, l'argent est remboursé sur la carte.`,
 };
 
 // Возврат: только для оплаченного счёта. Услуга отменяется на сайте (монеты списываются, но не ниже нуля;
@@ -49,7 +62,7 @@ export function refundOrder(db, invId, note) {
       if (product.coins) db.run('UPDATE users SET coins = MAX(0, coins - ?) WHERE id = ?', product.coins, order.user_id);
       if (product.vipDays) db.run('UPDATE users SET vip_until = MAX(?, vip_until - ?) WHERE id = ?', now, product.vipDays * DAY, order.user_id);
       const lang = db.get('SELECT lang FROM users WHERE id = ?', order.user_id)?.lang;
-      addEvent(db, order.user_id, 'system', null, (REFUND_TEXT[lang] || REFUND_TEXT.ru)(product.title));
+      addEvent(db, order.user_id, 'system', null, textFor(REFUND_TEXT, lang)(product.title));
     }
     return db.get('SELECT * FROM orders WHERE inv_id = ?', invId);
   });

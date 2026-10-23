@@ -4,4 +4,4 @@ Disallow: /admin.html
 Disallow: /api/
 Disallow: /uploads/
 
-Sitemap: https://ВАШ-ДОМЕН/sitemap.xml
+Sitemap: https://lyubovvcifrah.ru/sitemap.xml

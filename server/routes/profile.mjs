@@ -1,5 +1,6 @@
 // Своя анкета: данные, настройки, фото, проверка селфи.
 import { fail } from '../http.mjs';
+import { LANGS, langOf } from '../langs.mjs';
 import { decodeImage, removeFile, saveFile } from '../media.mjs';
 import { isVip, myPhotos, userOut } from '../model.mjs';
 import { parseDetails } from '../options.mjs';
@@ -26,7 +27,7 @@ function checkBirth(birth) {
 export function validateProfile(body) {
   const p = {
     name: oneLine(body.name), birth: str(body.birth), g: body.g, seek: body.seek,
-    city: oneLine(body.city), about: str(body.about), lang: body.lang === 'en' ? 'en' : 'ru',
+    city: oneLine(body.city), about: str(body.about), lang: langOf(body.lang),
     ...parseDetails(body),
   };
   if (!NAME_RE.test(p.name)) fail(400, 'bad_name');
@@ -75,7 +76,7 @@ export default function profileRoutes(route) {
       sets.push(`${col} = ?`); vals.push(body[key] ? 1 : 0);
     }
     if (body.lang !== undefined) {
-      if (!['ru', 'en'].includes(body.lang)) invalid('lang');
+      if (!LANGS.includes(body.lang)) invalid('lang');
       sets.push('lang = ?'); vals.push(body.lang);
     }
     if (sets.length) db.run(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`, ...vals, user.id);

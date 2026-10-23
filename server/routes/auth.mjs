@@ -2,6 +2,7 @@
 import crypto from 'node:crypto';
 import { isConfigured, settings } from '../../netlify/lib/robokassa.mjs';
 import { fail } from '../http.mjs';
+import { langOf, textFor } from '../langs.mjs';
 import { SUPPORT, addEvent, myPhotos, newUserId, sha256, userOut, walletOf } from '../model.mjs';
 import { deleteUser, exportUser, isEmailBanned } from '../pd.mjs';
 
@@ -22,15 +23,49 @@ const WELCOME = {
     support: 'Welcome to Love in Numbers! Ask us anything about the site, payments or your profile here.',
     event: 'Your account is ready. Fill in your profile and add photos to get noticed faster.',
   },
+  uk: {
+    support: 'Ласкаво просимо до «Любов у цифрах»! Тут можна поставити запитання про сайт, оплату чи анкету.',
+    event: 'Акаунт створено. Заповніть анкету й додайте фото — так вас помітять швидше.',
+  },
+  kk: {
+    support: '«Махаббат сандарда»-ға қош келдіңіз! Мұнда сайт, төлем немесе анкета туралы сұрақ қоюға болады.',
+    event: 'Аккаунт жасалды. Анкетаны толтырып, сурет қосыңыз — сонда сізді тезірек байқайды.',
+  },
+  uz: {
+    support: '«Sevgi raqamlarda»ga xush kelibsiz! Bu yerda sayt, toʻlov yoki anketa haqida savol berishingiz mumkin.',
+    event: 'Akkaunt yaratildi. Anketani toʻldiring va rasm qoʻshing — shunda sizni tezroq payqashadi.',
+  },
+  de: {
+    support: 'Willkommen bei „Liebe in Zahlen“! Hier kannst du Fragen zur Seite, zur Zahlung oder zum Profil stellen.',
+    event: 'Dein Konto ist bereit. Füll dein Profil aus und füge Fotos hinzu, damit man dich schneller bemerkt.',
+  },
+  es: {
+    support: '¡Bienvenido a «Amor en Números»! Aquí puedes preguntar sobre el sitio, los pagos o tu perfil.',
+    event: 'Tu cuenta está lista. Completa tu perfil y añade fotos para que te vean antes.',
+  },
+  fr: {
+    support: 'Bienvenue sur « L\'Amour en Chiffres » ! Posez ici vos questions sur le site, le paiement ou votre profil.',
+    event: 'Votre compte est prêt. Remplissez votre profil et ajoutez des photos pour être remarqué plus vite.',
+  },
 };
 
+// Откуда пришёл человек: метки utm_source / utm_medium / utm_campaign первого визита, «vk / cpc / osen».
+// Берём только короткие латинские слова, чтобы в базу не попадало ничего лишнего.
+export function adSource(src) {
+  if (!src || typeof src !== 'object') return null;
+  const part = v => String(v ?? '').toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 40);
+  const parts = [part(src.s), part(src.m), part(src.c)];
+  while (parts.length && !parts[parts.length - 1]) parts.pop();
+  return parts.length ? parts.map(x => x || '-').join(' / ') : null;
+}
+
 // Новый пользователь: приветствие от поддержки и системное событие.
-function createUser(db, email, lang) {
+function createUser(db, email, lang, src = null) {
   const id = newUserId();
   const now = Date.now();
-  const t = WELCOME[lang] || WELCOME.ru;
+  const t = textFor(WELCOME, lang);
   db.tx(() => {
-    db.run('INSERT INTO users (id, email, lang, created_at, last_seen) VALUES (?, ?, ?, ?, ?)', id, email, lang, now, now);
+    db.run('INSERT INTO users (id, email, lang, src, created_at, last_seen) VALUES (?, ?, ?, ?, ?, ?)', id, email, lang, src, now, now);
     db.run("INSERT INTO messages (from_id, to_id, t, kind, text) VALUES (?, ?, ?, 'text', ?)", SUPPORT, id, now, t.support);
     addEvent(db, id, 'system', null, t.event);
   });
@@ -54,7 +89,7 @@ export default function authRoutes(route) {
     if (email.length > 254 || !EMAIL_RE.test(email)) fail(400, 'bad_email');
     // Почта удалённого забаненного аккаунта: новая регистрация запрещена.
     if (!db.get('SELECT 1 FROM users WHERE email = ?', email) && isEmailBanned(app, email)) fail(403, 'banned');
-    const lang = body.lang === 'en' ? 'en' : 'ru';
+    const lang = langOf(body.lang);
     const now = Date.now();
     const prev = db.get('SELECT sent_at FROM codes WHERE email = ?', email);
     if (prev && now - prev.sent_at < CODE_GAP) fail(429, 'too_often', { wait: Math.ceil((prev.sent_at + CODE_GAP - now) / 1000) });
@@ -98,7 +133,7 @@ export default function authRoutes(route) {
     let user = db.get('SELECT * FROM users WHERE email = ?', email);
     if (!user) {
       if (isEmailBanned(app, email)) fail(403, 'banned');
-      user = createUser(db, email, row.lang);
+      user = createUser(db, email, row.lang, adSource(body.src));
     }
     startSession(user.id);
     return { user: userOut(user) };

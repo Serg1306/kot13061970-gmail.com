@@ -127,6 +127,13 @@ test('приветствие от поддержки на русском и ан
   await en.put('/api/profile', { name: 'John', birth: '1990-01-01', g: 'm', seek: 'f', city: 'London', consent: true, consentPublic: true, lang: 'en' });
   const st2 = await en.get('/api/state');
   assert.equal(st2.body.chats.support[0].text, 'Welcome to Love in Numbers! Ask us anything about the site, payments or your profile here.');
+
+  const de = srv.client();
+  await de.login('welcome-de@example.ru', 'de');
+  await de.put('/api/profile', { name: 'Lena', birth: '1990-01-01', g: 'f', seek: 'm', city: 'Berlin', consent: true, consentPublic: true, lang: 'de' });
+  const st3 = await de.get('/api/state');
+  assert.match(st3.body.chats.support[0].text, /^Willkommen bei „Liebe in Zahlen“!/);
+  assert.equal(srv.app.db.get('SELECT lang FROM users WHERE email = ?', 'welcome-de@example.ru').lang, 'de');
 });
 
 test('выход и удаление аккаунта вместе с файлами', async () => {
