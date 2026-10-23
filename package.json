@@ -1,0 +1,14 @@
+{
+  "name": "lyubov-v-cifrah",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Сайт знакомств «Любовь в цифрах»: сервер на Node.js без внешних зависимостей",
+  "type": "module",
+  "scripts": {
+    "start": "node --no-warnings server/server.mjs",
+    "test": "node --test \"server/test/*.test.mjs\""
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

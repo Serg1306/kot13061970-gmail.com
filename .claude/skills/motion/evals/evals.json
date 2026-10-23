@@ -1,0 +1,23 @@
+{
+  "skill_name": "motion-agent",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to create a button that scales up when hovered and scales down when tapped. Can you give me the Motion code for this?",
+      "expected_output": "Motion code showing a button with whileHover and whileTap props for scale animations",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "How do I create a continuous rotation animation using Motion's useTime and useTransform hooks in React?",
+      "expected_output": "Code showing useTime and useTransform hooks for perpetual rotation animation",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Show me how to set up a shared element animation between two components using layoutId in Motion.",
+      "expected_output": "Examples of motion components with matching layoutId props for shared element transitions",
+      "files": []
+    }
+  ]
+}

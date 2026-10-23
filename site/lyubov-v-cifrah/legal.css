@@ -1,0 +1,73 @@
+/* Общие стили юридических страниц «Любовь в цифрах»: оферта, политика, согласие, соглашение */
+:root {
+  --paper: #fbf6fb; --bg: #f1e1f6; --bg-pink: #ffd3e3; --bg-blue: #cde5ff;
+  --ink: #23163a; --muted: #6d6380; --line: #ddd6e8; --card: #fff;
+  --rose: #d93a63; --sea: #2f6fd6; --plum: #7a4fd1;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #17111f; --bg: #24183a; --bg-pink: #3b1631; --bg-blue: #122a4c;
+    --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45; --card: #211a2d;
+    --rose: #f0638a; --sea: #6fa8ff; --plum: #a283f0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #17111f; --bg: #24183a; --bg-pink: #3b1631; --bg-blue: #122a4c;
+  --ink: #f1ecf7; --muted: #a99fbb; --line: #352b45; --card: #211a2d;
+  --rose: #f0638a; --sea: #6fa8ff; --plum: #a283f0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.65 "Golos Text", system-ui, sans-serif; padding: 0 1rem 3rem; overflow-wrap: break-word; }
+main, .top, .foot { max-width: 46rem; margin: 0 auto; }
+a { color: var(--rose); overflow-wrap: anywhere; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--plum); outline-offset: 3px; }
+
+.top { display: flex; align-items: center; gap: .6rem; padding: 1rem 0 .4rem; }
+.logo { display: inline-flex; align-items: center; gap: .45rem; font-family: "Great Vibes", cursive; font-size: 2.1rem; line-height: 1.2; color: var(--ink); text-decoration: none; white-space: nowrap; }
+.logo svg { width: 28px; height: 28px; flex: none; }
+.age { flex: none; border: 1.5px solid var(--rose); color: var(--rose); border-radius: 999px; font-size: .78rem; font-weight: 600; padding: .05rem .45rem; line-height: 1.4; }
+.lang { margin-left: auto; flex: none; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); border-radius: 999px; font: 600 .85rem/1 "Golos Text", system-ui, sans-serif; letter-spacing: .04em; padding: .5rem .8rem; cursor: pointer; }
+.lang:hover { background: var(--ink); color: var(--paper); }
+
+h1, h2, h3 { font-family: "Prata", Georgia, serif; font-weight: 400; line-height: 1.2; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); margin: .5rem 0 1rem; }
+h2 { font-size: 1.35rem; margin: 2rem 0 .6rem; }
+h3 { font-size: 1.1rem; margin: 1.4rem 0 .4rem; }
+p { margin: .6rem 0; }
+ul, ol { padding-left: 1.3rem; margin: .5rem 0; }
+li { margin: .25rem 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 1.2rem 1.4rem; }
+.card > :first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
+table { width: 100%; border-collapse: collapse; }
+td { padding: .45rem 0; border-bottom: 1px dashed var(--line); vertical-align: top; }
+td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: .8rem; }
+table.grid td:last-child { text-align: left; white-space: normal; }
+table.grid td:first-child { width: 38%; padding-right: .8rem; font-weight: 600; }
+.muted { color: var(--muted); font-size: .92rem; }
+.note { border-left: 3px solid var(--rose); padding: .2rem 0 .2rem .9rem; color: var(--muted); }
+.toc { font-size: .95rem; }
+.toc ol { columns: 2 14rem; column-gap: 2rem; margin: 0; }
+.toc li { margin: 0 0 .3rem; break-inside: avoid; }
+
+.foot { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1.2rem; color: var(--muted); font-size: .88rem; }
+.foot nav { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; margin-bottom: .8rem; }
+.foot p { margin: .3rem 0; }
+
+@media (max-width: 480px) {
+  .card { padding: 1rem; border-radius: 14px; }
+  .logo { font-size: 1.65rem; }
+  .logo svg { width: 22px; height: 22px; }
+  table.grid td { display: block; width: auto !important; padding-right: 0; }
+  table.grid td:first-child { border-bottom: 0; padding-bottom: 0; }
+}
+@media print {
+  .lang, .foot nav { display: none; }
+  body { background: #fff; color: #000; }
+  [data-lang-block] { display: block !important; }
+}
