@@ -6,13 +6,13 @@
 
 1. Войдите на https://login.robokassa.ru и создайте магазин для сайта.
 2. Заполните данные об услугах. Для проверки магазина на сайте уже есть цены (раздел «Бесплатно и с VIP») и страница `oferta.html` с офертой, условиями оплаты и возврата и контактами.
-3. В «Технических настройках» магазина укажите (вместо `ВАШ-ДОМЕН` подставьте адрес сайта на Netlify):
+3. В «Технических настройках» магазина укажите (адрес сайта — lyubovvcifrah.ru, в Netlify папка публикации `site/lyubov-v-cifrah`):
 
 | Поле | Значение | Метод |
 |---|---|---|
-| Result URL | `https://ВАШ-ДОМЕН/api/robokassa-result` | POST |
-| Success URL | `https://ВАШ-ДОМЕН/site/lyubov-v-cifrah/` | GET |
-| Fail URL | `https://ВАШ-ДОМЕН/site/lyubov-v-cifrah/?pay=fail` | GET |
+| Result URL | `https://lyubovvcifrah.ru/api/robokassa-result` | POST |
+| Success URL | `https://lyubovvcifrah.ru/` | GET |
+| Fail URL | `https://lyubovvcifrah.ru/?pay=fail` | GET |
 | Алгоритм расчёта хеша | MD5 (или другой, см. `ROBOKASSA_HASH`) | |
 
 4. Скопируйте идентификатор магазина, пароль #1 и пароль #2. Для тестового режима в кабинете есть отдельная пара тестовых паролей.

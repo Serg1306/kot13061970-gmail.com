@@ -2,8 +2,7 @@
 
 Запуск из корня репозитория:
     python3 site/lyubov-v-cifrah/tools/make_city_pages.py --base-url https://example.ru
-Без --base-url подставляется заглушка https://ВАШ-ДОМЕН — её потом можно заменить одним запуском
-с настоящим адресом (или поиском-заменой по сайту).
+Без --base-url подставляется адрес сайта https://lyubovvcifrah.ru.
 
 Что создаётся (всё в site/lyubov-v-cifrah/):
     goroda/<slug>.html   — страница города: заголовок, описание, мини-калькулятор совместимости,
@@ -30,7 +29,7 @@ import urllib.parse
 HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.normpath(os.path.join(HERE, ".."))
 OUT = os.path.join(SITE, "goroda")
-PLACEHOLDER = "https://ВАШ-ДОМЕН"
+PLACEHOLDER = "https://lyubovvcifrah.ru"
 BRAND = "Любовь в цифрах"
 
 # (slug, название, «в …» предложный падеж, страна/регион, группа, вступление, идеи для свидания)
