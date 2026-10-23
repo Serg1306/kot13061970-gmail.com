@@ -6,7 +6,8 @@
 
 ```sh
 node render.mjs rolik-a video.mp4 30                    # кадры → H.264 без звука
-python3 voice.py rolik-a.html irina track.wav        # черновая озвучка RHVoice по SUBS (RHVOICE — папка установки RHVoice)
+python3 music.py music.wav 20                          # весёлая фоновая музыка, синтезируется без чужих прав
+python3 voice.py rolik-a.html irina track.wav music.wav  # озвучка RHVoice по SUBS (RHVOICE — папка установки; PITCH=130 RATE=115 — бодрее)
 ffmpeg -i video.mp4 -i track.wav -c:v copy -c:a aac -b:a 192k -movflags +faststart rolik-a.mp4
 ```
 
