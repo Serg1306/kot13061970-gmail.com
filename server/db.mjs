@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS banned_emails (
 
 // Колонки, добавленные после первого выпуска: в старой базе их создаём через ALTER TABLE.
 const COLUMNS = {
-  users: { consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT', src: 'TEXT' },
+  users: { consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT', src: 'TEXT', marital: 'TEXT', body: 'TEXT', drink: 'TEXT', edu: 'TEXT', home: 'TEXT', income: 'TEXT', job: 'TEXT', langs: 'TEXT' },
   orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER' },
 };
 
