@@ -3,7 +3,7 @@ import { fail } from '../http.mjs';
 import { LANGS, langOf } from '../langs.mjs';
 import { decodeImage, removeFile, saveFile } from '../media.mjs';
 import { isVip, myPhotos, userOut } from '../model.mjs';
-import { parseDetails } from '../options.mjs';
+import { CHOICES, DETAIL_KEYS, parseDetails } from '../options.mjs';
 
 const MAX_PHOTOS = 10;
 const invalid = field => fail(400, 'invalid', { field });
@@ -54,9 +54,10 @@ export default function profileRoutes(route) {
       db.run('UPDATE users SET name = ?, birth = ?, g = ?, seek = ?, city = ?, about = ?, lang = ? WHERE id = ?',
         p.name, p.birth, p.g, p.seek, p.city, p.about, body.lang ? p.lang : user.lang, user.id);
       // подробности анкеты необязательны: старый клиент без этих полей их не стирает
-      if (['goal', 'interests', 'height', 'kids', 'smoke'].some(k => k in body)) {
-        db.run('UPDATE users SET goal = ?, interests = ?, height = ?, kids = ?, smoke = ? WHERE id = ?',
-          p.goal, JSON.stringify(p.interests), p.height, p.kids, p.smoke, user.id);
+      if (DETAIL_KEYS.some(k => k in body)) {
+        const ch = Object.keys(CHOICES);
+        db.run(`UPDATE users SET goal = ?, interests = ?, height = ?, kids = ?, smoke = ?, ${ch.map(k => `${k} = ?`).join(', ')}, job = ?, langs = ? WHERE id = ?`,
+          p.goal, JSON.stringify(p.interests), p.height, p.kids, p.smoke, ...ch.map(k => p[k]), p.job, JSON.stringify(p.langs), user.id);
       }
       if (fresh) {
         db.run('UPDATE users SET consent_at = COALESCE(consent_at, ?), consent_public_at = COALESCE(consent_public_at, ?), consent_version = ?, consent_ip = ? WHERE id = ?',

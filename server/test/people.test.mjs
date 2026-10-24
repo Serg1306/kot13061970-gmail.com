@@ -217,3 +217,21 @@ test('подробности анкеты: цель, интересы, рост,
   await a.put('/api/profile', { ...base, goal: 'friends' });
   assert.equal((await a.get('/api/account/export')).body.profile.goal, 'friends');
 });
+
+test('подробности анкеты как на Mamba: семья, телосложение, алкоголь, образование, жильё, доход, работа, языки', async () => {
+  const a = await srv.user('mamba@example.ru', {
+    goal: 'flirt', marital: 'divorced', body: 'athletic', drink: 'social', edu: 'higher', home: 'own', income: 'middle',
+    job: '  Инженер-<строитель>  ', langs: ['ru', 'en', 'ru', 'xx', 'de', 'fr', 'es', 'it'],
+  });
+  const b = await srv.user('mamba-viewer@example.ru', { g: 'm' });
+  const seen = await person(b, a.id);
+  assert.deepEqual([seen.goal, seen.marital, seen.body, seen.drink, seen.edu, seen.home, seen.income],
+    ['flirt', 'divorced', 'athletic', 'social', 'higher', 'own', 'middle']);
+  assert.equal(seen.job, 'Инженер-строитель');
+  assert.deepEqual(seen.langs, ['ru', 'en', 'de', 'fr', 'es']);
+  const base = { name: 'Тест', birth: '1990-05-01', g: 'f', seek: 'a', city: 'Москва', about: '' };
+  await a.put('/api/profile', { ...base, marital: 'hack', job: '', langs: 'ru' });
+  const me = (await a.get('/api/me')).body.user;
+  assert.deepEqual([me.marital, me.job, me.langs, me.body], [null, null, [], null]);
+  assert.equal((await a.get('/api/account/export')).body.profile.langs.length, 0);
+});
