@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { detailsOut } from './options.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
-import { CATALOG } from '../netlify/lib/robokassa.mjs';
+import { CATALOG } from './tkassa.mjs';
 import { removeFile } from './media.mjs';
 import { uploadSrc } from './model.mjs';
 

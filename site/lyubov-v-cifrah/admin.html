@@ -132,12 +132,16 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const when = t => t ? new Date(t).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
   const REASONS = { fake: 'Фейковая анкета', scam: 'Мошенничество', rude: 'Грубость', photos: 'Неприемлемые фото', minor: 'Несовершеннолетний', other: 'Другое' };
-  const ERRORS = { bad_email: 'Проверьте адрес почты.', too_often: 'Код уже отправлен, подождите минуту.', bad_code: 'Неверный код.', code_expired: 'Код устарел, запросите новый.', too_many_attempts: 'Слишком много попыток, запросите новый код.', mail_failed: 'Не удалось отправить письмо, проверьте настройки почты.', rate_limited: 'Слишком много запросов, подождите.', robokassa_unavailable: 'Робокасса сейчас не отвечает, попробуйте позже.', not_configured: 'Робокасса не настроена на сервере.', not_paid: 'Счёт не оплачен — возвращать нечего.' };
+  const ERRORS = { bad_email: 'Проверьте адрес почты.', too_often: 'Код уже отправлен, подождите минуту.', bad_code: 'Неверный код.', code_expired: 'Код устарел, запросите новый.', too_many_attempts: 'Слишком много попыток, запросите новый код.', mail_failed: 'Не удалось отправить письмо, проверьте настройки почты.', rate_limited: 'Слишком много запросов, подождите.', tkassa_unavailable: 'Т-Касса сейчас не отвечает, попробуйте позже.', not_configured: 'Т-Касса не настроена на сервере (команда lyubov-tkassa).', not_paid: 'Заказ не оплачен, возвращать нечего.' };
 
   let queue = null, tab = 'photos', thread = null, email = '';
   const STATUS = { new: 'не оплачен', paid: 'оплачен', refunded: 'возврат' };
   const PD_REASONS = { user_request: 'запрос пользователя', consent_withdrawn: 'отзыв согласия', ban: 'бан', retention: 'истёк срок хранения' };
-  const REFUND_NOTE = 'Деньги возвращаются в личном кабинете Робокассы: Операции → Возврат. Эта кнопка только отменяет услугу на сайте.';
+  // Статусы платежа Т-Кассы для сверки заказа.
+  const TK_STATES = { NOT_FOUND: 'платёж не найден (человек не перешёл к оплате)', NEW: 'создан, не оплачен', FORM_SHOWED: 'открыта форма оплаты, не оплачен',
+    AUTHORIZING: 'идёт оплата', AUTHORIZED: 'деньги заблокированы, ждут подтверждения', CONFIRMED: 'оплачен', REJECTED: 'отклонён банком',
+    CANCELED: 'отменён', DEADLINE_EXPIRED: 'срок оплаты истёк', REVERSED: 'отменён', REFUNDED: 'возвращён', PARTIAL_REFUNDED: 'частично возвращён' };
+  const REFUND_NOTE = 'Деньги возвращаются в личном кабинете Т-Бизнеса: Интернет-эквайринг → Операции → платёж → Возврат. Эта кнопка только отменяет услугу на сайте.';
   const rub = n => Number(n || 0).toLocaleString('ru-RU') + ' ₽';
   const isoDay = t => new Date(t + 3 * 3600e3).toISOString().slice(0, 10);
   const pay = { status: '', q: '', data: null };
@@ -309,7 +313,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
             ${o.email ? person({ name: o.name, email: o.email }) : '<span class="muted">аккаунт удалён</span>'}
             ${o.refundNote ? `<span class="muted">Примечание: ${esc(o.refundNote)}</span>` : ''}
             <div class="row" style="margin-top:.3rem">
-              ${o.status === 'new' ? `<button class="btn" data-act="check" data-id="${esc(o.invId)}">Проверить в Робокассе</button>` : ''}
+              ${o.status === 'new' ? `<button class="btn" data-act="check" data-id="${esc(o.invId)}">Проверить в Т-Кассе</button>` : ''}
               ${o.status === 'paid' ? `<button class="btn rose" data-act="refund" data-id="${esc(o.invId)}">Оформить возврат</button>` : ''}
             </div>
           </article>`).join('')}</div>` : empty('Платежей не найдено.')}`;
@@ -386,7 +390,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
     }
     let note = '';
     if (act === 'refund') {
-      note = prompt(REFUND_NOTE + '\n\nВозврат уже сделан в кабинете Робокассы? Напишите примечание (дата, причина):', '');
+      note = prompt(REFUND_NOTE + '\n\nВозврат уже сделан в кабинете Т-Бизнеса? Напишите примечание (дата, причина):', '');
       if (note === null) return;
     }
     if (act === 'delban' && !confirm('Удалить все данные забаненного пользователя? Почта останется в чёрном списке (только хэш) на 3 года.')) return;
@@ -394,7 +398,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
     try {
       if (act === 'check') {
         const r = await api('POST', '/api/admin/order-check', { invId: id });
-        alert(r.credited ? 'Оплата найдена в Робокассе — услуга начислена.' : `Состояние в Робокассе: ${r.state}${r.code != null ? ' (код ' + r.code + ')' : ''}.`);
+        alert(r.credited ? 'Оплата найдена в Т-Кассе — услуга начислена.' : `Состояние в Т-Кассе: ${TK_STATES[r.state] || r.state}.`);
         return await loadPay();
       }
       if (act === 'refund') { await api('POST', '/api/admin/refund', { invId: id, note }); return await loadPay(); }

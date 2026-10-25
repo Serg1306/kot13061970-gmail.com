@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS gifts (
   t INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS gifts_to ON gifts(to_id);
--- Счета Робокассы: InvId привязан к пользователю, начисление ровно один раз (status new → paid).
+-- Заказы Т-Кассы: номер заказа (OrderId) привязан к пользователю, начисление ровно один раз (status new → paid).
 CREATE TABLE IF NOT EXISTS orders (
   inv_id TEXT PRIMARY KEY,
   user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS banned_emails (
 // Колонки, добавленные после первого выпуска: в старой базе их создаём через ALTER TABLE.
 const COLUMNS = {
   users: { consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT', src: 'TEXT', marital: 'TEXT', body: 'TEXT', drink: 'TEXT', edu: 'TEXT', home: 'TEXT', income: 'TEXT', job: 'TEXT', langs: 'TEXT' },
-  orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER' },
+  orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER', payment_id: 'TEXT' },
 };
 
 function migrate(raw) {

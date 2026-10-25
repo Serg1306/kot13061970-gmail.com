@@ -13,7 +13,7 @@ test('config и заголовки безопасности', async () => {
   assert.equal(r.status, 200);
   assert.equal(r.body.live, true);
   assert.equal(r.body.devCodes, true);
-  assert.equal(r.body.robokassa, false);
+  assert.equal(r.body.payments, false);
   assert.equal(r.body.vapidPublicKey, null); // push выключен по умолчанию
   assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
   assert.match(r.headers.get('content-security-policy'), /frame-ancestors 'none'/);
@@ -28,7 +28,7 @@ test('статика: index, типы, запрет выхода из папки
   assert.equal(video.status, 206);
   assert.equal(video.headers.get('content-type'), 'video/mp4');
   assert.equal((await video.arrayBuffer()).byteLength, 100);
-  for (const p of ['/%2e%2e/%2e%2e/package.json', '/..%2f..%2fnetlify/lib/robokassa.mjs', '/.git/config', '/tools/make_demo_media.py']) {
+  for (const p of ['/%2e%2e/%2e%2e/package.json', '/..%2f..%2fserver/tkassa.mjs', '/.git/config', '/tools/make_demo_media.py']) {
     const r = await c.get(p);
     assert.notEqual(r.status, 200, p);
   }
@@ -107,7 +107,7 @@ test('анкета: проверки, согласие, 18+', async () => {
   assert.equal(r.body.user.name, 'Анна-Мария');
   assert.ok(r.body.user.consentAt > 0);
   assert.equal(r.body.user.consentPublicAt, r.body.user.consentAt);
-  assert.equal(r.body.user.consentVersion, '2026-10-14');
+  assert.equal(r.body.user.consentVersion, '2026-10-25');
   assert.equal(srv.app.db.get('SELECT consent_ip FROM users WHERE id = ?', r.body.user.id).consent_ip, '127.0.0.1');
   // Повторное сохранение — согласие уже есть.
   const r2 = await c.put('/api/profile', { ...good, city: 'Казань' });

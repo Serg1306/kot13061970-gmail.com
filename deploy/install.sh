@@ -5,7 +5,7 @@
 #
 # Скрипт можно запускать повторно: он обновит сайт до свежей версии и не тронет данные пользователей и настройки.
 # После установки доступны команды:
-#   lyubov-robokassa  — ввести данные магазина Робокассы (пароли вводятся на сервере, никуда не отправляются)
+#   lyubov-tkassa     — ввести данные терминала Т-Кассы (пароль вводится на сервере, никуда не отправляется)
 #   lyubov-mail       — настроить почту для кодов входа (Яндекс)
 #   lyubov-domain     — подключить домен и HTTPS
 #   lyubov-update     — обновить сайт до последней версии
@@ -87,17 +87,15 @@ SMTP_FROM=
 DEV_CODES=0
 AUTO_APPROVE=0
 PUSH_ENABLED=0
-CONSENT_VERSION=2026-10-14
+CONSENT_VERSION=2026-10-25
 METRIKA_ID=
 
-# Робокасса: настраивается командой lyubov-robokassa
-ROBOKASSA_LOGIN=
-ROBOKASSA_PASS1=
-ROBOKASSA_PASS2=
-ROBOKASSA_TEST=1
-ROBOKASSA_HASH=md5
-ROBOKASSA_RECEIPT=1
-ROBOKASSA_TAX=none
+# Т-Касса: настраивается командой lyubov-tkassa
+TKASSA_TERMINAL=
+TKASSA_PASSWORD=
+TKASSA_RECEIPT=0
+TKASSA_TAXATION=usn_income
+TKASSA_TAX=none
 EOF
   ok "Создан файл настроек $ENV_FILE"
 else
@@ -184,27 +182,26 @@ PY
 else echo "\$k=\$v" >> "\$ENV_FILE"; fi; }
 EOF
 
-cat > /usr/local/bin/lyubov-robokassa <<'EOF'
+cat > /usr/local/bin/lyubov-tkassa <<'EOF'
 #!/usr/bin/env bash
-# Ввод данных магазина Робокассы. Пароли вводятся здесь, на сервере, и никуда не отправляются.
+# Ввод данных терминала Т-Кассы. Пароль вводится здесь, на сервере, и никуда не отправляется.
 set -e
 . /usr/local/lib/lyubov-env.sh
-echo "Данные возьмите в личном кабинете Робокассы: ваш магазин → «Технические настройки»."
-read -r -p "Идентификатор магазина: " L </dev/tty
-read -r -s -p "Пароль #1 (ввод не отображается): " P1 </dev/tty; echo
-read -r -s -p "Пароль #2 (ввод не отображается): " P2 </dev/tty; echo
-read -r -p "Это тестовые пароли? (да/нет) [да]: " T </dev/tty
-case "${T:-да}" in н*|n*) T=0 ;; *) T=1 ;; esac
-setenv ROBOKASSA_LOGIN "$L"; setenv ROBOKASSA_PASS1 "$P1"; setenv ROBOKASSA_PASS2 "$P2"
-if [ "$T" = 1 ]; then setenv ROBOKASSA_TEST 1; else setenv ROBOKASSA_TEST 0; fi
+echo "Данные возьмите в личном кабинете Т-Бизнеса: Интернет-эквайринг → Магазины → ваш магазин → Терминалы."
+echo "Для проверки сначала введите тестовый терминал (в конце его имени DEMO), потом боевой."
+read -r -p "TerminalKey: " K </dev/tty
+read -r -s -p "Пароль терминала (ввод не отображается): " P </dev/tty; echo
+read -r -p "Подключена онлайн-касса и нужно передавать чеки? (да/нет) [нет]: " R </dev/tty
+case "${R:-нет}" in д*|y*) R=1 ;; *) R=0 ;; esac
+setenv TKASSA_TERMINAL "$K"; setenv TKASSA_PASSWORD "$P"; setenv TKASSA_RECEIPT "$R"
+if [ "$R" = 1 ]; then
+  read -r -p "Система налогообложения (osn, usn_income, usn_income_outcome, patent) [usn_income]: " X </dev/tty
+  setenv TKASSA_TAXATION "${X:-usn_income}"
+fi
 systemctl restart lyubov
-URL=$(grep '^PUBLIC_URL=' "$ENV_FILE" | cut -d= -f2-)
 echo
-echo "Готово. В Робокассе → «Технические настройки» укажите (метод для Result URL — POST):"
-echo "  Result URL:  $URL/api/robokassa-result"
-echo "  Success URL: $URL/"
-echo "  Fail URL:    $URL/?pay=fail"
-[ "$T" = 1 ] && echo "Сейчас включён ТЕСТОВЫЙ режим. После активации магазина запустите команду ещё раз с боевыми паролями."
+echo "Готово. Адреса уведомлений и возврата сайт передаёт Т-Кассе сам, в кабинете их указывать не нужно."
+case "$K" in *DEMO|*demo) echo "Сейчас включён ТЕСТОВЫЙ терминал. После проверки запустите команду ещё раз с боевым терминалом.";; esac
 EOF
 
 cat > /usr/local/bin/lyubov-mail <<'EOF'
@@ -243,7 +240,6 @@ setenv PUBLIC_URL "https://$D"
 systemctl restart lyubov
 echo
 echo "Готово: https://$D"
-echo "Если Робокасса уже подключена, поменяйте адреса в её «Технических настройках» на https://$D/… (команда lyubov-robokassa покажет их)."
 EOF
 
 cat > /usr/local/bin/lyubov-update <<EOF
@@ -255,8 +251,9 @@ chown -R lyubov:lyubov "$APP"
 systemctl restart lyubov
 echo "Сайт обновлён до версии \$(git -C "$APP" rev-parse --short HEAD)"
 EOF
-chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-robokassa /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
-ok "Команды lyubov-robokassa, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
+rm -f /usr/local/bin/lyubov-robokassa
+chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-tkassa /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
+ok "Команды lyubov-tkassa, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
 
 say "8/8. Проверка"
 if curl -fsS http://127.0.0.1/api/config | grep -q '"live":true'; then ok "Сайт работает: http://$IP/"; else warn "Сайт не ответил, журнал: journalctl -u lyubov -n 50"; fi
@@ -266,6 +263,6 @@ cat <<EOF
 Готово! Дальше по порядку:
   1. lyubov-domain     — когда купите домен и направите его на $IP
   2. lyubov-mail       — чтобы коды входа приходили на почту
-  3. lyubov-robokassa  — когда зарегистрируете магазин в Робокассе
+  3. lyubov-tkassa     — когда подключите интернет-эквайринг Т-Кассы
 Модерация: http://$IP/admin.html (вход по почте модератора).
 EOF

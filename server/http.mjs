@@ -101,7 +101,7 @@ const CSP = [
   "manifest-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self' https://auth.robokassa.ru",
+  "form-action 'self'",
   "frame-ancestors 'none'",
 ].join('; ');
 

@@ -1,7 +1,7 @@
 // POST /api/signup {src?, city?, g?} — демо-режим: анкета хранится в браузере, а здесь только отмечается,
 // что зарегистрировался ещё один человек. Имени, почты и даты рождения сюда не попадает.
 import { getStore } from '@netlify/blobs';
-import { json } from '../lib/robokassa.mjs';
+import { json } from '../lib/http.mjs';
 
 const clip = (v, n) => String(v ?? '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, n);
 

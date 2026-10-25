@@ -1,6 +1,6 @@
 // Конфигурация, вход по коду из письма, выход, удаление аккаунта.
 import crypto from 'node:crypto';
-import { isConfigured, settings } from '../../netlify/lib/robokassa.mjs';
+import { isConfigured, settings } from '../tkassa.mjs';
 import { fail } from '../http.mjs';
 import { langOf, textFor } from '../langs.mjs';
 import { SUPPORT, addEvent, myPhotos, newUserId, sha256, userOut, walletOf } from '../model.mjs';
@@ -75,7 +75,7 @@ function createUser(db, email, lang, src = null) {
 export default function authRoutes(route) {
   route('GET', '/api/config', ({ app }) => ({
     live: true,
-    robokassa: isConfigured(settings(app.config.env)),
+    payments: isConfigured(settings(app.config.env)),
     vapidPublicKey: app.push.publicKey || null,
     metrikaId: app.config.metrikaId,
     devCodes: app.config.devCodes,

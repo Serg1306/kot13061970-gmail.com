@@ -2,7 +2,7 @@
 import path from 'node:path';
 import { fail, serveFile } from '../http.mjs';
 import { textFor } from '../langs.mjs';
-import { CATALOG } from '../../netlify/lib/robokassa.mjs';
+import { CATALOG } from '../tkassa.mjs';
 import { isSafeName } from '../media.mjs';
 import { ONLINE_MS, addEvent, dayStartMsk, messageOut, uploadSrc } from '../model.mjs';
 import { REASONS, deleteUser, destroySelfie } from '../pd.mjs';
