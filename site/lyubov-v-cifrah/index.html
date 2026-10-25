@@ -1684,7 +1684,6 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     <nav aria-labelledby="fcHelp"><h3 id="fcHelp">Помощь</h3><a href="terms.html">Правила общения</a></nav>
   </div>
   <div class="t-foot-text"><button class="t-link cupid-switch" type="button" id="cupidToggle" aria-pressed="false" aria-label="Амуры: включить">Амуры</button>
-    <span id="footNote">Любовь в цифрах. Демо-версия: анкеты и их фото сгенерированы, ваши данные и фото хранятся только в вашем браузере.</span>
     <span>Расчёты носят развлекательный характер. <span class="age-mark" title="Только для совершеннолетних">18+</span></span>
     <p class="legal">© 2026 Любовь в цифрах</p>
   </div>
@@ -4381,7 +4380,6 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     }
     LIVE.on = true; LIVE.config = cfg;
     PEOPLE.length = 0; CAROUSEL.length = 0; DEMO_POSTS.length = 0;
-    $('#footNote').textContent = 'Любовь в цифрах — знакомства по дате рождения.';
     $('#emailField').hidden = false; $('#loginSwitch').hidden = false;
     if (cfg.metrikaId) loadMetrika(cfg.metrikaId);
     const me = await api('GET', '/api/me').catch(() => null);
