@@ -1,8 +1,8 @@
-// Оплата через Робокассу. Логика подписи — общая с функциями Netlify (netlify/lib/robokassa.mjs);
-// здесь добавлена привязка счёта к пользователю и начисление ровно один раз.
+// Оплата через Т-Кассу. Запросы к API и подписи — в server/tkassa.mjs;
+// здесь привязка заказа к пользователю и начисление ровно один раз.
 import {
-  CATALOG, checkPaid, isConfigured, newInvId, opStateUrl, parseOpState, paymentUrl, settings,
-} from '../../netlify/lib/robokassa.mjs';
+  CATALOG, checkNotification, initPayment, isConfigured, newInvId, orderState, priceKopecks, settings,
+} from '../tkassa.mjs';
 import { fail, text } from '../http.mjs';
 import { textFor } from '../langs.mjs';
 import { DAY, addEvent, walletOf } from '../model.mjs';
@@ -49,7 +49,7 @@ const REFUND_TEXT = {
 };
 
 // Возврат: только для оплаченного счёта. Услуга отменяется на сайте (монеты списываются, но не ниже нуля;
-// срок VIP сокращается на купленные дни, но не раньше текущего момента). Деньги возвращает оператор в кабинете Робокассы.
+// срок VIP сокращается на купленные дни, но не раньше текущего момента). Деньги возвращает оператор в личном кабинете Т-Бизнеса (Т-Касса).
 export function refundOrder(db, invId, note) {
   return db.tx(() => {
     const order = db.get('SELECT * FROM orders WHERE inv_id = ?', invId);
@@ -68,29 +68,29 @@ export function refundOrder(db, invId, note) {
   });
 }
 
-// Сверка счёта с Робокассой (XML-интерфейс OpStateExt). Если там оплачено — начисляем (идемпотентно).
+// Сверка заказа с Т-Кассой (метод CheckOrder). Если там оплачено — начисляем (идемпотентно).
 export async function checkOrder(app, invId) {
   const { db } = app;
   const s = settings(app.config.env);
   if (!isConfigured(s)) fail(503, 'not_configured');
-  if (!db.get('SELECT 1 FROM orders WHERE inv_id = ?', invId)) fail(404, 'not_found');
+  const order = db.get('SELECT * FROM orders WHERE inv_id = ?', invId);
+  if (!order) fail(404, 'not_found');
   db.run('UPDATE orders SET last_checked_at = ? WHERE inv_id = ?', Date.now(), invId);
-  let xml;
+  let st;
   try {
-    const res = await fetch(opStateUrl(s, invId), { signal: AbortSignal.timeout(15000) });
-    xml = await res.text();
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    st = await orderState(s, invId);
   } catch (e) {
-    app.log.warn(`robokassa: сверка счёта ${invId} не удалась: ${e.message}`);
-    fail(502, 'robokassa_unavailable');
+    app.log.warn(`tkassa: сверка заказа ${invId} не удалась: ${e.message}`);
+    fail(502, 'tkassa_unavailable');
   }
-  const st = parseOpState(xml);
-  const credited = st.paid ? creditOrder(db, invId) : false;
-  if (credited) app.log.info(`robokassa: счёт ${invId} оплачен (найден сверкой)`);
-  return { state: st.state, code: st.stateCode, resultCode: st.resultCode, credited };
+  const paid = st.paid && st.amount === priceKopecks(order.product);
+  if (st.paid && !paid) app.log.error(`tkassa: заказ ${invId} оплачен на другую сумму (${st.amount} коп.)`);
+  const credited = paid ? creditOrder(db, invId) : false;
+  if (credited) app.log.info(`tkassa: заказ ${invId} оплачен (найден сверкой)`);
+  return { state: st.state, paid, credited };
 }
 
-// Фоновая сверка: неоплаченные счета возрастом от 5 минут до 48 часов, не чаще раза в 30 минут на счёт.
+// Фоновая сверка: неоплаченные заказы возрастом от 5 минут до 48 часов, не чаще раза в 30 минут на заказ.
 export async function checkPendingOrders(app) {
   if (!isConfigured(settings(app.config.env))) return 0;
   const now = Date.now();
@@ -102,28 +102,8 @@ export async function checkPendingOrders(app) {
   return due.length;
 }
 
-// Параметры Робокассы: строка запроса + тело (форма или JSON).
-function robokassaParams(url, raw, contentType) {
-  const params = new URLSearchParams(url.searchParams);
-  if (!raw?.length) return params;
-  if (String(contentType).includes('application/json')) {
-    let body = {};
-    try { body = JSON.parse(raw.toString('utf8')) || {}; } catch { /* пустое тело */ }
-    for (const [k, v] of Object.entries(body)) params.set(k, String(v));
-  } else {
-    for (const [k, v] of new URLSearchParams(raw.toString('utf8'))) params.set(k, v);
-  }
-  return params;
-}
-
-// Проверка подписи и соответствия заказа: тот же товар, что в счёте.
-function paidOrder(db, s, params, password) {
-  const paid = checkPaid(s, params, password);
-  if (!paid) return null;
-  const order = db.get('SELECT * FROM orders WHERE inv_id = ?', paid.invId);
-  if (!order || order.product !== paid.productKey) return { paid, order: null };
-  return { paid, order };
-}
+// Адрес сайта для ссылок возврата: PUBLIC_URL, а без него — адрес, по которому пришёл запрос.
+const siteUrl = (app, req) => app.config.publicUrl || `http://${req.headers.host}`;
 
 export default function payRoutes(route) {
   route('GET', '/api/pay', ({ app }) => {
@@ -131,14 +111,14 @@ export default function payRoutes(route) {
     return { configured: isConfigured(s), test: s.test, catalog: CATALOG };
   }, { auth: 'none' });
 
-  route('POST', '/api/pay', ({ app, user, body }) => {
+  route('POST', '/api/pay', async ({ app, user, body, req }) => {
     const { db } = app;
     const s = settings(app.config.env);
     if (!isConfigured(s)) fail(503, 'not_configured');
     const product = CATALOG[body.product];
     if (!product) fail(400, 'unknown_product');
     app.limiter.check(`pay:${user.id}`, 20, 3600e3);
-    // Номер счёта уникален: при совпадении берём другой.
+    // Номер заказа уникален: при совпадении берём другой.
     let invId;
     for (let i = 0; i < 5 && !invId; i++) {
       const candidate = newInvId();
@@ -147,41 +127,60 @@ export default function payRoutes(route) {
       if (r.changes) invId = candidate;
     }
     if (!invId) fail(503, 'try_again');
-    return paymentUrl(s, body.product, { invId, email: user.email });
+    const base = siteUrl(app, req);
+    try {
+      const p = await initPayment(s, body.product, {
+        invId, email: user.email,
+        successUrl: `${base}/?pay=ok&order=${invId}`, failUrl: `${base}/?pay=fail`, notificationUrl: `${base}/api/tkassa-notify`,
+      });
+      db.run('UPDATE orders SET payment_id = ? WHERE inv_id = ?', p.paymentId, invId);
+      return { url: p.url, invId };
+    } catch (e) {
+      app.log.warn(`tkassa: не удалось создать платёж ${invId}: ${e.message}`);
+      fail(502, 'tkassa_unavailable');
+    }
   }, { auth: 'user' });
 
-  // Result URL: Робокасса сообщает об оплате (подпись паролем #2), ответ — строка OK<InvId>.
-  route('POST', '/api/robokassa-result', handleResult, { auth: 'none', csrf: false, raw: true });
-  route('GET', '/api/robokassa-result', handleResult, { auth: 'none', csrf: false, raw: true });
-
-  // Возврат на Success URL: подпись паролем #1; начисление, если Result URL ещё не дошёл (идемпотентно).
-  route('POST', '/api/pay-confirm', ({ app, url, raw, req, user }) => {
-    const { db } = app;
+  // Уведомление Т-Кассы об изменении платежа (NotificationURL). Ответ — строка OK, иначе Т-Касса повторит.
+  route('POST', '/api/tkassa-notify', ({ app, body }) => {
+    const { db, log } = app;
     const s = settings(app.config.env);
-    if (!isConfigured(s)) fail(503, 'not_configured');
-    const found = paidOrder(db, s, robokassaParams(url, raw, req.headers['content-type']), s.pass1);
-    if (!found) fail(400, 'bad_signature');
-    if (!found.order) fail(404, 'unknown_order');
-    creditOrder(db, found.paid.invId);
-    // fresh — первое подтверждение этого счёта: сайт показывает «Оплата прошла» только один раз.
-    const first = db.run('UPDATE orders SET confirmed_at = ? WHERE inv_id = ? AND confirmed_at IS NULL', Date.now(), found.paid.invId);
-    const out = { ok: true, invId: found.paid.invId, product: found.paid.productKey, ...found.paid.product, fresh: first.changes === 1 };
-    if (user && user.id === found.order.user_id) out.wallet = walletOf(db.get('SELECT * FROM users WHERE id = ?', user.id));
-    return out;
-  }, { auth: 'optional', raw: true });
-}
+    if (!isConfigured(s)) return text('not configured', 503);
+    const n = checkNotification(s, body);
+    if (!n) return text('bad token', 400);
+    const order = db.get('SELECT * FROM orders WHERE inv_id = ?', n.invId);
+    if (!order) { log.error(`tkassa: уведомление о неизвестном заказе ${n.invId}`); return text('OK'); }
+    if (n.status === 'CONFIRMED' && n.success) {
+      if (n.amount !== priceKopecks(order.product)) {
+        log.error(`tkassa: заказ ${n.invId} оплачен на другую сумму (${n.amount} коп.)`);
+      } else {
+        const credited = creditOrder(db, n.invId);
+        log.info(`tkassa: заказ ${n.invId} (${order.product}) ${credited ? 'оплачен' : 'уже был начислен'}`);
+      }
+    } else if (['REFUNDED', 'PARTIAL_REFUNDED', 'REVERSED'].includes(n.status)) {
+      log.warn(`tkassa: по заказу ${n.invId} пришёл статус ${n.status} — оформите возврат в admin.html`);
+    }
+    return text('OK');
+  }, { auth: 'none', csrf: false });
 
-function handleResult({ app, url, raw, req }) {
-  const { db, log } = app;
-  const s = settings(app.config.env);
-  if (!isConfigured(s)) return text('not configured', 503);
-  const found = paidOrder(db, s, robokassaParams(url, raw, req.headers['content-type']), s.pass2);
-  if (!found) return text('bad sign', 400);
-  if (!found.order) {
-    log.error(`robokassa: оплачен неизвестный счёт ${found.paid.invId}`);
-    return text('unknown order', 404);
-  }
-  const credited = creditOrder(db, found.paid.invId);
-  log.info(`robokassa: счёт ${found.paid.invId} (${found.paid.productKey}) ${credited ? 'оплачен' : 'уже был начислен'}`);
-  return text(`OK${found.paid.invId}`);
+  // Возврат на сайт после оплаты (SuccessURL). Ссылка без подписи, поэтому оплату сервер проверяет
+  // сам: по уведомлению, которое уже пришло, или запросом CheckOrder к Т-Кассе.
+  route('POST', '/api/pay-confirm', async ({ app, body, user, ip }) => {
+    const { db } = app;
+    if (!isConfigured(settings(app.config.env))) fail(503, 'not_configured');
+    app.limiter.check(`confirm:${ip}`, 30, 3600e3);
+    const invId = String(body.invId || '');
+    let order = db.get('SELECT * FROM orders WHERE inv_id = ?', invId);
+    if (!order) fail(404, 'unknown_order');
+    if (order.status === 'new') {
+      await checkOrder(app, invId);
+      order = db.get('SELECT * FROM orders WHERE inv_id = ?', invId);
+    }
+    if (order.status !== 'paid') return { ok: false, pending: order.status === 'new', invId };
+    // fresh — первое подтверждение этого заказа: сайт показывает «Оплата прошла» только один раз.
+    const first = db.run('UPDATE orders SET confirmed_at = ? WHERE inv_id = ? AND confirmed_at IS NULL', Date.now(), invId);
+    const out = { ok: true, invId, product: order.product, ...CATALOG[order.product], fresh: first.changes === 1 };
+    if (user && user.id === order.user_id) out.wallet = walletOf(db.get('SELECT * FROM users WHERE id = ?', user.id));
+    return out;
+  }, { auth: 'optional' });
 }

@@ -5,7 +5,7 @@
 
 Все ответы — JSON `{"error": "<код>"}` при ошибке с HTTP-статусом 4xx/5xx. Тела запросов — JSON (лимит 8 МБ, больше — `413 too_large`; не JSON — `400 bad_json`).
 Сессия — cookie `lvc_s` (HttpOnly, SameSite=Lax, Secure при HTTPS), 60 дней. В базе хранится только SHA-256 токена.
-Все изменяющие запросы (POST/PUT/DELETE) требуют заголовок `X-Requested-With: lvc` (защита от CSRF), иначе `403 csrf`. Исключение — `/api/robokassa-result` (его вызывает Робокасса).
+Все изменяющие запросы (POST/PUT/DELETE) требуют заголовок `X-Requested-With: lvc` (защита от CSRF), иначе `403 csrf`. Исключение — `/api/tkassa-notify` (его вызывает Т-Касса).
 
 Общие ошибки: `401 auth` — нет сессии; `409 profile_required` — анкета ещё не заполнена (нужен `PUT /api/profile`); `403 banned` — пользователь забанен;
 `404 not_found` — нет такой анкеты/объекта или она скрыта; `429 rate_limited {wait}` — слишком часто;
@@ -41,7 +41,7 @@ Signal       = { id, from: id, t: ms, data: object }
 
 ## Конфигурация
 
-`GET /api/config` → `{ live: true, robokassa: bool, vapidPublicKey: string|null, metrikaId: string|null, devCodes: bool }`
+`GET /api/config` → `{ live: true, payments: bool, vapidPublicKey: string|null, metrikaId: string|null, devCodes: bool }`
 
 `vapidPublicKey` = `null`, пока push выключен (`PUSH_ENABLED` ≠ `1`, по умолчанию) — тогда сайт не должен предлагать подписку на уведомления.
 
@@ -108,14 +108,14 @@ Signal       = { id, from: id, t: ms, data: object }
   `/?go=messages&with=<id>`, `/?go=matches&with=<id>`, `/?go=friends`, `/?go=call&from=<id>`, `/?go=messages&with=support`. Подписки, на которые служба ответила 404/410, удаляются.
 - На почту (если `notifyEmail`): взаимная симпатия и первое непрочитанное сообщение от собеседника, не чаще раза в 30 минут на человека.
 
-## Оплата (Робокасса)
+## Оплата (Т-Касса)
 
-Те же адреса, что и у функций Netlify, логика из `netlify/lib/robokassa.mjs`:
-- `GET /api/pay` → `{ configured, test, catalog }`.
-- `POST /api/pay { product }` → `{ url, invId }` (нужна сессия; счёт записывается в таблицу `orders` и привязан к пользователю; `unknown_product`, `503 not_configured`).
-- `POST|GET /api/robokassa-result` (Result URL) — проверка подписи паролем #2 и того, что товар совпадает со счётом; начисление VIP/монет в базе ровно один раз (+ событие `system` «Оплата получена»), ответ `OK<InvId>` (и на повторное уведомление тоже). Неверная подпись — `400 bad sign`, неизвестный счёт — `404`.
-- `POST /api/pay-confirm` (тело — параметры, с которыми Робокасса вернула на Success URL, JSON или форма; заголовок `X-Requested-With: lvc` обязателен) — проверка подписи паролем #1; начисление уже сделано по Result URL (или делается здесь, если ещё нет — идемпотентно).
-  Ответ: `{ ok: true, invId, product, title, price, vipDays?|coins?, fresh: bool, wallet? }`. `fresh` = true только при первом подтверждении этого счёта (показывать «Оплата прошла» один раз). `wallet` — только если запрос с сессией владельца счёта; без сессии подпись всё равно проверяется. Ошибки: `bad_signature`, `404 unknown_order`.
+Логика в `server/tkassa.mjs` (запросы к API v2 Т-Кассы и подписи) и `server/routes/pay.mjs`:
+- `GET /api/pay` → `{ configured, test, catalog }` (`test` — терминал с `DEMO` в конце).
+- `POST /api/pay { product }` → `{ url, invId }` (нужна сессия; заказ записывается в таблицу `orders` и привязан к пользователю; сервер вызывает `Init` с суммой в копейках, `OrderId = invId`, `SuccessURL = /?pay=ok&order=<invId>`, `FailURL = /?pay=fail`, `NotificationURL = /api/tkassa-notify`). Ошибки: `unknown_product`, `503 not_configured`, `502 tkassa_unavailable`.
+- `POST /api/tkassa-notify` — уведомление Т-Кассы (JSON). Проверяются `TerminalKey` и `Token` = SHA-256 от значений полей верхнего уровня (без `Token` и вложенных объектов), отсортированных по имени, вместе с паролем терминала. При `Status: CONFIRMED`, `Success: true` и сумме, равной цене товара, — начисление VIP/монет ровно один раз (+ событие `system` «Оплата получена»). Ответ `OK` (и на повтор, и на неизвестный заказ — чтобы Т-Касса не повторяла). Неверная подпись — `400 bad token`.
+- `POST /api/pay-confirm { invId }` — человек вернулся на сайт по SuccessURL. Ссылка не подписана, поэтому заказ начисляется только по уведомлению или по ответу `CheckOrder`, который сервер запрашивает сам.
+  Ответ: `{ ok: true, invId, product, title, price, vipDays?|coins?, fresh: bool, wallet? }`, пока не оплачено — `{ ok: false, pending: true, invId }`. `fresh` = true только при первом подтверждении этого заказа (показывать «Оплата прошла» один раз). `wallet` — только если запрос с сессией владельца заказа. Ошибки: `404 unknown_order`, `502 tkassa_unavailable`.
 
 ## Модерация
 
@@ -132,9 +132,9 @@ Signal       = { id, from: id, t: ms, data: object }
 ### Платежи
 - `GET /api/admin/orders?status=new|paid|refunded&q=` → `{ orders: Order[], totals: { today, todayCount, month, monthCount, all, allCount, refunded, refundedCount } }` — новые первыми, до 200; `q` ищет по номеру счёта (точно), почте и имени (подстрока). Суммы в рублях: `today/month/all` — счета в статусе `paid` по дате оплаты (сутки и месяц по Москве), `refunded` — сумма возвращённых.
   `Order = { invId, userId, email, name, product, title, price, status: "new"|"paid"|"refunded", createdAt, paidAt, refundedAt, refundNote, lastCheckedAt }` (`userId/email/name` = null, если аккаунт удалён).
-- `POST /api/admin/refund { invId, note }` → `{ order }` — только для `paid` (иначе `not_paid`). Отмечает возврат и отменяет услугу: `coins = MAX(0, coins − купленные)`, `vipUntil = MAX(сейчас, vipUntil − купленные дни)`; пользователю — событие `system`. Сами деньги возвращаются оператором в кабинете Робокассы (Операции → Возврат).
-- `POST /api/admin/order-check { invId }` → `{ state, code, resultCode, credited }` — сверка через XML-интерфейс Робокассы `OpStateExt` (подпись `MerchantLogin:InvoiceID:Пароль#2` тем же алгоритмом `ROBOKASSA_HASH`). `state`: `paid` (код 100) / `pending` (5) / `cancelled` (10) / `held` (20) / `processing` (50) / `refunded` (60) / `suspended` (80) / `not_found` / `error`. При `paid` начисление идемпотентно (`credited` — начислено именно сейчас). Ошибки: `404 not_found`, `503 not_configured`, `502 robokassa_unavailable`.
-- Фоновая сверка раз в 10 минут: счета `new` возрастом от 5 минут до 48 часов, каждый не чаще раза в 30 минут (`last_checked_at`); только если Робокасса настроена; ошибки сети пишутся в журнал и не роняют сервер.
+- `POST /api/admin/refund { invId, note }` → `{ order }` — только для `paid` (иначе `not_paid`). Отмечает возврат и отменяет услугу: `coins = MAX(0, coins − купленные)`, `vipUntil = MAX(сейчас, vipUntil − купленные дни)`; пользователю — событие `system`. Сами деньги возвращаются оператором в кабинете Т-Бизнеса (Интернет-эквайринг → Операции → Возврат).
+- `POST /api/admin/order-check { invId }` → `{ state, paid, credited }` — сверка методом `CheckOrder` Т-Кассы. `state` — статус платежа Т-Кассы (`CONFIRMED`, `NEW`, `FORM_SHOWED`, `REJECTED`, `REFUNDED`… или `NOT_FOUND`, если платежа нет). `paid` — оплачен на полную сумму заказа; начисление идемпотентно (`credited` — начислено именно сейчас). Ошибки: `404 not_found`, `503 not_configured`, `502 tkassa_unavailable`.
+- Фоновая сверка раз в 10 минут: счета `new` возрастом от 5 минут до 48 часов, каждый не чаще раза в 30 минут (`last_checked_at`); только если Т-Касса настроена; ошибки сети пишутся в журнал и не роняют сервер.
 
 ### Персональные данные
 - `GET /api/admin/destruction?from=YYYY-MM-DD&to=YYYY-MM-DD` (включительно, сутки по Москве) → `{ rows: [{ id, at, subjectRef, emailMasked, categories, reason, method, operator }] }` — журнал уничтожения ПДн (приказ РКН № 179 от 28.10.2022). `subjectRef` = первые 16 hex от sha256(user_id + секрет сервера), `emailMasked` вида `k***@gmail.com`, `reason`: `user_request` | `ban` | `retention` | `consent_withdrawn`, `method` = «удаление из БД и файлов», `operator` — почта модератора, «пользователь (сам, через сайт)» или «система …». Записи пишутся при удалении аккаунта (сам или модератор) и при удалении селфи (после проверки и по сроку 30 дней, категория «селфи для проверки»).
@@ -157,7 +157,7 @@ Signal       = { id, from: id, t: ms, data: object }
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | push; если не заданы, сервер создаёт ключи и хранит в `DATA_DIR/vapid.json` (только при `PUSH_ENABLED=1`) |
 | `CONSENT_VERSION` | редакция текстов согласий, записывается с каждым согласием (по умолчанию `2026-10-14`) |
 | `METRIKA_ID` | номер счётчика Яндекс Метрики |
-| `ROBOKASSA_*` | как в `docs/robokassa-setup.md`; `ROBOKASSA_XML_URL` — адрес XML-интерфейса для сверки (только для тестов, по умолчанию `https://auth.robokassa.ru/Merchant/WebService/Service.asmx`) |
+| `TKASSA_*` | как в `docs/tkassa-setup.md`; `TKASSA_API_URL` — адрес API (только для тестов, по умолчанию `https://securepay.tinkoff.ru/v2`) |
 
 Файл `.env` в корне проекта читается сервером автоматически (уже заданные переменные окружения важнее). Пример — `server/.env.example`, установка — `docs/deploy.md`.
 

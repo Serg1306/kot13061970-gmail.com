@@ -6,7 +6,7 @@
      (личные данные и фото удалённых анкет не должны оседать в кэше).
    - Push: полезная нагрузка JSON { title, body, url } → уведомление; клик открывает или фокусирует вкладку.
    Чтобы обновить кэш у всех, увеличьте VERSION. */
-const VERSION = 'v11';
+const VERSION = 'v12';
 const STATIC = `lvc-static-${VERSION}`;
 const PAGES = `lvc-pages-${VERSION}`;
 const FONTS = `lvc-fonts-${VERSION}`;
@@ -106,7 +106,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(staleWhileRevalidate(event));
     return;
   }
-  if (url.origin !== self.location.origin) return; // чужие сайты (Метрика, Робокасса) — без вмешательства
+  if (url.origin !== self.location.origin) return; // чужие сайты (Метрика, Т-Касса) — без вмешательства
   if (isPrivate(url)) return;                       // /api/, /uploads/, admin.html — только сеть
   if (req.headers.has('range')) return;             // видео с перемоткой — напрямую
 
