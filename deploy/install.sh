@@ -6,6 +6,7 @@
 # Скрипт можно запускать повторно: он обновит сайт до свежей версии и не тронет данные пользователей и настройки.
 # После установки доступны команды:
 #   lyubov-tkassa     — ввести данные терминала Т-Кассы (пароль вводится на сервере, никуда не отправляется)
+#   lyubov-sms        — вход по номеру телефона: ключ SMS.ru для СМС с кодом
 #   lyubov-mail       — настроить почту для кодов входа (Яндекс)
 #   lyubov-domain     — подключить домен и HTTPS
 #   lyubov-update     — обновить сайт до последней версии
@@ -84,10 +85,14 @@ SMTP_USER=
 SMTP_PASS=
 SMTP_FROM=
 
+# СМС с кодом входа по номеру телефона (SMS.ru): настраивается командой lyubov-sms
+SMS_RU_API_ID=
+SMS_PREFIXES=7
+SMS_DAILY_LIMIT=300
+
 DEV_CODES=0
 AUTO_APPROVE=0
 PUSH_ENABLED=0
-CONSENT_VERSION=2026-10-25
 METRIKA_ID=
 
 # Т-Касса: настраивается командой lyubov-tkassa
@@ -100,6 +105,8 @@ EOF
   ok "Создан файл настроек $ENV_FILE"
 else
   ok "Файл настроек уже есть — не трогаю"
+  # Редакцию согласий задаёт сам сайт: строка из прошлых установок больше не нужна.
+  sed -i '/^CONSENT_VERSION=/d' "$ENV_FILE"
 fi
 chown lyubov:lyubov "$ENV_FILE"; chmod 600 "$ENV_FILE"
 
@@ -217,6 +224,21 @@ systemctl restart lyubov
 echo "Готово. Попробуйте войти на сайт — код должен прийти на почту."
 EOF
 
+cat > /usr/local/bin/lyubov-sms <<'EOF'
+#!/usr/bin/env bash
+# Вход по номеру телефона: СМС с кодом через SMS.ru. Ключ вводится здесь, на сервере, и никуда не отправляется.
+set -e
+. /usr/local/lib/lyubov-env.sh
+echo "Ключ возьмите в кабинете sms.ru: «Программистам» → api_id."
+read -r -s -p "api_id (ввод не отображается): " K </dev/tty; echo
+read -r -p "Не больше скольких СМС в сутки на весь сайт (защита баланса) [300]: " L </dev/tty
+setenv SMS_RU_API_ID "$K"; setenv SMS_DAILY_LIMIT "${L:-300}"
+grep -q '^SMS_PREFIXES=' "$ENV_FILE" || setenv SMS_PREFIXES 7
+systemctl restart lyubov
+echo "Готово. На сайте вход теперь по номеру телефона, по почте — запасной вариант."
+echo "СМС уходят только на номера +7 (Россия и Казахстан). Другие страны: строка SMS_PREFIXES в $ENV_FILE, например 7,375,998."
+EOF
+
 cat > /usr/local/bin/lyubov-domain <<'EOF'
 #!/usr/bin/env bash
 # Подключение домена и бесплатного сертификата HTTPS (Let's Encrypt, продлевается сам).
@@ -252,8 +274,8 @@ systemctl restart lyubov
 echo "Сайт обновлён до версии \$(git -C "$APP" rev-parse --short HEAD)"
 EOF
 rm -f /usr/local/bin/lyubov-robokassa
-chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-tkassa /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
-ok "Команды lyubov-tkassa, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
+chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-tkassa /usr/local/bin/lyubov-sms /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
+ok "Команды lyubov-tkassa, lyubov-sms, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
 
 say "8/8. Проверка"
 if curl -fsS http://127.0.0.1/api/config | grep -q '"live":true'; then ok "Сайт работает: http://$IP/"; else warn "Сайт не ответил, журнал: journalctl -u lyubov -n 50"; fi
@@ -263,6 +285,7 @@ cat <<EOF
 Готово! Дальше по порядку:
   1. lyubov-domain     — когда купите домен и направите его на $IP
   2. lyubov-mail       — чтобы коды входа приходили на почту
-  3. lyubov-tkassa     — когда подключите интернет-эквайринг Т-Кассы
+  3. lyubov-sms        — вход по номеру телефона (СМС через SMS.ru)
+  4. lyubov-tkassa     — когда подключите интернет-эквайринг Т-Кассы
 Модерация: http://$IP/admin.html (вход по почте модератора).
 EOF

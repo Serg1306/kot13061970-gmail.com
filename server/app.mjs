@@ -14,6 +14,7 @@ import { sha256 } from './model.mjs';
 import { createNotifier } from './notify.mjs';
 import { destroySelfie, loadSecret, purgeBannedEmails } from './pd.mjs';
 import { createPush } from './push.mjs';
+import { createSms } from './sms.mjs';
 import actionRoutes from './routes/actions.mjs';
 import adminRoutes from './routes/admin.mjs';
 import authRoutes from './routes/auth.mjs';
@@ -57,7 +58,7 @@ export function createApp(env = process.env, { log = console } = {}) {
   for (const dir of [config.dataDir, config.uploadsDir, config.privateDir]) fs.mkdirSync(dir, { recursive: true });
   const logger = log || silentLog;
   const db = openDb(path.join(config.dataDir, 'lvc.sqlite'));
-  const app = { config, db, log: logger, limiter: createLimiter(), mailer: createMailer(config, logger), push: config.pushEnabled ? createPush(config, logger) : DISABLED_PUSH };
+  const app = { config, db, log: logger, limiter: createLimiter(), mailer: createMailer(config, logger), sms: createSms(config, logger), push: config.pushEnabled ? createPush(config, logger) : DISABLED_PUSH };
   app.secret = loadSecret(config.dataDir);
   app.notify = createNotifier(app);
 

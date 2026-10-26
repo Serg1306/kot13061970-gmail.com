@@ -107,7 +107,7 @@ test('анкета: проверки, согласие, 18+', async () => {
   assert.equal(r.body.user.name, 'Анна-Мария');
   assert.ok(r.body.user.consentAt > 0);
   assert.equal(r.body.user.consentPublicAt, r.body.user.consentAt);
-  assert.equal(r.body.user.consentVersion, '2026-10-25');
+  assert.equal(r.body.user.consentVersion, '2026-10-26');
   assert.equal(srv.app.db.get('SELECT consent_ip FROM users WHERE id = ?', r.body.user.id).consent_ip, '127.0.0.1');
   // Повторное сохранение — согласие уже есть.
   const r2 = await c.put('/api/profile', { ...good, city: 'Казань' });

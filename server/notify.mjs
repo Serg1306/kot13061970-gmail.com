@@ -91,7 +91,8 @@ export function createNotifier(app) {
 
   // Письмо не чаще раза в 30 минут на человека.
   function sendEmail(to, kind, fromUser) {
-    if (!to.notify_email) return;
+    // Вошедшим по телефону писем не шлём: почты у них нет.
+    if (!to.notify_email || !to.email.includes('@')) return;
     const now = Date.now();
     const r = db.run('UPDATE users SET last_email_at = ? WHERE id = ? AND last_email_at <= ?', now, to.id, now - EMAIL_GAP);
     if (!r.changes) return;

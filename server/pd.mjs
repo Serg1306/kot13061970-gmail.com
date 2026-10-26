@@ -31,6 +31,8 @@ export function loadSecret(dataDir) {
 export const subjectRef = (secret, userId) => crypto.createHash('sha256').update(String(userId) + secret).digest('hex').slice(0, 16);
 export const emailHash = (secret, email) => crypto.createHmac('sha256', secret).update(String(email)).digest('hex');
 export function maskEmail(email) {
+  // Телефон: +7******67 — код страны и две последние цифры.
+  if (String(email || '').startsWith('+')) return email.slice(0, 2) + '*'.repeat(Math.max(0, email.length - 4)) + email.slice(-2);
   const [local = '', domain = ''] = String(email || '').split('@');
   return `${local.slice(0, 1) || '?'}***@${domain}`;
 }

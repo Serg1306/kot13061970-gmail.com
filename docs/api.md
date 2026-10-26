@@ -41,14 +41,15 @@ Signal       = { id, from: id, t: ms, data: object }
 
 ## Конфигурация
 
-`GET /api/config` → `{ live: true, payments: bool, vapidPublicKey: string|null, metrikaId: string|null, devCodes: bool }`
+`GET /api/config` → `{ live: true, payments: bool, phoneLogin: bool, vapidPublicKey: string|null, metrikaId: string|null, devCodes: bool }`. `phoneLogin` — включён вход по номеру телефона (подключён SMS.ru или `DEV_CODES=1`).
 
 `vapidPublicKey` = `null`, пока push выключен (`PUSH_ENABLED` ≠ `1`, по умолчанию) — тогда сайт не должен предлагать подписку на уведомления.
 
 ## Вход по почте
 
 - `POST /api/auth/start { email, lang }` → `{ ok: true, devCode?: "123456" }`. Почта приводится к нижнему регистру, пробелы обрезаются (`bad_email` при неверной). Шестизначный код, живёт 10 минут, 5 попыток, не чаще раза в 60 с на почту (`429 {error:"too_often", wait: сек}`). `devCode` возвращается только при `DEV_CODES=1`. Если SMTP не настроен, код пишется в журнал сервера; если письмо не ушло — `502 mail_failed`.
-- `POST /api/auth/verify { email, code }` → ставит cookie, `{ user: User|null }` (`null` — анкета ещё не заполнена). Ошибки: `400 bad_code`, `400 code_expired`, `429 too_many_attempts`. При первом входе создаётся аккаунт, приветственное сообщение от `support` (на языке из `auth/start`) и событие `system`.
+- `POST /api/auth/start { phone, lang }` → `{ ok: true, via: "call"|"sms", devCode? }` — вход по номеру телефона (см. `docs/sms-setup.md`). Номер приводится к виду `+79991234567` (`8 999…`, `999…` без кода страны — Россия). `via: "call"` — звонок-сброс, код — 4 последние цифры номера робота; `"sms"` — СМС с 6 цифрами. Ошибки: `400 bad_phone`, `400 phone_country` (страна не в `SMS_PREFIXES`), `503 sms_off` (SMS.ru не подключён), `503 sms_limit` (исчерпан `SMS_DAILY_LIMIT`), `502 sms_failed`, `429 too_often`; не больше 10 кодов в час с одного IP. Номер хранится как логин в `users.email`.
+- `POST /api/auth/verify { email | phone, code }` → ставит cookie, `{ user: User|null }` (`null` — анкета ещё не заполнена). Ошибки: `400 bad_code`, `400 code_expired`, `429 too_many_attempts`. При первом входе создаётся аккаунт, приветственное сообщение от `support` (на языке из `auth/start`) и событие `system`.
 - `POST /api/auth/logout` → `{ ok: true }`.
 - `DELETE /api/account` → удаляет пользователя и всё его (фото-файлы, селфи, голосовые, посты, сообщения в обе стороны, лайки…), `{ ok: true }`. Счета об оплате остаются без привязки к человеку (бухучёт). В журнал уничтожения пишется запись (`reason: user_request`). Если аккаунт был забанен, хэш его почты попадает в чёрный список на 3 года.
 - `GET /api/account/export` → файл JSON (`Content-Disposition: attachment; filename="lyubov-v-cifrah-data.json"`) со всеми данными о себе (152-ФЗ, ст. 14): `profile, consents {processingAt, publicAt, version, ip}, wallet, photos, verification, likes {given, receivedCount}, passes, matches, friends, blocked, messages (свои и мне: текст, ссылки на голосовые), posts, visits {madeByMe, receivedCount}, gifts {sent, received}, reportsFiled, orders, events`. О других людях — только их id или количество. Не чаще 5 раз в час (`429 rate_limited`).

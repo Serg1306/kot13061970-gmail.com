@@ -39,7 +39,7 @@ test('выгрузка своих данных (ст. 14 152-ФЗ)', async () =>
   assert.equal(d.profile.email, 'export-a@example.ru');
   assert.equal(d.profile.name, 'Ада');
   assert.ok(d.consents.processingAt > 0 && d.consents.publicAt > 0);
-  assert.equal(d.consents.version, '2026-10-25');
+  assert.equal(d.consents.version, '2026-10-26');
   assert.equal(d.photos.length, 1);
   assert.deepEqual(d.likes.given.map(x => x.id), [b.id]);
   assert.equal(d.likes.receivedCount, 1);
