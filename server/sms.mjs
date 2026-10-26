@@ -1,14 +1,9 @@
-// Код входа на телефон через SMS.ru. Два способа:
-//   call — звонок-сброс (https://sms.ru/api/code_call): робот звонит, код — последние 4 цифры его номера.
-//          Около 0,4 ₽ за код, имя отправителя регистрировать не нужно. Так входят в Мамбу и Авито.
-//   sms  — СМС с шестизначным кодом (https://sms.ru/api/send): около 8,5 ₽ за СМС, у операторов может понадобиться
-//          платное имя отправителя.
-// Ключ — в .env сервера, в браузер не попадает:
+// Код входа на телефон: СМС с четырёхзначным кодом через SMS.ru (https://sms.ru/api/send).
+// По прайсу SMS.ru около 8,5 ₽ за СМС. Ключ — в .env сервера, в браузер не попадает:
 //   SMS_RU_API_ID   — api_id из личного кабинета SMS.ru
-//   SMS_MODE        — call (по умолчанию) или sms
 //   SMS_FROM        — имя отправителя, если оно согласовано в SMS.ru (иначе отправитель по умолчанию)
 //   SMS_PREFIXES    — коды стран через запятую, куда разрешено слать СМС; по умолчанию 7 (Россия и Казахстан)
-//   SMS_DAILY_LIMIT — не больше стольких кодов в сутки на весь сайт, защита баланса от накрутки; по умолчанию 300
+//   SMS_DAILY_LIMIT — не больше стольких СМС в сутки на весь сайт, защита баланса от накрутки; по умолчанию 300
 //   SMS_API_URL     — адрес API (меняется только в автотестах)
 import { textFor } from './langs.mjs';
 
@@ -53,8 +48,6 @@ export function createSms(config, log) {
   let day = '', sent = 0;
   return {
     configured: Boolean(s),
-    // Как придёт код: звонком (4 цифры) или СМС (6 цифр).
-    via: s?.mode === 'sms' ? 'sms' : s ? 'call' : 'sms',
     outbox,
     // Можно ли слать СМС на этот номер: страна из списка разрешённых.
     allowed: phone => (s?.prefixes || ['7']).some(p => phone.startsWith('+' + p)),
@@ -64,28 +57,23 @@ export function createSms(config, log) {
       if (d !== day) { day = d; sent = 0; }
       return Boolean(s) && sent >= s.dailyLimit;
     },
-    // Отправить код. Возвращает код, который придёт человеку: при звонке его выбирает SMS.ru (4 цифры).
-    async send(phone, { code, lang, publicUrl, ip }) {
-      if (!s) { outbox.push({ to: phone, code }); return code; }
-      const call = s.mode === 'call';
-      const params = call
-        ? { api_id: s.apiId, phone: phone.slice(1), ip: ip || '-1', json: '1' }
-        : { api_id: s.apiId, to: phone.slice(1), msg: codeText(code, lang, publicUrl), json: '1', ...(s.from ? { from: s.from } : {}) };
-      const res = await fetch(s.apiUrl + (call ? '/code/call' : '/sms/send'), {
+    async send(phone, { code, lang, publicUrl }) {
+      if (!s) { outbox.push({ to: phone, code }); return; }
+      const to = phone.slice(1);
+      const res = await fetch(s.apiUrl + '/sms/send', {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(params),
+        body: new URLSearchParams({ api_id: s.apiId, to, msg: codeText(code, lang, publicUrl), json: '1', ...(s.from ? { from: s.from } : {}) }),
         signal: AbortSignal.timeout(15000),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const r = await res.json();
-      const one = call ? r : r.sms?.[phone.slice(1)];
-      if (r.status !== 'OK' || one?.status !== 'OK' || (call && !/^\d{4}$/.test(String(r.code)))) {
+      const one = r.sms?.[to];
+      if (r.status !== 'OK' || one?.status !== 'OK') {
         throw new Error(`SMS.ru: ${one?.status_code || r.status_code || '?'} ${one?.status_text || r.status_text || ''}`.trim());
       }
       sent++;
       if (typeof r.balance === 'number' && r.balance < 100) log.warn(`sms: на балансе SMS.ru осталось ${r.balance} ₽`);
-      return call ? String(r.code) : code;
     },
   };
 }

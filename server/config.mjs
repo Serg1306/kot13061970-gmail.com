@@ -29,13 +29,12 @@ export function loadConfig(env = process.env) {
       pass: env.SMTP_PASS || '',
       from: env.SMTP_FROM || env.SMTP_USER || '',
     } : null,
-    // Код входа на телефон (SMS.ru: звонок или СМС), см. server/sms.mjs.
+    // СМС с кодом входа (SMS.ru), см. server/sms.mjs.
     sms: env.SMS_RU_API_ID ? {
       apiId: env.SMS_RU_API_ID,
       from: env.SMS_FROM || '',
       prefixes: String(env.SMS_PREFIXES || '7').split(',').map(x => x.replace(/\D/g, '')).filter(Boolean),
       dailyLimit: Number(env.SMS_DAILY_LIMIT) || 300,
-      mode: env.SMS_MODE === 'sms' ? 'sms' : 'call',
       apiUrl: (env.SMS_API_URL || 'https://sms.ru').replace(/\/+$/, ''),
     } : null,
     devCodes: env.DEV_CODES === '1',

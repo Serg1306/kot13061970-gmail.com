@@ -104,30 +104,27 @@ export default function authRoutes(route) {
     const now = Date.now();
     const prev = db.get('SELECT sent_at FROM codes WHERE email = ?', login);
     if (prev && now - prev.sent_at < CODE_GAP) fail(429, 'too_often', { wait: Math.ceil((prev.sent_at + CODE_GAP - now) / 1000) });
-    // Звонки и СМС стоят денег: не больше 10 в час с одного IP и общий суточный лимит.
+    // СМС стоят денег: не больше 10 в час с одного IP и общий суточный лимит.
     if (byPhone) {
       limiter.check(`sms:${ip}`, 10, 3600e3);
-      if (sms.exhausted()) { log.error('sms: суточный лимит кодов на телефон исчерпан (SMS_DAILY_LIMIT)'); fail(503, 'sms_limit'); }
+      if (sms.exhausted()) { log.error('sms: суточный лимит СМС исчерпан (SMS_DAILY_LIMIT)'); fail(503, 'sms_limit'); }
     }
-    let code = String(crypto.randomInt(0, 1e6)).padStart(6, '0');
+    // В СМС — 4 цифры (их удобно набрать с телефона), в письме — 6.
+    const code = byPhone ? String(crypto.randomInt(0, 1e4)).padStart(4, '0') : String(crypto.randomInt(0, 1e6)).padStart(6, '0');
     const userLang = db.get('SELECT lang FROM users WHERE email = ?', login)?.lang || lang;
     if (byPhone) {
       try {
         if (!sms.configured) log.info(`Код входа для ${login}: ${code}`);
-        code = await sms.send(login, { code, lang: userLang, publicUrl: config.publicUrl, ip });
+        await sms.send(login, { code, lang: userLang, publicUrl: config.publicUrl });
       } catch (e) {
-        log.error(`код на телефон не отправлен: ${e.message}`);
+        log.error(`СМС с кодом не отправлено: ${e.message}`);
         fail(502, 'sms_failed');
       }
     }
     db.run(`INSERT INTO codes (email, code_hash, lang, expires, attempts, sent_at) VALUES (?, ?, ?, ?, 0, ?)
       ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, lang = excluded.lang, expires = excluded.expires, attempts = 0, sent_at = excluded.sent_at`,
     login, codeHash(login, code), lang, now + CODE_TTL, now);
-    if (byPhone) {
-      // via: call — звонок, код из 4 последних цифр номера; sms — СМС с 6 цифрами.
-      const out = { ok: true, via: sms.via };
-      return config.devCodes ? { ...out, devCode: code } : out;
-    }
+    if (byPhone) return config.devCodes ? { ok: true, devCode: code } : { ok: true };
     if (mailer.configured) {
       try {
         await mailer.send(login, 'code', userLang, { code });

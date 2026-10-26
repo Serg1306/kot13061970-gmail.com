@@ -6,7 +6,6 @@ import { codeText, normPhone } from '../sms.mjs';
 import { startServer } from './helpers.mjs';
 
 // Поддельный SMS.ru: запоминает запросы; номер 79990000000 отвечает ошибкой, как при недоступном номере.
-// Звонок (/code/call) отвечает кодом 4321 — последними цифрами номера, с которого «звонит робот».
 function startSmsMock() {
   const hits = [];
   const server = http.createServer((req, res) => {
@@ -15,12 +14,9 @@ function startSmsMock() {
     req.on('end', () => {
       const q = Object.fromEntries(new URLSearchParams(raw));
       hits.push({ path: req.url, ...q });
-      const bad = (q.to || q.phone) === '79990000000';
-      const body = req.url === '/code/call'
-        ? (bad ? { status: 'ERROR', status_code: 202, status_text: 'Неправильно указан номер' } : { status: 'OK', code: '4321', call_id: '1', cost: 0.4, balance: 500 })
-        : { status: 'OK', status_code: 100, balance: 500, sms: { [q.to]: bad
-          ? { status: 'ERROR', status_code: 207, status_text: 'На этот номер нельзя отправлять сообщения' }
-          : { status: 'OK', status_code: 100, sms_id: '000000-1' } } };
+      const body = { status: 'OK', status_code: 100, balance: 500, sms: { [q.to]: q.to === '79990000000'
+        ? { status: 'ERROR', status_code: 207, status_text: 'На этот номер нельзя отправлять сообщения' }
+        : { status: 'OK', status_code: 100, sms_id: '000000-1' } } };
       res.writeHead(200, { 'content-type': 'application/json' });
       res.end(JSON.stringify(body));
     });
@@ -30,17 +26,16 @@ function startSmsMock() {
   })));
 }
 
-let mock, srv, call, dev;
+let mock, srv, dev;
 before(async () => {
   mock = await startSmsMock();
   srv = await startServer({
-    DEV_CODES: '', SMS_MODE: 'sms', SMS_RU_API_ID: 'test-api-id', SMS_API_URL: mock.url, SMS_PREFIXES: '7,998', SMS_DAILY_LIMIT: '4',
+    DEV_CODES: '', SMS_RU_API_ID: 'test-api-id', SMS_API_URL: mock.url, SMS_PREFIXES: '7,998', SMS_DAILY_LIMIT: '4',
     PUBLIC_URL: 'https://lyubovvcifrah.ru', ADMIN_EMAILS: 'admin@lvc.test, 8 (900) 555-00-11',
   });
-  call = await startServer({ DEV_CODES: '', SMS_RU_API_ID: 'test-api-id', SMS_API_URL: mock.url });
   dev = await startServer();
 });
-after(async () => { await srv.close(); await call.close(); await dev.close(); mock.close(); });
+after(async () => { await srv.close(); await dev.close(); mock.close(); });
 
 test('номер телефона приводится к виду +79991234567', () => {
   assert.equal(normPhone('8 (999) 123-45-67'), '+79991234567');
@@ -51,10 +46,10 @@ test('номер телефона приводится к виду +79991234567'
   assert.equal(normPhone('12345'), '');
   assert.equal(normPhone('abc'), '');
   assert.equal(maskEmail('+79991234567'), '+7********67');
-  assert.equal(codeText('123456', 'ru', 'https://lyubovvcifrah.ru'), 'Код входа в «Любовь в цифрах»: 123456\n\n@lyubovvcifrah.ru #123456');
+  assert.equal(codeText('1234', 'ru', 'https://lyubovvcifrah.ru'), 'Код входа в «Любовь в цифрах»: 1234\n\n@lyubovvcifrah.ru #1234');
 });
 
-test('вход по телефону: код уходит в СМС, второй вход — в тот же аккаунт', async () => {
+test('вход по телефону: код из 4 цифр уходит в СМС, второй вход — в тот же аккаунт', async () => {
   const cfg = await srv.client().get('/api/config');
   assert.equal(cfg.body.phoneLogin, true);
 
@@ -62,13 +57,12 @@ test('вход по телефону: код уходит в СМС, второ�
   const s = await c.post('/api/auth/start', { phone: '8 912 345-67-89', lang: 'ru' });
   assert.equal(s.status, 200);
   assert.equal(s.body.devCode, undefined, 'без DEV_CODES код в ответе не отдаётся');
-  assert.equal(s.body.via, 'sms');
   const hit = mock.hits.at(-1);
   assert.equal(hit.path, '/sms/send');
   assert.equal(hit.api_id, 'test-api-id');
   assert.equal(hit.to, '79123456789');
-  const code = /: (\d{6})/.exec(hit.msg)[1];
-  assert.match(hit.msg, /@lyubovvcifrah\.ru #\d{6}$/);
+  const code = /: (\d{4})\n/.exec(hit.msg)[1];
+  assert.match(hit.msg, /@lyubovvcifrah\.ru #\d{4}$/);
 
   const v = await c.post('/api/auth/verify', { phone: '+7 912 345 67 89', code });
   assert.equal(v.status, 200);
@@ -79,25 +73,9 @@ test('вход по телефону: код уходит в СМС, второ�
   const c2 = srv.client();
   assert.equal((await c2.post('/api/auth/start', { phone: '89123456789' })).status, 200);
   assert.equal((await c2.post('/api/auth/start', { phone: '89123456789' })).body.error, 'too_often', 'новый код не раньше чем через минуту');
-  const code2 = /: (\d{6})/.exec(mock.hits.at(-1).msg)[1];
+  const code2 = /: (\d{4})\n/.exec(mock.hits.at(-1).msg)[1];
   const v2 = await c2.post('/api/auth/verify', { phone: '89123456789', code: code2 });
   assert.equal(v2.body.user.id, prof.body.user.id);
-});
-
-test('вход звонком: код — 4 последние цифры номера робота', async () => {
-  const c = call.client();
-  const s = await c.post('/api/auth/start', { phone: '+7 913 000 11 22', lang: 'ru' });
-  assert.equal(s.status, 200);
-  assert.equal(s.body.via, 'call');
-  const hit = mock.hits.at(-1);
-  assert.equal(hit.path, '/code/call');
-  assert.equal(hit.phone, '79130001122');
-  assert.equal(hit.ip, '127.0.0.1', 'SMS.ru получает IP посетителя для защиты от накрутки');
-  assert.equal((await c.post('/api/auth/verify', { phone: '89130001122', code: '1234' })).body.error, 'bad_code');
-  const v = await c.post('/api/auth/verify', { phone: '89130001122', code: '4321' });
-  assert.equal(v.status, 200);
-  const failed = await c.post('/api/auth/start', { phone: '+7 999 000 00 00' });
-  assert.equal(failed.body.error, 'sms_failed');
 });
 
 test('телефон: неверный номер, чужая страна, ошибка SMS.ru, суточный лимит', async () => {
@@ -121,7 +99,7 @@ test('режим разработки: код в ответе; телефон в
   // На сервере без SMS.ru, но с DEV_CODES вход по телефону работает с кодом в ответе.
   assert.equal((await c.get('/api/config')).body.phoneLogin, true);
   const s = await c.post('/api/auth/start', { phone: '+7 900 555 00 11' });
-  assert.match(s.body.devCode, /^\d{6}$/);
+  assert.match(s.body.devCode, /^\d{4}$/);
   assert.equal(srv.app.config.adminEmails.has('+79005550011'), true);
 });
 
