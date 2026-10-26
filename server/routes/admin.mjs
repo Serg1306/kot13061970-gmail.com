@@ -8,6 +8,7 @@ import { ONLINE_MS, addEvent, dayStartMsk, messageOut, uploadSrc } from '../mode
 import { REASONS, deleteUser, destroySelfie } from '../pd.mjs';
 import { checkOrder, refundOrder } from './pay.mjs';
 import { normEmail } from './auth.mjs';
+import { normPhone } from '../sms.mjs';
 
 const VERIFY_TEXT = {
   ru: { ok: 'Фото проверено: на анкете появился значок «фото проверено».', no: 'Проверка фото не пройдена. Попробуйте ещё раз: лицо должно быть хорошо видно, жест — как в задании.' },
@@ -198,7 +199,7 @@ export default function adminRoutes(route) {
     if (!REASONS.includes(reason)) fail(400, 'invalid', { field: 'reason' });
     const target = body.userId
       ? db.get('SELECT * FROM users WHERE id = ?', String(body.userId))
-      : db.get('SELECT * FROM users WHERE email = ?', normEmail(body.email));
+      : db.get('SELECT * FROM users WHERE email = ?', String(body.email || '').includes('@') ? normEmail(body.email) : normPhone(body.email));
     if (!target) fail(404, 'not_found');
     if (target.id === user.id) fail(400, 'self');
     deleteUser(app, target.id, { reason, operator: user.email });

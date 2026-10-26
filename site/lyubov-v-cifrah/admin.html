@@ -337,7 +337,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
         <form id="delForm" class="card">
           <p class="muted" style="margin-top:0">Например, если человек прислал письмо об отзыве согласия. Удаляются анкета, фото, переписка и всё остальное; в журнал попадёт запись.</p>
           <div class="filters" style="margin:0">
-            <label>Почта пользователя<input type="email" name="email" required></label>
+            <label>Почта или телефон пользователя<input type="text" name="email" required placeholder="name@example.com или +79991234567"></label>
             <label>Основание<select name="reason">${['consent_withdrawn', 'user_request', 'ban'].map(v => `<option value="${v}">${PD_REASONS[v]}</option>`).join('')}</select></label>
             <button class="btn rose" type="submit">Удалить</button>
           </div>
