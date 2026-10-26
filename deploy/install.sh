@@ -226,17 +226,35 @@ EOF
 
 cat > /usr/local/bin/lyubov-sms <<'EOF'
 #!/usr/bin/env bash
-# Вход по номеру телефона: СМС с кодом через SMS.ru. Ключ вводится здесь, на сервере, и никуда не отправляется.
+# Вход по номеру телефона: код звонком или СМС через SMS.ru. Ключ остаётся на сервере.
+#   lyubov-sms                — спросит ключ
+#   lyubov-sms КЛЮЧ           — ключ сразу после команды
+#   lyubov-sms КЛЮЧ 500       — и суточный лимит кодов
 set -e
 . /usr/local/lib/lyubov-env.sh
-echo "Ключ возьмите в кабинете sms.ru: «Программистам» → api_id."
-read -r -s -p "api_id (ввод не отображается): " K </dev/tty; echo
-read -r -p "Не больше скольких СМС в сутки на весь сайт (защита баланса) [300]: " L </dev/tty
-setenv SMS_RU_API_ID "$K"; setenv SMS_DAILY_LIMIT "${L:-300}"
+K="${1:-}"
+if [ -z "$K" ]; then
+  echo "Ключ возьмите в кабинете sms.ru: «Программистам» → api_id."
+  read -r -p "Вставьте api_id (правая кнопка мыши) и нажмите Enter: " K </dev/tty
+fi
+K=$(printf '%s' "$K" | tr -d '[:space:]')
+if ! printf '%s' "$K" | grep -Eq '^[A-Za-z0-9-]{16,}$'; then
+  echo "Это не похоже на api_id (он вида XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX). Ничего не сохранено, запустите lyubov-sms ещё раз."; exit 1
+fi
+B=$(curl -fsS --max-time 15 "https://sms.ru/my/balance?api_id=$K&json=1" || true)
+if printf '%s' "$B" | grep -q '"status": *"OK"'; then
+  echo "Ключ подходит. Баланс SMS.ru: $(printf '%s' "$B" | grep -o '"balance": *[0-9.]*' | grep -o '[0-9.]*$') ₽"
+else
+  echo "SMS.ru не принял ключ: $B"; echo "Проверьте api_id в кабинете sms.ru. Ничего не сохранено."; exit 1
+fi
+L="${2:-}"
+if [ -z "$1" ]; then read -r -p "Не больше скольких кодов в сутки на весь сайт (защита баланса) [300]: " L </dev/tty; fi
+case "$L" in ''|*[!0-9]*) L=300 ;; esac
+setenv SMS_RU_API_ID "$K"; setenv SMS_DAILY_LIMIT "$L"
 grep -q '^SMS_PREFIXES=' "$ENV_FILE" || setenv SMS_PREFIXES 7
 systemctl restart lyubov
-echo "Готово. На сайте вход теперь по номеру телефона, по почте — запасной вариант."
-echo "СМС уходят только на номера +7 (Россия и Казахстан). Другие страны: строка SMS_PREFIXES в $ENV_FILE, например 7,375,998."
+echo "Готово. На сайте вход теперь по номеру телефона, по почте — запасной вариант. Лимит: $L кодов в сутки."
+echo "Коды уходят только на номера +7 (Россия и Казахстан). Другие страны: строка SMS_PREFIXES в $ENV_FILE, например 7,375,998."
 EOF
 
 cat > /usr/local/bin/lyubov-domain <<'EOF'
