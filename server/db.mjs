@@ -175,6 +175,15 @@ CREATE TABLE IF NOT EXISTS pd_destruction (
   operator TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS pd_destruction_at ON pd_destruction(at);
+-- Вход через VK ID и Яндекс ID: постоянный ID человека у провайдера → аккаунт.
+CREATE TABLE IF NOT EXISTS oauth_ids (
+  provider TEXT NOT NULL,
+  sub TEXT NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (provider, sub)
+);
+CREATE INDEX IF NOT EXISTS oauth_user ON oauth_ids(user_id);
 -- Почты удалённых забаненных (только HMAC-хэш), чтобы они не могли зарегистрироваться снова. Хранятся 3 года.
 CREATE TABLE IF NOT EXISTS banned_emails (
   email_hash TEXT PRIMARY KEY,

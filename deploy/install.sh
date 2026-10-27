@@ -7,6 +7,8 @@
 # После установки доступны команды:
 #   lyubov-tkassa     — ввести данные терминала Т-Кассы (пароль вводится на сервере, никуда не отправляется)
 #   lyubov-sms        — вход по номеру телефона: ключ SMS.ru для СМС с кодом
+#   lyubov-vk         — вход через VK ID: ID приложения
+#   lyubov-yandex     — вход через Яндекс ID: ClientID и Client secret приложения
 #   lyubov-mail       — настроить почту для кодов входа (Яндекс)
 #   lyubov-domain     — подключить домен и HTTPS
 #   lyubov-update     — обновить сайт до последней версии
@@ -89,6 +91,11 @@ SMTP_FROM=
 SMS_RU_API_ID=
 SMS_PREFIXES=7
 SMS_DAILY_LIMIT=300
+
+# Вход через VK ID и Яндекс ID: настраивается командами lyubov-vk и lyubov-yandex
+VK_CLIENT_ID=
+YANDEX_CLIENT_ID=
+YANDEX_CLIENT_SECRET=
 
 DEV_CODES=0
 AUTO_APPROVE=0
@@ -257,6 +264,46 @@ echo "Готово. На сайте вход теперь по номеру те
 echo "Коды уходят только на номера +7 (Россия и Казахстан). Другие страны: строка SMS_PREFIXES в $ENV_FILE, например 7,375,998."
 EOF
 
+cat > /usr/local/bin/lyubov-vk <<'EOF'
+#!/usr/bin/env bash
+# Вход через VK ID. ID приложения — в кабинете id.vk.com/about/business/go → ваше приложение (подробно — docs/oauth-setup.md).
+#   lyubov-vk           — спросит ID
+#   lyubov-vk 12345678  — ID сразу после команды
+set -e
+. /usr/local/lib/lyubov-env.sh
+K="${1:-}"
+[ -n "$K" ] || read -r -p "ID приложения VK ID (только цифры): " K </dev/tty
+K=$(printf '%s' "$K" | tr -d '[:space:]')
+if ! printf '%s' "$K" | grep -Eq '^[0-9]{5,12}$'; then echo "ID приложения VK — это только цифры. Ничего не сохранено."; exit 1; fi
+setenv VK_CLIENT_ID "$K"
+systemctl restart lyubov
+U=$(grep '^PUBLIC_URL=' "$ENV_FILE" | cut -d= -f2-)
+echo "Готово. На сайте появилась кнопка «Войти через VK ID»."
+echo "В настройках приложения VK ID должен быть доверенный Redirect URL: $U/api/oauth/vk/callback"
+EOF
+
+cat > /usr/local/bin/lyubov-yandex <<'EOF'
+#!/usr/bin/env bash
+# Вход через Яндекс ID. ClientID и Client secret — на oauth.yandex.ru → ваше приложение (подробно — docs/oauth-setup.md).
+#   lyubov-yandex                    — спросит оба значения
+#   lyubov-yandex CLIENT_ID SECRET   — сразу после команды
+set -e
+. /usr/local/lib/lyubov-env.sh
+K="${1:-}"; S="${2:-}"
+[ -n "$K" ] || read -r -p "ClientID (вставьте правой кнопкой мыши и нажмите Enter): " K </dev/tty
+[ -n "$S" ] || read -r -p "Client secret (вставьте и нажмите Enter): " S </dev/tty
+K=$(printf '%s' "$K" | tr -d '[:space:]'); S=$(printf '%s' "$S" | tr -d '[:space:]')
+for V in "$K" "$S"; do
+  if ! printf '%s' "$V" | grep -Eq '^[0-9a-f]{32}$'; then echo "Это не похоже на ClientID или Client secret Яндекса (32 символа: цифры и буквы a–f). Ничего не сохранено."; exit 1; fi
+done
+[ "$K" != "$S" ] || { echo "ClientID и Client secret совпадают — похоже, одно значение вставлено дважды. Ничего не сохранено."; exit 1; }
+setenv YANDEX_CLIENT_ID "$K"; setenv YANDEX_CLIENT_SECRET "$S"
+systemctl restart lyubov
+U=$(grep '^PUBLIC_URL=' "$ENV_FILE" | cut -d= -f2-)
+echo "Готово. На сайте появилась кнопка «Войти с Яндекс ID»."
+echo "В настройках приложения Яндекса должен быть Redirect URI: $U/api/oauth/yandex/callback"
+EOF
+
 cat > /usr/local/bin/lyubov-domain <<'EOF'
 #!/usr/bin/env bash
 # Подключение домена и бесплатного сертификата HTTPS (Let's Encrypt, продлевается сам).
@@ -292,8 +339,8 @@ systemctl restart lyubov
 echo "Сайт обновлён до версии \$(git -C "$APP" rev-parse --short HEAD)"
 EOF
 rm -f /usr/local/bin/lyubov-robokassa
-chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-tkassa /usr/local/bin/lyubov-sms /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
-ok "Команды lyubov-tkassa, lyubov-sms, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
+chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-tkassa /usr/local/bin/lyubov-sms /usr/local/bin/lyubov-vk /usr/local/bin/lyubov-yandex /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
+ok "Команды lyubov-tkassa, lyubov-sms, lyubov-vk, lyubov-yandex, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
 
 say "8/8. Проверка"
 if curl -fsS http://127.0.0.1/api/config | grep -q '"live":true'; then ok "Сайт работает: http://$IP/"; else warn "Сайт не ответил, журнал: journalctl -u lyubov -n 50"; fi
@@ -304,6 +351,7 @@ cat <<EOF
   1. lyubov-domain     — когда купите домен и направите его на $IP
   2. lyubov-mail       — чтобы коды входа приходили на почту
   3. lyubov-sms        — вход по номеру телефона (СМС через SMS.ru)
-  4. lyubov-tkassa     — когда подключите интернет-эквайринг Т-Кассы
+  4. lyubov-vk, lyubov-yandex — вход через VK ID и Яндекс ID (docs/oauth-setup.md)
+  5. lyubov-tkassa     — когда подключите интернет-эквайринг Т-Кассы
 Модерация: http://$IP/admin.html (вход по почте модератора).
 EOF
