@@ -1,6 +1,7 @@
 // Настройки сервера из переменных окружения (см. server/.env.example и docs/deploy.md).
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { oauthConfig } from './oauth.mjs';
 import { normPhone } from './sms.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -37,6 +38,8 @@ export function loadConfig(env = process.env) {
       dailyLimit: Number(env.SMS_DAILY_LIMIT) || 300,
       apiUrl: (env.SMS_API_URL || 'https://sms.ru').replace(/\/+$/, ''),
     } : null,
+    // Вход через VK ID и Яндекс ID, см. server/oauth.mjs.
+    oauth: oauthConfig(env),
     devCodes: env.DEV_CODES === '1',
     autoApprove: env.AUTO_APPROVE === '1',
     vapid: {

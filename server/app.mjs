@@ -18,6 +18,7 @@ import { createSms } from './sms.mjs';
 import actionRoutes from './routes/actions.mjs';
 import adminRoutes from './routes/admin.mjs';
 import authRoutes from './routes/auth.mjs';
+import oauthRoutes from './routes/oauth.mjs';
 import payRoutes, { checkPendingOrders } from './routes/pay.mjs';
 import peopleRoutes from './routes/people.mjs';
 import profileRoutes from './routes/profile.mjs';
@@ -63,7 +64,7 @@ export function createApp(env = process.env, { log = console } = {}) {
   app.notify = createNotifier(app);
 
   const router = createRouter();
-  for (const add of [authRoutes, profileRoutes, peopleRoutes, actionRoutes, payRoutes, adminRoutes]) add(router.route);
+  for (const add of [authRoutes, oauthRoutes, profileRoutes, peopleRoutes, actionRoutes, payRoutes, adminRoutes]) add(router.route);
 
   // Пользователь по cookie сессии. Время последней активности обновляется не чаще раза в минуту.
   function sessionUser(token) {

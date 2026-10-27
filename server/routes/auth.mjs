@@ -64,7 +64,7 @@ export function adSource(src) {
 }
 
 // Новый пользователь: приветствие от поддержки и системное событие.
-function createUser(db, email, lang, src = null) {
+export function createUser(db, email, lang, src = null) {
   const id = newUserId();
   const now = Date.now();
   const t = textFor(WELCOME, lang);
@@ -82,6 +82,8 @@ export default function authRoutes(route) {
     payments: isConfigured(settings(app.config.env)),
     // Вход по номеру телефона: когда подключён SMS.ru (или в режиме разработки с кодами в ответе).
     phoneLogin: app.sms.configured || app.config.devCodes,
+    // Кнопки «Войти через VK ID / Яндекс ID»: только для подключённых приложений.
+    oauth: Object.keys(app.config.oauth).filter(k => app.config.oauth[k]),
     vapidPublicKey: app.push.publicKey || null,
     metrikaId: app.config.metrikaId,
     devCodes: app.config.devCodes,
@@ -192,6 +194,8 @@ export default function authRoutes(route) {
 
   route('GET', '/api/me', ({ app, user }) => ({
     user: userOut(user),
+    // Имя, дата рождения и пол из VK ID или Яндекс ID — чтобы подставить в анкету, пока она не заполнена.
+    ...(!user.name && app.oauthHints?.get(user.id) ? { hint: app.oauthHints.get(user.id).hint } : {}),
     wallet: walletOf(user),
     photos: myPhotos(app.db, user.id),
     admin: app.config.adminEmails.has(user.email),
