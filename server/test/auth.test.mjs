@@ -157,3 +157,21 @@ test('выход и удаление аккаунта вместе с файла
   await b.post('/api/auth/logout');
   assert.equal((await b.get('/api/me')).status, 401);
 });
+
+test('без CODE_LOGIN вход по коду только для админов, остальные — через VK ID и Яндекс ID', async () => {
+  const off = await startServer({ DEV_CODES: '' });
+  try {
+    const c = off.client();
+    const cfg = (await c.get('/api/config')).body;
+    assert.equal(cfg.codeLogin, false);
+    assert.equal(cfg.phoneLogin, false);
+    const s = await c.post('/api/auth/start', { email: 'new@lvc.test' });
+    assert.equal(s.status, 403);
+    assert.equal(s.body.error, 'code_login_off');
+    assert.equal((await c.post('/api/auth/verify', { email: 'new@lvc.test', code: '123456' })).body.error, 'code_login_off');
+    // Админ по-прежнему получает код (письмо пишется в журнал, пока почта не настроена).
+    assert.equal((await c.post('/api/auth/start', { email: 'admin@lvc.test' })).status, 200);
+    const code = off.app.mailer.outbox.at(-1).code;
+    assert.equal((await c.post('/api/auth/verify', { email: 'admin@lvc.test', code })).status, 200);
+  } finally { await off.close(); }
+});
