@@ -80,8 +80,10 @@ export default function authRoutes(route) {
   route('GET', '/api/config', ({ app }) => ({
     live: true,
     payments: isConfigured(settings(app.config.env)),
+    // Вход по коду из СМС или письма (CODE_LOGIN=1); без него — только VK ID и Яндекс ID.
+    codeLogin: app.config.codeLogin,
     // Вход по номеру телефона: когда подключён SMS.ru (или в режиме разработки с кодами в ответе).
-    phoneLogin: app.sms.configured || app.config.devCodes,
+    phoneLogin: app.config.codeLogin && (app.sms.configured || app.config.devCodes),
     // Кнопки «Войти через VK ID / Яндекс ID»: только для подключённых приложений.
     oauth: Object.keys(app.config.oauth).filter(k => app.config.oauth[k]),
     vapidPublicKey: app.push.publicKey || null,
@@ -95,6 +97,8 @@ export default function authRoutes(route) {
     limiter.check(`start:${ip}`, 40, 600e3);
     const byPhone = body.phone !== undefined;
     const login = loginOf(body);
+    // Вход по коду выключен: код получают только админы, остальные входят через VK ID или Яндекс ID.
+    if (!config.codeLogin && !config.adminEmails.has(login)) fail(403, 'code_login_off');
     if (byPhone) {
       if (!sms.configured && !config.devCodes) fail(503, 'sms_off');
       if (!login) fail(400, 'bad_phone');
@@ -146,6 +150,7 @@ export default function authRoutes(route) {
     const { db, limiter } = app;
     limiter.check(`verify:${ip}`, 60, 600e3);
     const email = loginOf(body);
+    if (!app.config.codeLogin && !app.config.adminEmails.has(email)) fail(403, 'code_login_off');
     const code = String(body.code ?? '').trim();
     const row = db.get('SELECT * FROM codes WHERE email = ?', email);
     const now = Date.now();

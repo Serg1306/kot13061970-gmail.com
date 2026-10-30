@@ -41,7 +41,7 @@ Signal       = { id, from: id, t: ms, data: object }
 
 ## Конфигурация
 
-`GET /api/config` → `{ live: true, payments: bool, phoneLogin: bool, vapidPublicKey: string|null, metrikaId: string|null, devCodes: bool }`. `phoneLogin` — включён вход по номеру телефона (подключён SMS.ru или `DEV_CODES=1`).
+`GET /api/config` → `{ live: true, payments: bool, codeLogin: bool, phoneLogin: bool, vapidPublicKey: string|null, metrikaId: string|null, devCodes: bool }`. `phoneLogin` — включён вход по номеру телефона (подключён SMS.ru или `DEV_CODES=1`).
 
 `vapidPublicKey` = `null`, пока push выключен (`PUSH_ENABLED` ≠ `1`, по умолчанию) — тогда сайт не должен предлагать подписку на уведомления.
 
@@ -153,6 +153,7 @@ Signal       = { id, from: id, t: ms, data: object }
 | `PUBLIC_URL` | адрес сайта, например `https://lyubov-v-cifrah.ru` (для писем и push) |
 | `ADMIN_EMAILS` | почты модераторов через запятую |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | отправка писем (SMTPS 465 или STARTTLS 587) |
+| `CODE_LOGIN` | `1` — вход по коду из СМС или письма для всех; иначе только для `ADMIN_EMAILS` (`403 code_login_off`) |
 | `DEV_CODES` | `1` — показывать код входа в ответе (только для проверки!) |
 | `AUTO_APPROVE` | `1` — фото без модерации |
 | `PUSH_ENABLED` | `1` — включить Web Push (по умолчанию выключен, нужен для этого уведомление РКН о трансграничной передаче) |
