@@ -33,3 +33,10 @@ test('основной адрес и API не перенаправляются',
   assert.equal((await get('/', '127.0.0.1')).status, 200);
   assert.notEqual((await get('/api/config', 'www.lyubovvcifrah.ru')).status, 301);
 });
+
+test('адрес без .html ведёт на страницу с .html (301)', async () => {
+  const r = await get('/goroda/chelyabinsk', 'lyubovvcifrah.ru');
+  assert.equal(r.status, 301);
+  assert.equal(r.headers.get('location'), '/goroda/chelyabinsk.html');
+  assert.equal((await get('/goroda/net-takogo', 'lyubovvcifrah.ru')).status, 404);
+});

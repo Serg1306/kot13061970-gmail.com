@@ -154,6 +154,10 @@ export function createApp(env = process.env, { log = console } = {}) {
       if (!p.endsWith('/')) { res.writeHead(301, { location: p + '/' + url.search }); return res.end(); }
       file = path.join(file, 'index.html');
     }
+    // Адрес без .html (так его отдавал Netlify и запомнил Google) ведёт на страницу с .html.
+    if (!path.extname(p) && !p.endsWith('/') && !fs.existsSync(file) && fs.existsSync(file + '.html')) {
+      res.writeHead(301, { location: p + '.html' + url.search }); return res.end();
+    }
     const ext = path.extname(file).toLowerCase();
     const cache = ['.html', '.js', '.mjs', '.webmanifest', '.json'].includes(ext) ? 'no-cache' : 'public, max-age=86400';
     if (!serveFile(req, res, file, cache)) sendText(res, 404, 'Not found');
