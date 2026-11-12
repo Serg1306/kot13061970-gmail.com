@@ -107,12 +107,21 @@ test('анкета: проверки, согласие, 18+', async () => {
   assert.equal(r.body.user.name, 'Анна-Мария');
   assert.ok(r.body.user.consentAt > 0);
   assert.equal(r.body.user.consentPublicAt, r.body.user.consentAt);
-  assert.equal(r.body.user.consentVersion, '2026-10-26');
+  assert.equal(r.body.user.consentVersion, '2026-11-12');
   assert.equal(srv.app.db.get('SELECT consent_ip FROM users WHERE id = ?', r.body.user.id).consent_ip, '127.0.0.1');
   // Повторное сохранение — согласие уже есть.
   const r2 = await c.put('/api/profile', { ...good, city: 'Казань' });
   assert.equal(r2.body.user.city, 'Казань');
   assert.equal(r2.body.user.consentAt, r.body.user.consentAt);
+  // Повторное согласие по новой редакции документов.
+  srv.app.db.run("UPDATE users SET consent_version = '2026-10-26' WHERE id = ?", r.body.user.id);
+  assert.equal((await c.get('/api/config')).body.consentVersion, '2026-11-12');
+  assert.equal((await c.post('/api/consent', { consent: true })).body.error, 'consent_public_required');
+  assert.equal((await c.post('/api/consent', { consentPublic: true })).body.error, 'consent_required');
+  const r3 = await c.post('/api/consent', { consent: true, consentPublic: true });
+  assert.equal(r3.status, 200);
+  assert.equal(r3.body.user.consentVersion, '2026-11-12');
+  assert.ok(r3.body.user.consentAt >= r.body.user.consentAt);
 });
 
 test('приветствие от поддержки на русском и английском', async () => {

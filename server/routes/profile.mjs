@@ -67,6 +67,17 @@ export default function profileRoutes(route) {
     return { user: userOut(meAgain(db, user.id)) };
   }, { auth: 'user' });
 
+  // Повторное согласие после смены редакции документов (например, смены оператора данных):
+  // клиент показывает окно, если consentVersion пользователя не совпадает с текущей из /api/config.
+  route('POST', '/api/consent', ({ app, user, body, ip }) => {
+    if (body.consent !== true) fail(400, 'consent_required');
+    if (body.consentPublic !== true) fail(400, 'consent_public_required');
+    const now = Date.now();
+    app.db.run('UPDATE users SET consent_at = ?, consent_public_at = ?, consent_version = ?, consent_ip = ? WHERE id = ?',
+      now, now, app.config.consentVersion, String(ip || '').slice(0, 64), user.id);
+    return { user: userOut(meAgain(app.db, user.id)) };
+  }, { auth: 'user' });
+
   route('PUT', '/api/settings', ({ app, user, body }) => {
     const { db } = app;
     const sets = [], vals = [];
