@@ -1180,30 +1180,31 @@ html:has(body.in-app) { background: #470a1b; }
 }
 body.in-app .top { background: #2e0611; box-shadow: 0 0 0 100vmax #2e0611; clip-path: inset(0 -100vmax); }
 body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E"); }
-/* ===== Объёмные стеклянные кнопки с подсветкой (класс g3) =====
+/* ===== Объёмные стеклянные кнопки с подсветкой: все .btn и .t-btn сайта и кабинета, плюс класс g3 =====
    Верхняя грань — толстый прозрачный обод и тёмная выпуклая линза (::before),
    под ней видна толщина стекла, налитая светом (::after), от неё тень и цветной свет на фоне.
-   Цвет подсветки — --glow; .g3-brand — розовый → синий. Селектор усилен (.g3 ×4 и :not(#_)),
+   Цвет подсветки — --glow; .g3-brand — розовый → синий. Селектор усилен (:not(#_) ×2),
    чтобы перебить прежние стили кнопок на главной, в mix.css и в окне входа. */
-.g3.g3.g3.g3:not(#_) {
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_) {
   --glow: var(--brand-a, #ff4f8b);
   --rim: 6px;
   --depth: 9px;
   isolation: isolate;
-  display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+  align-items: center; justify-content: center; gap: .6rem;
   min-height: 3.6rem; padding: 0 2rem; margin-bottom: var(--depth);
-  border: 0; border-radius: 999px; background: none; box-shadow: none; filter: none; opacity: 1; /* taste-skill-ignore: объёмное стекло по просьбе владельца */
+  border: 0; border-radius: 999px; background: none; box-shadow: none; filter: none; /* taste-skill-ignore: объёмное стекло по просьбе владельца */
   color: #fff; font-weight: 600; text-decoration: none; text-shadow: 0 1px 2px rgb(0 0 0 / .7); /* taste-skill-ignore: объёмное стекло по просьбе владельца */
   cursor: pointer; -webkit-tap-highlight-color: transparent;
   transition: transform .18s var(--t-ease, ease), filter .25s;
 }
-.g3.g3.g3.g3:not(#_):not(.mx-city) { position: relative; }
-.g3.g3.g3.g3:not(#_)::before,
-.g3.g3.g3.g3:not(#_)::after {
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):not(.mx-city) { position: relative; }
+.g3:not(#_):not(.oauth-btn) { display: inline-flex; } /* .btn и .t-btn сохраняют свой display: где-то их прячут по ширине экрана */
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_)::before,
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_)::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
 }
 /* верхняя грань: обод (border-box) + линза (padding-box) */
-.g3.g3.g3.g3:not(#_)::before {
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_)::before {
   z-index: -1; border: var(--rim) solid transparent;
   background:
     radial-gradient(38% 30% at 24% 12%, rgb(255 255 255 / .38), rgb(255 255 255 / 0) 70%) padding-box, /* taste-skill-ignore: объёмное стекло по просьбе владельца */
@@ -1220,7 +1221,7 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     inset 3px 0 6px -3px rgb(0 0 0 / .8), inset -3px 0 6px -3px rgb(0 0 0 / .8);
 }
 /* толщина стекла */
-.g3.g3.g3.g3:not(#_)::after {
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_)::after {
   z-index: -2; transform: translateY(var(--depth));
   background:
     linear-gradient(90deg, rgb(0 0 0 / .45), rgb(0 0 0 / 0) 14%, rgb(255 255 255 / .28) 50%, rgb(0 0 0 / 0) 86%, rgb(0 0 0 / .45)), /* taste-skill-ignore: объёмное стекло по просьбе владельца */
@@ -1234,29 +1235,52 @@ body.in-app .top nav select.lang { background-image: url("data:image/svg+xml,%3C
     0 30px 60px -10px color-mix(in srgb, var(--glow) 50%, transparent);
   transition: transform .18s var(--t-ease, ease);
 }
-.g3.g3.g3.g3.g3-brand:not(#_) { --glow: #a766c5; }
-.g3.g3.g3.g3.g3-brand:not(#_)::after {
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):is(.g3-brand, .btn.rose, .btn.solid) { --glow: #a766c5; }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):is(.g3-brand, .btn.rose, .btn.solid)::after {
   background:
     linear-gradient(90deg, rgb(0 0 0 / .35), rgb(0 0 0 / 0) 14%, rgb(255 255 255 / .3) 50%, rgb(0 0 0 / 0) 86%, rgb(0 0 0 / .35)), /* taste-skill-ignore: объёмное стекло по просьбе владельца */
     linear-gradient(90deg, var(--brand-a, #ff4f8b), var(--brand-b, #4f7cff)); /* taste-skill-ignore: объёмное стекло по просьбе владельца */
 }
-.g3.g3.g3.g3.g3-blue:not(#_) { --glow: var(--brand-b, #4f7cff); }
-.g3.g3.g3.g3.g3-sm:not(#_) { --rim: 4px; --depth: 6px; min-height: 2.75rem; padding: 0 1.25rem; }
-.g3.g3.g3.g3:not(#_):hover { transform: translateY(-3px); filter: brightness(1.12); }
-.g3.g3.g3.g3:not(#_):hover::after { transform: translateY(calc(var(--depth) + 3px)); }
-.g3.g3.g3.g3:not(#_):active { transform: translateY(calc(var(--depth) * .7)); }
-.g3.g3.g3.g3:not(#_):active::after { transform: translateY(calc(var(--depth) * .3)); }
-.g3.g3.g3.g3:not(#_):focus-visible { outline: 2px solid #fff; outline-offset: 5px; }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).g3-blue { --glow: var(--brand-b, #4f7cff); }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).btn:not(.g3):not(.rose):not(.solid) { --glow: var(--brand-b, #4f7cff); }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).btn:not(.g3) { --rim: 5px; --depth: 7px; min-height: 2.9rem; padding: 0 1.4rem; }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):disabled { opacity: .45; cursor: not-allowed; transform: none; filter: grayscale(.4); }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).btn.back { --rim: 4px; --depth: 5px; min-height: 2.6rem; min-width: 2.9rem; padding: 0 .9rem; }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).g3-sm { --rim: 4px; --depth: 6px; min-height: 2.75rem; padding: 0 1.25rem; }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):hover { transform: translateY(-3px); filter: brightness(1.12); }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):hover::after { transform: translateY(calc(var(--depth) + 3px)); }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):active { transform: translateY(calc(var(--depth) * .7)); }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):active::after { transform: translateY(calc(var(--depth) * .3)); }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):focus-visible { outline: 2px solid #fff; outline-offset: 5px; }
 /* значки VK и Яндекса внутри кнопки остаются в цветах брендов */
-.g3.oauth-vk:not(#_) { --glow: #0077ff; }
-.g3.oauth-ya:not(#_) { --glow: #fc3f1d; }
-.g3.g3.g3.g3.oauth-btn:not(#_) { display: flex; width: 100%; }
-@media (hover: none) { .g3.g3.g3.g3:not(#_):hover { transform: none; filter: none; } .g3.g3.g3.g3:not(#_):hover::after { transform: translateY(var(--depth)); } }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).oauth-vk { --glow: #0077ff; }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).oauth-ya { --glow: #fc3f1d; }
+:is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_).oauth-btn { display: flex; width: 100%; }
+@media (hover: none) { :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):hover { transform: none; filter: none; } :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):hover::after { transform: translateY(var(--depth)); } }
 @media (prefers-reduced-motion: reduce) {
-  .g3.g3.g3.g3:not(#_), .g3.g3.g3.g3:not(#_)::after { transition: none; }
-  .g3.g3.g3.g3:not(#_):hover, .g3.g3.g3.g3:not(#_):active { transform: none; }
-  .g3.g3.g3.g3:not(#_):hover::after, .g3.g3.g3.g3:not(#_):active::after { transform: translateY(var(--depth)); }
+  :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_), :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_)::after { transition: none; }
+  :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):hover, :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):active { transform: none; }
+  :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):hover::after, :is(.g3, .btn:not(.ghost):not(.icon):not(.lang):not(.send .btn), .t-btn):not(#_):not(#_):active::after { transform: translateY(var(--depth)); }
 }
+/* галочки и кружки выбора — то же стекло (скрытые поля .seg и .interest-picks не трогаем) */
+input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks input):not(.sr) {
+  -webkit-appearance: none; appearance: none; flex: none; position: relative; vertical-align: middle;
+  width: 1.45rem; height: 1.45rem; min-height: 0; margin: .15rem 0 0; padding: 0; border: 0; border-radius: .45rem; cursor: pointer;
+  background: radial-gradient(70% 50% at 35% 15%, rgb(255 255 255 / .35), rgb(255 255 255 / 0) 70%), linear-gradient(180deg, #34333d, #0e0d13 60%, #08070c); /* taste-skill-ignore: объёмное стекло по просьбе владельца */
+  box-shadow: inset 0 1.5px 0 rgb(255 255 255 / .55), inset 0 -2px 3px rgb(79 124 255 / .7), 0 0 0 1px rgb(255 255 255 / .25), 0 3px 0 rgb(40 30 70), 0 6px 12px -3px rgb(0 0 0 / .8); /* taste-skill-ignore: объёмное стекло по просьбе владельца */
+  transition: transform .15s var(--t-ease, ease), box-shadow .2s;
+}
+input[type=radio]:not(.seg input):not(.interest-picks input):not(.sr) { border-radius: 50%; }
+input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks input):not(.sr):checked {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 72% no-repeat, radial-gradient(70% 50% at 35% 15%, rgb(255 255 255 / .45), rgb(255 255 255 / 0) 70%), linear-gradient(135deg, var(--brand-a, #ff4f8b), var(--brand-b, #4f7cff)); /* taste-skill-ignore: объёмное стекло по просьбе владельца */
+  box-shadow: inset 0 1.5px 0 rgb(255 255 255 / .7), inset 0 -2px 3px rgb(255 255 255 / .45), 0 0 0 1px rgb(255 255 255 / .3), 0 3px 0 #6b2a7a, 0 6px 16px -3px rgb(255 79 139 / .75); /* taste-skill-ignore: объёмное стекло по просьбе владельца */
+}
+input[type=radio]:not(.seg input):not(.interest-picks input):not(.sr):checked {
+  background: radial-gradient(circle, #fff 0 26%, rgb(255 255 255 / 0) 31%), radial-gradient(70% 50% at 35% 15%, rgb(255 255 255 / .45), rgb(255 255 255 / 0) 70%), linear-gradient(135deg, var(--brand-a, #ff4f8b), var(--brand-b, #4f7cff)); /* taste-skill-ignore: объёмное стекло по просьбе владельца */
+}
+input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks input):not(.sr):active { transform: translateY(2px); }
+input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks input):not(.sr):focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks input):not(.sr):disabled { opacity: .45; cursor: not-allowed; }
 </style>
 </head>
 <body>
