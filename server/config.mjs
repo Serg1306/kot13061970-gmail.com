@@ -41,6 +41,9 @@ export function loadConfig(env = process.env) {
     // Вход через VK ID и Яндекс ID, см. server/oauth.mjs.
     oauth: oauthConfig(env),
     devCodes: env.DEV_CODES === '1',
+    // Вход и регистрация по коду из СМС или письма. По умолчанию выключены: регистрация только через VK ID и Яндекс ID.
+    // Админы из ADMIN_EMAILS входят по коду всегда (страница /#admin-login).
+    codeLogin: env.CODE_LOGIN === '1' || env.DEV_CODES === '1',
     autoApprove: env.AUTO_APPROVE === '1',
     vapid: {
       publicKey: env.VAPID_PUBLIC_KEY || '',

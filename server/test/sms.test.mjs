@@ -30,7 +30,7 @@ let mock, srv, dev;
 before(async () => {
   mock = await startSmsMock();
   srv = await startServer({
-    DEV_CODES: '', SMS_RU_API_ID: 'test-api-id', SMS_API_URL: mock.url, SMS_PREFIXES: '7,998', SMS_DAILY_LIMIT: '4',
+    DEV_CODES: '', CODE_LOGIN: '1', SMS_RU_API_ID: 'test-api-id', SMS_API_URL: mock.url, SMS_PREFIXES: '7,998', SMS_DAILY_LIMIT: '4',
     PUBLIC_URL: 'https://lyubovvcifrah.ru', ADMIN_EMAILS: 'admin@lvc.test, 8 (900) 555-00-11',
   });
   dev = await startServer();
@@ -104,7 +104,7 @@ test('режим разработки: код в ответе; телефон в
 });
 
 test('без SMS.ru и без DEV_CODES вход по телефону выключен', async () => {
-  const off = await startServer({ DEV_CODES: '' });
+  const off = await startServer({ DEV_CODES: '', CODE_LOGIN: '1' });
   try {
     const c = off.client();
     assert.equal((await c.get('/api/config')).body.phoneLogin, false);
