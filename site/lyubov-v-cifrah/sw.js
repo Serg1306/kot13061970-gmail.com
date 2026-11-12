@@ -6,14 +6,14 @@
      (личные данные и фото удалённых анкет не должны оседать в кэше).
    - Push: полезная нагрузка JSON { title, body, url } → уведомление; клик открывает или фокусирует вкладку.
    Чтобы обновить кэш у всех, увеличьте VERSION. */
-const VERSION = 'v16';
+const VERSION = 'v17';
 const STATIC = `lvc-static-${VERSION}`;
 const PAGES = `lvc-pages-${VERSION}`;
 const FONTS = `lvc-fonts-${VERSION}`;
 const KEEP = [STATIC, PAGES, FONTS];
 
 const SCOPE = new URL(self.registration ? self.registration.scope : './', self.location).pathname; // например "/" или "/lyubov-v-cifrah/"
-const PRECACHE_PAGES = ['./', 'index.html', 'oferta.html', 'privacy.html', 'terms.html', 'consent.html'];
+const PRECACHE_PAGES = ['./', 'oferta.html', 'privacy.html', 'terms.html', 'consent.html'];
 const PRECACHE_STATIC = ['manifest.webmanifest', 'fonts/fonts.css', 'legal.css', 'legal.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon-32.png', 'icons/apple-touch-icon.png', 'icons/favicon.svg', 'icons/logo-3d-256.png', 'logo3d.js', 'mix.css', 'scroll.js', 'compat.js'];
 
 self.addEventListener('install', event => {
@@ -61,7 +61,7 @@ async function networkFirst(event) {
   } catch (e) {
     const hit = await cache.match(req, { ignoreSearch: true });
     if (hit) return hit;
-    const home = await cache.match('./') || await cache.match('index.html');
+    const home = await cache.match('./');
     if (home) return home;
     return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Нет сети</title><p style="font:1.1rem system-ui;padding:2rem">Нет подключения к интернету. Проверьте сеть и обновите страницу.</p>',
       { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } });

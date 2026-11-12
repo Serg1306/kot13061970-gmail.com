@@ -88,6 +88,8 @@ export default function authRoutes(route) {
     oauth: Object.keys(app.config.oauth).filter(k => app.config.oauth[k]),
     vapidPublicKey: app.push.publicKey || null,
     metrikaId: app.config.metrikaId,
+    // Текущая редакция согласий: у кого записана другая, сайт попросит подтвердить согласие заново.
+    consentVersion: app.config.consentVersion,
     devCodes: app.config.devCodes,
     ...(app.config.iceServers ? { iceServers: app.config.iceServers } : {}),
   }), { auth: 'none' });

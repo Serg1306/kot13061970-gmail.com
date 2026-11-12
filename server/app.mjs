@@ -123,9 +123,23 @@ export function createApp(env = process.env, { log = console } = {}) {
     sendJson(res, 200, out === undefined ? { ok: true } : out);
   }
 
+  // Основной домен из PUBLIC_URL (без www), например lyubovvcifrah.ru.
+  function canonicalHost() {
+    try { return config.publicUrl ? new URL(config.publicUrl).host.replace(/^www\./, '') : ''; } catch { return ''; }
+  }
+
   function handleStatic(req, res, url) {
     if (req.method !== 'GET' && req.method !== 'HEAD') return sendText(res, 405, 'Method not allowed');
     const p = url.pathname;
+    // Один адрес на страницу для поисковиков: www и /index.html ведут на основной адрес (301).
+    const host = String(req.headers.host || '').toLowerCase();
+    const main = canonicalHost();
+    const bare = p.endsWith('/index.html') ? p.slice(0, -'index.html'.length) : p;
+    const www = main && host === 'www.' + main;
+    if (www || bare !== p) {
+      res.writeHead(301, { location: (www ? new URL(config.publicUrl).protocol + '//' + main : '') + bare + url.search });
+      return res.end();
+    }
     if (p.startsWith('/uploads/')) {
       const name = p.slice('/uploads/'.length);
       if (isSafeName(name) && serveFile(req, res, path.join(config.uploadsDir, name), 'public, max-age=31536000, immutable')) return;
@@ -139,6 +153,10 @@ export function createApp(env = process.env, { log = console } = {}) {
       // Папка без завершающего слэша — перенаправляем, чтобы относительные ссылки работали.
       if (!p.endsWith('/')) { res.writeHead(301, { location: p + '/' + url.search }); return res.end(); }
       file = path.join(file, 'index.html');
+    }
+    // Адрес без .html (так его отдавал Netlify и запомнил Google) ведёт на страницу с .html.
+    if (!path.extname(p) && !p.endsWith('/') && !fs.existsSync(file) && fs.existsSync(file + '.html')) {
+      res.writeHead(301, { location: p + '.html' + url.search }); return res.end();
     }
     const ext = path.extname(file).toLowerCase();
     const cache = ['.html', '.js', '.mjs', '.webmanifest', '.json'].includes(ext) ? 'no-cache' : 'public, max-age=86400';
