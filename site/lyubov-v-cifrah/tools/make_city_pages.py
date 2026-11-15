@@ -177,7 +177,7 @@ WIDGET_JS = r"""
   const R = 84, C = 2 * Math.PI * R, GAP = 6;
   function ring(svg, res) {
     let start = 0, out = '';
-    res.parts.forEach(p => {
+    res.parts.filter(p => p.w > 0).forEach(p => {
       const seg = p.w * C - GAP, fill = Math.max(seg * p.v / 100, 0.01);
       out += `<circle cx="100" cy="100" r="${R}" fill="none" stroke="var(--line)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${seg} ${C}" stroke-dashoffset="${-start}"/>`;
       out += `<circle cx="100" cy="100" r="${R}" fill="none" stroke="${p.c}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${fill} ${C}" stroke-dashoffset="${-start}"/>`;
@@ -201,7 +201,7 @@ WIDGET_JS = r"""
         li.style.setProperty('--c', p.c);
         const head = document.createElement('div'); head.className = 'ph';
         const t = document.createElement('b'); t.textContent = p.t;
-        const v = document.createElement('span'); v.textContent = p.v + '% · вес ' + Math.round(p.w * 100) + '%';
+        const v = document.createElement('span'); v.textContent = p.w > 0 ? p.v + '% · по таблице чисел' : 'для интереса, на процент не влияет';
         head.append(t, v);
         const why = document.createElement('p'); why.textContent = p.why;
         li.append(head, why);
@@ -501,12 +501,12 @@ def city_page(c, base, all_cities):
 
   <section class="block" id="how">
     <h2>Как работает подбор по дате рождения</h2>
-    <p>Мы не задаём десятки вопросов. Достаточно даты рождения — из неё складываются четыре системы, и каждая даёт свой вклад в итоговый процент.</p>
+    <p>Мы не задаём десятки вопросов. Достаточно даты рождения — процент совместимости считается по числам судьбы двух людей, а знак, восточный год и аркан дополняют картину.</p>
     <div class="systems">
-      <div class="card" style="--c:var(--rose)"><div class="w">30%</div><h3>Число судьбы</h3><p>Сумма цифр даты рождения до одной цифры (11 и 22 — особые). Похожие числа — похожий ритм жизни.</p></div>
-      <div class="card" style="--c:var(--sun)"><div class="w">25%</div><h3>Знак и стихия</h3><p>Огонь и воздух, земля и вода усиливают друг друга; одна стихия — общий темперамент.</p></div>
-      <div class="card" style="--c:var(--sea)"><div class="w">25%</div><h3>Восточный год</h3><p>Знаки из одного «треугольника союзников» ладят лучше всего, противоположные по кругу — спорят.</p></div>
-      <div class="card" style="--c:var(--plum)"><div class="w">20%</div><h3>Аркан пары</h3><p>Сумма дней рождения даёт один из 22 арканов — короткое описание того, какой будет ваша пара.</p></div>
+      <div class="card" style="--c:var(--rose)"><div class="w">%</div><h3>Число судьбы</h3><p>Сумма цифр даты рождения до одной цифры (11 и 22 — особые). Процент пары берётся из таблицы совместимости чисел.</p></div>
+      <div class="card" style="--c:var(--sun)"><div class="w">+</div><h3>Знак и стихия</h3><p>Огонь и воздух, земля и вода усиливают друг друга; одна стихия — общий темперамент.</p></div>
+      <div class="card" style="--c:var(--sea)"><div class="w">+</div><h3>Восточный год</h3><p>Знаки из одного «треугольника союзников» ладят лучше всего, противоположные по кругу — спорят.</p></div>
+      <div class="card" style="--c:var(--plum)"><div class="w">+</div><h3>Аркан пары</h3><p>Сумма дней рождения даёт один из 22 арканов — короткое описание того, какой будет ваша пара.</p></div>
     </div>
   </section>
 
@@ -539,7 +539,8 @@ def city_page(c, base, all_cities):
     </ul>
   </section>
 </main>
-""" + footer("../") + """<script src="compat.js" defer></script>
+""" + footer("../") + """<script src="../compat-table.js" defer></script>
+<script src="compat.js" defer></script>
 </body>
 </html>
 """

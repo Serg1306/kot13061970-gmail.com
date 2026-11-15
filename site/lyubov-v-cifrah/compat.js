@@ -1,6 +1,7 @@
-// Расчёт совместимости по датам рождения — копия функций из index.html (блок «расчёты по дате»).
-// При изменении формулы в index.html обновите и этот файл.
+// Расчёт совместимости по датам рождения — копия блока «расчёты по дате» из index.html.
+// Процент берётся из таблицы compat-table.js. При изменении формулы в index.html обновите и этот файл.
 (() => {
+  /* ---------- расчёты по дате ---------- */
   const parse = s => { const [y, m, d] = s.split('-').map(Number); return { y, m, d }; };
   const digitSum = n => String(n).split('').reduce((a, c) => a + +c, 0);
   function lifePath({ y, m, d }) {
@@ -42,16 +43,16 @@
     21: ['Мир', 'Цельная пара, вам хорошо где угодно вместе.', 95], 22: ['Шут', 'Свобода и спонтанность, без рутины.', 70]
   };
 
+  // Процент пары берётся только из таблицы compat-table.js (её можно править без программиста).
+  // Знак, восточный год и аркан показываются как подробности и на процент не влияют.
+  const TABLE = globalThis.LVC_TABLE || { numbers: {}, pairs: {}, levels: [] };
+  const pctOf = v => Math.max(0, Math.min(100, Math.round(Number(v) || 0)));
   function scoreNumerology(a, b) {
-    const fam = n => (n === 11 ? 2 : n === 22 ? 4 : n);
-    const x = fam(a), y = fam(b);
-    const g = n => [1, 5, 7].includes(n) ? 0 : [2, 4, 8].includes(n) ? 1 : 2;
-    if (a === b) return [88, `Одинаковое число ${a}: вы смотрите на мир похоже.`];
-    if (g(x) === g(y)) return [94, `Числа ${a} и ${b} из одной семьи, ритм жизни совпадает.`];
-    const friendly = { 0: 2, 1: 2, 2: 1 }; // 1-5-7 ↔ 3-6-9, 2-4-8 ↔ 3-6-9
-    if (friendly[g(x)] === g(y) || friendly[g(y)] === g(x)) return [72, `Числа ${a} и ${b} дополняют друг друга.`];
-    return [52, `Числа ${a} и ${b} разные по темпу, нужно больше разговаривать.`];
+    const row = TABLE.pairs[`${Math.min(a, b)}-${Math.max(a, b)}`] || [50, ''];
+    return [pctOf(row[0]), String(row[1] || '')];
   }
+  const levelOf = t => TABLE.levels.find(l => t >= l.min) || TABLE.levels[TABLE.levels.length - 1] || { title: '', text: '' };
+  const numberInfo = n => TABLE.numbers[n] || { name: '', about: '' };
   function scoreZodiac(a, b) {
     const diff = Math.abs(a.i - b.i);
     if (a.i === b.i) return [80, `Оба ${a.name}: хорошо понимаете друг друга, но можете скучать.`];
@@ -73,21 +74,27 @@
   const cap = s => s[0].toUpperCase() + s.slice(1);
 
   function compat(s1, s2) {
-    const p1 = parse(s1), p2 = parse(s2);
-    const n = scoreNumerology(lifePath(p1), lifePath(p2));
-    const z = scoreZodiac(zodiac(p1), zodiac(p2));
-    const e = scoreEastern(eastern(p1), eastern(p2));
+    const p1 = parse(s1), p2 = parse(s2), n1 = lifePath(p1), n2 = lifePath(p2);
+    const n = scoreNumerology(n1, n2);
+    const z1 = zodiac(p1), z2 = zodiac(p2), e1 = eastern(p1), e2 = eastern(p2);
+    const z = scoreZodiac(z1, z2);
+    const e = scoreEastern(e1, e2);
     let pa = arcanum(p1) + arcanum(p2); if (pa > 22) pa -= 22;
     const ar = ARCANA[pa];
+    const total = n[0];
+    // parts: число судьбы даёт процент (w: 1), остальное — подробности без веса
     const parts = [
-      { key: 'num', t: 'Число судьбы', w: .30, v: n[0], why: n[1], c: 'var(--rose)' },
-      { key: 'zod', t: 'Знак и стихия', w: .25, v: z[0], why: z[1], c: 'var(--sun)' },
-      { key: 'east', t: 'Восточный год', w: .25, v: e[0], why: e[1], c: 'var(--sea)' },
-      { key: 'arc', t: 'Аркан пары', w: .20, v: ar[2], why: `${pa}, ${ar[0]}: ${ar[1]}`, c: 'var(--plum)' }
+      { key: 'num', t: 'Число судьбы', w: 1, v: total, short: `${n1} и ${n2}`, why: n[1], c: 'var(--rose)' },
+      { key: 'zod', t: 'Знак и стихия', w: 0, v: z[0], short: `${z1.name} и ${z2.name}`, why: z[1], c: 'var(--sun)' },
+      { key: 'east', t: 'Восточный год', w: 0, v: e[0], short: `${e1.name} и ${e2.name}`, why: e[1], c: 'var(--sea)' },
+      { key: 'arc', t: 'Аркан пары', w: 0, v: ar[2], short: `${pa}, ${ar[0]}`, why: `${pa}, ${ar[0]}: ${ar[1]}`, c: 'var(--plum)' }
     ];
-    const total = Math.round(parts.reduce((a, p) => a + p.v * p.w, 0));
-    return { total, parts, pairArcanum: pa, arc: ar };
+    const a = numberInfo(n1), b = numberInfo(n2);
+    // описание пары: кто есть кто, текст пары из таблицы, вывод по проценту
+    const about = [n[1], levelOf(total).text].filter(Boolean).join(' ');
+    const text = [`Ваше число судьбы ${n1}${a.name ? ` (${a.name})` : ''}, у партнёра ${n2}${b.name ? ` (${b.name})` : ''}.`, about].join(' ');
+    return { total, parts, pairArcanum: pa, arc: ar, n1, n2, text, about };
   }
-  const verdictOf = t => t >= 85 ? 'Редкое совпадение, пишите первыми' : t >= 72 ? 'Хорошая пара, есть о чём поговорить' : t >= 60 ? 'Можно попробовать' : 'Разные ритмы, но всё решает встреча';
-  window.LVC = { parse, lifePath, zodiac, eastern, arcanum, ARCANA, compat, verdictOf };
+  const verdictOf = t => levelOf(t).title;
+  window.LVC = { parse, lifePath, zodiac, eastern, arcanum, ARCANA, compat, verdictOf, levelOf, numberInfo };
 })();
