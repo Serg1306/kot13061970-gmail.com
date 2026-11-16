@@ -456,8 +456,9 @@ def city_page(c, base, all_cities):
          "dateModified": TODAY},
         breadcrumbs_ld(base, [("Главная", base + "/"), ("Города", base + "/goroda/"), (name, url)]),
     ]}
+    current = ' aria-current="page"'  # вне f-строки: Python до 3.12 не разрешает обратную косую черту внутри {}
     others = "\n".join(
-        f'    <li><a href="{o[0]}.html"{" aria-current=\"page\"" if o[0] == slug else ""}>{esc(o[1])}</a></li>' for o in all_cities)
+        f'    <li><a href="{o[0]}.html"{current if o[0] == slug else ""}>{esc(o[1])}</a></li>' for o in all_cities)
     ideas_html = "\n".join(f"        <li>{esc(i[0].upper() + i[1:])}</li>" for i in ideas)
     abroad = group in ("eu", "world")
     where = (f"Если вы недавно переехали, укажите в анкете город «{name}» — так вас найдут русскоязычные соседи, которые тоже ищут пару {prep}, "
