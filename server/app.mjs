@@ -14,9 +14,11 @@ import { sha256 } from './model.mjs';
 import { createNotifier } from './notify.mjs';
 import { destroySelfie, loadSecret, purgeBannedEmails } from './pd.mjs';
 import { createPush } from './push.mjs';
+import { createSms } from './sms.mjs';
 import actionRoutes from './routes/actions.mjs';
 import adminRoutes from './routes/admin.mjs';
 import authRoutes from './routes/auth.mjs';
+import oauthRoutes from './routes/oauth.mjs';
 import payRoutes, { checkPendingOrders } from './routes/pay.mjs';
 import peopleRoutes from './routes/people.mjs';
 import profileRoutes from './routes/profile.mjs';
@@ -57,12 +59,12 @@ export function createApp(env = process.env, { log = console } = {}) {
   for (const dir of [config.dataDir, config.uploadsDir, config.privateDir]) fs.mkdirSync(dir, { recursive: true });
   const logger = log || silentLog;
   const db = openDb(path.join(config.dataDir, 'lvc.sqlite'));
-  const app = { config, db, log: logger, limiter: createLimiter(), mailer: createMailer(config, logger), push: config.pushEnabled ? createPush(config, logger) : DISABLED_PUSH };
+  const app = { config, db, log: logger, limiter: createLimiter(), mailer: createMailer(config, logger), sms: createSms(config, logger), push: config.pushEnabled ? createPush(config, logger) : DISABLED_PUSH };
   app.secret = loadSecret(config.dataDir);
   app.notify = createNotifier(app);
 
   const router = createRouter();
-  for (const add of [authRoutes, profileRoutes, peopleRoutes, actionRoutes, payRoutes, adminRoutes]) add(router.route);
+  for (const add of [authRoutes, oauthRoutes, profileRoutes, peopleRoutes, actionRoutes, payRoutes, adminRoutes]) add(router.route);
 
   // Пользователь по cookie сессии. Время последней активности обновляется не чаще раза в минуту.
   function sessionUser(token) {
@@ -121,9 +123,23 @@ export function createApp(env = process.env, { log = console } = {}) {
     sendJson(res, 200, out === undefined ? { ok: true } : out);
   }
 
+  // Основной домен из PUBLIC_URL (без www), например lyubovvcifrah.ru.
+  function canonicalHost() {
+    try { return config.publicUrl ? new URL(config.publicUrl).host.replace(/^www\./, '') : ''; } catch { return ''; }
+  }
+
   function handleStatic(req, res, url) {
     if (req.method !== 'GET' && req.method !== 'HEAD') return sendText(res, 405, 'Method not allowed');
     const p = url.pathname;
+    // Один адрес на страницу для поисковиков: www и /index.html ведут на основной адрес (301).
+    const host = String(req.headers.host || '').toLowerCase();
+    const main = canonicalHost();
+    const bare = p.endsWith('/index.html') ? p.slice(0, -'index.html'.length) : p;
+    const www = main && host === 'www.' + main;
+    if (www || bare !== p) {
+      res.writeHead(301, { location: (www ? new URL(config.publicUrl).protocol + '//' + main : '') + bare + url.search });
+      return res.end();
+    }
     if (p.startsWith('/uploads/')) {
       const name = p.slice('/uploads/'.length);
       if (isSafeName(name) && serveFile(req, res, path.join(config.uploadsDir, name), 'public, max-age=31536000, immutable')) return;
@@ -137,6 +153,10 @@ export function createApp(env = process.env, { log = console } = {}) {
       // Папка без завершающего слэша — перенаправляем, чтобы относительные ссылки работали.
       if (!p.endsWith('/')) { res.writeHead(301, { location: p + '/' + url.search }); return res.end(); }
       file = path.join(file, 'index.html');
+    }
+    // Адрес без .html (так его отдавал Netlify и запомнил Google) ведёт на страницу с .html.
+    if (!path.extname(p) && !p.endsWith('/') && !fs.existsSync(file) && fs.existsSync(file + '.html')) {
+      res.writeHead(301, { location: p + '.html' + url.search }); return res.end();
     }
     const ext = path.extname(file).toLowerCase();
     const cache = ['.html', '.js', '.mjs', '.webmanifest', '.json'].includes(ext) ? 'no-cache' : 'public, max-age=86400';

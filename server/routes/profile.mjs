@@ -1,8 +1,9 @@
 // Своя анкета: данные, настройки, фото, проверка селфи.
 import { fail } from '../http.mjs';
+import { LANGS, langOf } from '../langs.mjs';
 import { decodeImage, removeFile, saveFile } from '../media.mjs';
 import { isVip, myPhotos, userOut } from '../model.mjs';
-import { parseDetails } from '../options.mjs';
+import { CHOICES, DETAIL_KEYS, parseDetails } from '../options.mjs';
 
 const MAX_PHOTOS = 10;
 const invalid = field => fail(400, 'invalid', { field });
@@ -26,7 +27,7 @@ function checkBirth(birth) {
 export function validateProfile(body) {
   const p = {
     name: oneLine(body.name), birth: str(body.birth), g: body.g, seek: body.seek,
-    city: oneLine(body.city), about: str(body.about), lang: body.lang === 'en' ? 'en' : 'ru',
+    city: oneLine(body.city), about: str(body.about), lang: langOf(body.lang),
     ...parseDetails(body),
   };
   if (!NAME_RE.test(p.name)) fail(400, 'bad_name');
@@ -53,9 +54,10 @@ export default function profileRoutes(route) {
       db.run('UPDATE users SET name = ?, birth = ?, g = ?, seek = ?, city = ?, about = ?, lang = ? WHERE id = ?',
         p.name, p.birth, p.g, p.seek, p.city, p.about, body.lang ? p.lang : user.lang, user.id);
       // подробности анкеты необязательны: старый клиент без этих полей их не стирает
-      if (['goal', 'interests', 'height', 'kids', 'smoke'].some(k => k in body)) {
-        db.run('UPDATE users SET goal = ?, interests = ?, height = ?, kids = ?, smoke = ? WHERE id = ?',
-          p.goal, JSON.stringify(p.interests), p.height, p.kids, p.smoke, user.id);
+      if (DETAIL_KEYS.some(k => k in body)) {
+        const ch = Object.keys(CHOICES);
+        db.run(`UPDATE users SET goal = ?, interests = ?, height = ?, kids = ?, smoke = ?, ${ch.map(k => `${k} = ?`).join(', ')}, job = ?, langs = ? WHERE id = ?`,
+          p.goal, JSON.stringify(p.interests), p.height, p.kids, p.smoke, ...ch.map(k => p[k]), p.job, JSON.stringify(p.langs), user.id);
       }
       if (fresh) {
         db.run('UPDATE users SET consent_at = COALESCE(consent_at, ?), consent_public_at = COALESCE(consent_public_at, ?), consent_version = ?, consent_ip = ? WHERE id = ?',
@@ -63,6 +65,17 @@ export default function profileRoutes(route) {
       }
     });
     return { user: userOut(meAgain(db, user.id)) };
+  }, { auth: 'user' });
+
+  // Повторное согласие после смены редакции документов (например, смены оператора данных):
+  // клиент показывает окно, если consentVersion пользователя не совпадает с текущей из /api/config.
+  route('POST', '/api/consent', ({ app, user, body, ip }) => {
+    if (body.consent !== true) fail(400, 'consent_required');
+    if (body.consentPublic !== true) fail(400, 'consent_public_required');
+    const now = Date.now();
+    app.db.run('UPDATE users SET consent_at = ?, consent_public_at = ?, consent_version = ?, consent_ip = ? WHERE id = ?',
+      now, now, app.config.consentVersion, String(ip || '').slice(0, 64), user.id);
+    return { user: userOut(meAgain(app.db, user.id)) };
   }, { auth: 'user' });
 
   route('PUT', '/api/settings', ({ app, user, body }) => {
@@ -75,7 +88,7 @@ export default function profileRoutes(route) {
       sets.push(`${col} = ?`); vals.push(body[key] ? 1 : 0);
     }
     if (body.lang !== undefined) {
-      if (!['ru', 'en'].includes(body.lang)) invalid('lang');
+      if (!LANGS.includes(body.lang)) invalid('lang');
       sets.push('lang = ?'); vals.push(body.lang);
     }
     if (sets.length) db.run(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`, ...vals, user.id);

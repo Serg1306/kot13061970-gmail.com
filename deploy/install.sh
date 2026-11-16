@@ -5,7 +5,10 @@
 #
 # Скрипт можно запускать повторно: он обновит сайт до свежей версии и не тронет данные пользователей и настройки.
 # После установки доступны команды:
-#   lyubov-robokassa  — ввести данные магазина Робокассы (пароли вводятся на сервере, никуда не отправляются)
+#   lyubov-tkassa     — ввести данные терминала Т-Кассы (пароль вводится на сервере, никуда не отправляется)
+#   lyubov-sms        — вход по номеру телефона: ключ SMS.ru для СМС с кодом
+#   lyubov-vk         — вход через VK ID: ID приложения
+#   lyubov-yandex     — вход через Яндекс ID: ClientID и Client secret приложения
 #   lyubov-mail       — настроить почту для кодов входа (Яндекс)
 #   lyubov-domain     — подключить домен и HTTPS
 #   lyubov-update     — обновить сайт до последней версии
@@ -84,24 +87,33 @@ SMTP_USER=
 SMTP_PASS=
 SMTP_FROM=
 
+# СМС с кодом входа по номеру телефона (SMS.ru): настраивается командой lyubov-sms
+SMS_RU_API_ID=
+SMS_PREFIXES=7
+SMS_DAILY_LIMIT=300
+
+# Вход через VK ID и Яндекс ID: настраивается командами lyubov-vk и lyubov-yandex
+VK_CLIENT_ID=
+YANDEX_CLIENT_ID=
+YANDEX_CLIENT_SECRET=
+
 DEV_CODES=0
 AUTO_APPROVE=0
 PUSH_ENABLED=0
-CONSENT_VERSION=2026-10-14
 METRIKA_ID=
 
-# Робокасса: настраивается командой lyubov-robokassa
-ROBOKASSA_LOGIN=
-ROBOKASSA_PASS1=
-ROBOKASSA_PASS2=
-ROBOKASSA_TEST=1
-ROBOKASSA_HASH=md5
-ROBOKASSA_RECEIPT=1
-ROBOKASSA_TAX=none
+# Т-Касса: настраивается командой lyubov-tkassa
+TKASSA_TERMINAL=
+TKASSA_PASSWORD=
+TKASSA_RECEIPT=0
+TKASSA_TAXATION=usn_income
+TKASSA_TAX=none
 EOF
   ok "Создан файл настроек $ENV_FILE"
 else
   ok "Файл настроек уже есть — не трогаю"
+  # Редакцию согласий задаёт сам сайт: строка из прошлых установок больше не нужна.
+  sed -i '/^CONSENT_VERSION=/d' "$ENV_FILE"
 fi
 chown lyubov:lyubov "$ENV_FILE"; chmod 600 "$ENV_FILE"
 
@@ -184,27 +196,26 @@ PY
 else echo "\$k=\$v" >> "\$ENV_FILE"; fi; }
 EOF
 
-cat > /usr/local/bin/lyubov-robokassa <<'EOF'
+cat > /usr/local/bin/lyubov-tkassa <<'EOF'
 #!/usr/bin/env bash
-# Ввод данных магазина Робокассы. Пароли вводятся здесь, на сервере, и никуда не отправляются.
+# Ввод данных терминала Т-Кассы. Пароль вводится здесь, на сервере, и никуда не отправляется.
 set -e
 . /usr/local/lib/lyubov-env.sh
-echo "Данные возьмите в личном кабинете Робокассы: ваш магазин → «Технические настройки»."
-read -r -p "Идентификатор магазина: " L </dev/tty
-read -r -s -p "Пароль #1 (ввод не отображается): " P1 </dev/tty; echo
-read -r -s -p "Пароль #2 (ввод не отображается): " P2 </dev/tty; echo
-read -r -p "Это тестовые пароли? (да/нет) [да]: " T </dev/tty
-case "${T:-да}" in н*|n*) T=0 ;; *) T=1 ;; esac
-setenv ROBOKASSA_LOGIN "$L"; setenv ROBOKASSA_PASS1 "$P1"; setenv ROBOKASSA_PASS2 "$P2"
-if [ "$T" = 1 ]; then setenv ROBOKASSA_TEST 1; else setenv ROBOKASSA_TEST 0; fi
+echo "Данные возьмите в личном кабинете Т-Бизнеса: Интернет-эквайринг → Магазины → ваш магазин → Терминалы."
+echo "Для проверки сначала введите тестовый терминал (в конце его имени DEMO), потом боевой."
+read -r -p "TerminalKey: " K </dev/tty
+read -r -s -p "Пароль терминала (ввод не отображается): " P </dev/tty; echo
+read -r -p "Подключена онлайн-касса и нужно передавать чеки? (да/нет) [нет]: " R </dev/tty
+case "${R:-нет}" in д*|y*) R=1 ;; *) R=0 ;; esac
+setenv TKASSA_TERMINAL "$K"; setenv TKASSA_PASSWORD "$P"; setenv TKASSA_RECEIPT "$R"
+if [ "$R" = 1 ]; then
+  read -r -p "Система налогообложения (osn, usn_income, usn_income_outcome, patent) [usn_income]: " X </dev/tty
+  setenv TKASSA_TAXATION "${X:-usn_income}"
+fi
 systemctl restart lyubov
-URL=$(grep '^PUBLIC_URL=' "$ENV_FILE" | cut -d= -f2-)
 echo
-echo "Готово. В Робокассе → «Технические настройки» укажите (метод для Result URL — POST):"
-echo "  Result URL:  $URL/api/robokassa-result"
-echo "  Success URL: $URL/"
-echo "  Fail URL:    $URL/?pay=fail"
-[ "$T" = 1 ] && echo "Сейчас включён ТЕСТОВЫЙ режим. После активации магазина запустите команду ещё раз с боевыми паролями."
+echo "Готово. Адреса уведомлений и возврата сайт передаёт Т-Кассе сам, в кабинете их указывать не нужно."
+case "$K" in *DEMO|*demo) echo "Сейчас включён ТЕСТОВЫЙ терминал. После проверки запустите команду ещё раз с боевым терминалом.";; esac
 EOF
 
 cat > /usr/local/bin/lyubov-mail <<'EOF'
@@ -218,6 +229,79 @@ setenv SMTP_HOST smtp.yandex.ru; setenv SMTP_PORT 465; setenv SMTP_USER "$U"; se
 setenv SMTP_FROM "Любовь в цифрах <$U>"
 systemctl restart lyubov
 echo "Готово. Попробуйте войти на сайт — код должен прийти на почту."
+EOF
+
+cat > /usr/local/bin/lyubov-sms <<'EOF'
+#!/usr/bin/env bash
+# Вход по номеру телефона: СМС с кодом через SMS.ru. Ключ остаётся на сервере.
+#   lyubov-sms                — спросит ключ
+#   lyubov-sms КЛЮЧ           — ключ сразу после команды
+#   lyubov-sms КЛЮЧ 500       — и суточный лимит кодов
+set -e
+. /usr/local/lib/lyubov-env.sh
+K="${1:-}"
+if [ -z "$K" ]; then
+  echo "Ключ возьмите в кабинете sms.ru: «Программистам» → api_id."
+  read -r -p "Вставьте api_id (правая кнопка мыши) и нажмите Enter: " K </dev/tty
+fi
+K=$(printf '%s' "$K" | tr -d '[:space:]')
+if ! printf '%s' "$K" | grep -Eq '^[A-Za-z0-9-]{16,}$'; then
+  echo "Это не похоже на api_id (он вида XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX). Ничего не сохранено, запустите lyubov-sms ещё раз."; exit 1
+fi
+B=$(curl -fsS --max-time 15 "https://sms.ru/my/balance?api_id=$K&json=1" || true)
+if printf '%s' "$B" | grep -q '"status": *"OK"'; then
+  echo "Ключ подходит. Баланс SMS.ru: $(printf '%s' "$B" | grep -o '"balance": *[0-9.]*' | grep -o '[0-9.]*$') ₽"
+else
+  echo "SMS.ru не принял ключ: $B"; echo "Проверьте api_id в кабинете sms.ru. Ничего не сохранено."; exit 1
+fi
+L="${2:-}"
+if [ -z "$1" ]; then read -r -p "Не больше скольких кодов в сутки на весь сайт (защита баланса) [300]: " L </dev/tty; fi
+case "$L" in ''|*[!0-9]*) L=300 ;; esac
+setenv SMS_RU_API_ID "$K"; setenv SMS_DAILY_LIMIT "$L"
+grep -q '^SMS_PREFIXES=' "$ENV_FILE" || setenv SMS_PREFIXES 7
+systemctl restart lyubov
+echo "Готово. На сайте вход теперь по номеру телефона, по почте — запасной вариант. Лимит: $L кодов в сутки."
+echo "Коды уходят только на номера +7 (Россия и Казахстан). Другие страны: строка SMS_PREFIXES в $ENV_FILE, например 7,375,998."
+EOF
+
+cat > /usr/local/bin/lyubov-vk <<'EOF'
+#!/usr/bin/env bash
+# Вход через VK ID. ID приложения — в кабинете id.vk.com/about/business/go → ваше приложение (подробно — docs/oauth-setup.md).
+#   lyubov-vk           — спросит ID
+#   lyubov-vk 12345678  — ID сразу после команды
+set -e
+. /usr/local/lib/lyubov-env.sh
+K="${1:-}"
+[ -n "$K" ] || read -r -p "ID приложения VK ID (только цифры): " K </dev/tty
+K=$(printf '%s' "$K" | tr -d '[:space:]')
+if ! printf '%s' "$K" | grep -Eq '^[0-9]{5,12}$'; then echo "ID приложения VK — это только цифры. Ничего не сохранено."; exit 1; fi
+setenv VK_CLIENT_ID "$K"
+systemctl restart lyubov
+U=$(grep '^PUBLIC_URL=' "$ENV_FILE" | cut -d= -f2-)
+echo "Готово. На сайте появилась кнопка «Войти через VK ID»."
+echo "В настройках приложения VK ID должен быть доверенный Redirect URL: $U/api/oauth/vk/callback"
+EOF
+
+cat > /usr/local/bin/lyubov-yandex <<'EOF'
+#!/usr/bin/env bash
+# Вход через Яндекс ID. ClientID и Client secret — на oauth.yandex.ru → ваше приложение (подробно — docs/oauth-setup.md).
+#   lyubov-yandex                    — спросит оба значения
+#   lyubov-yandex CLIENT_ID SECRET   — сразу после команды
+set -e
+. /usr/local/lib/lyubov-env.sh
+K="${1:-}"; S="${2:-}"
+[ -n "$K" ] || read -r -p "ClientID (вставьте правой кнопкой мыши и нажмите Enter): " K </dev/tty
+[ -n "$S" ] || read -r -p "Client secret (вставьте и нажмите Enter): " S </dev/tty
+K=$(printf '%s' "$K" | tr -d '[:space:]'); S=$(printf '%s' "$S" | tr -d '[:space:]')
+for V in "$K" "$S"; do
+  if ! printf '%s' "$V" | grep -Eq '^[0-9a-f]{32}$'; then echo "Это не похоже на ClientID или Client secret Яндекса (32 символа: цифры и буквы a–f). Ничего не сохранено."; exit 1; fi
+done
+[ "$K" != "$S" ] || { echo "ClientID и Client secret совпадают — похоже, одно значение вставлено дважды. Ничего не сохранено."; exit 1; }
+setenv YANDEX_CLIENT_ID "$K"; setenv YANDEX_CLIENT_SECRET "$S"
+systemctl restart lyubov
+U=$(grep '^PUBLIC_URL=' "$ENV_FILE" | cut -d= -f2-)
+echo "Готово. На сайте появилась кнопка «Войти с Яндекс ID»."
+echo "В настройках приложения Яндекса должен быть Redirect URI: $U/api/oauth/yandex/callback"
 EOF
 
 cat > /usr/local/bin/lyubov-domain <<'EOF'
@@ -243,7 +327,6 @@ setenv PUBLIC_URL "https://$D"
 systemctl restart lyubov
 echo
 echo "Готово: https://$D"
-echo "Если Робокасса уже подключена, поменяйте адреса в её «Технических настройках» на https://$D/… (команда lyubov-robokassa покажет их)."
 EOF
 
 cat > /usr/local/bin/lyubov-update <<EOF
@@ -255,8 +338,9 @@ chown -R lyubov:lyubov "$APP"
 systemctl restart lyubov
 echo "Сайт обновлён до версии \$(git -C "$APP" rev-parse --short HEAD)"
 EOF
-chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-robokassa /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
-ok "Команды lyubov-robokassa, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
+rm -f /usr/local/bin/lyubov-robokassa
+chmod +x /usr/local/bin/lyubov-backup /usr/local/bin/lyubov-tkassa /usr/local/bin/lyubov-sms /usr/local/bin/lyubov-vk /usr/local/bin/lyubov-yandex /usr/local/bin/lyubov-mail /usr/local/bin/lyubov-domain /usr/local/bin/lyubov-update
+ok "Команды lyubov-tkassa, lyubov-sms, lyubov-vk, lyubov-yandex, lyubov-mail, lyubov-domain, lyubov-update, lyubov-backup готовы"
 
 say "8/8. Проверка"
 if curl -fsS http://127.0.0.1/api/config | grep -q '"live":true'; then ok "Сайт работает: http://$IP/"; else warn "Сайт не ответил, журнал: journalctl -u lyubov -n 50"; fi
@@ -266,6 +350,8 @@ cat <<EOF
 Готово! Дальше по порядку:
   1. lyubov-domain     — когда купите домен и направите его на $IP
   2. lyubov-mail       — чтобы коды входа приходили на почту
-  3. lyubov-robokassa  — когда зарегистрируете магазин в Робокассе
+  3. lyubov-sms        — вход по номеру телефона (СМС через SMS.ru)
+  4. lyubov-vk, lyubov-yandex — вход через VK ID и Яндекс ID (docs/oauth-setup.md)
+  5. lyubov-tkassa     — когда подключите интернет-эквайринг Т-Кассы
 Модерация: http://$IP/admin.html (вход по почте модератора).
 EOF

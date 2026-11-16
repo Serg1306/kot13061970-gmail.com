@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS gifts (
   t INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS gifts_to ON gifts(to_id);
--- Счета Робокассы: InvId привязан к пользователю, начисление ровно один раз (status new → paid).
+-- Заказы Т-Кассы: номер заказа (OrderId) привязан к пользователю, начисление ровно один раз (status new → paid).
 CREATE TABLE IF NOT EXISTS orders (
   inv_id TEXT PRIMARY KEY,
   user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
@@ -175,6 +175,15 @@ CREATE TABLE IF NOT EXISTS pd_destruction (
   operator TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS pd_destruction_at ON pd_destruction(at);
+-- Вход через VK ID и Яндекс ID: постоянный ID человека у провайдера → аккаунт.
+CREATE TABLE IF NOT EXISTS oauth_ids (
+  provider TEXT NOT NULL,
+  sub TEXT NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (provider, sub)
+);
+CREATE INDEX IF NOT EXISTS oauth_user ON oauth_ids(user_id);
 -- Почты удалённых забаненных (только HMAC-хэш), чтобы они не могли зарегистрироваться снова. Хранятся 3 года.
 CREATE TABLE IF NOT EXISTS banned_emails (
   email_hash TEXT PRIMARY KEY,
@@ -185,8 +194,8 @@ CREATE TABLE IF NOT EXISTS banned_emails (
 
 // Колонки, добавленные после первого выпуска: в старой базе их создаём через ALTER TABLE.
 const COLUMNS = {
-  users: { consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT' },
-  orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER' },
+  users: { consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT', src: 'TEXT', marital: 'TEXT', body: 'TEXT', drink: 'TEXT', edu: 'TEXT', home: 'TEXT', income: 'TEXT', job: 'TEXT', langs: 'TEXT' },
+  orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER', payment_id: 'TEXT' },
 };
 
 function migrate(raw) {

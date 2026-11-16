@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { detailsOut } from './options.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
-import { CATALOG } from '../netlify/lib/robokassa.mjs';
+import { CATALOG } from './tkassa.mjs';
 import { removeFile } from './media.mjs';
 import { uploadSrc } from './model.mjs';
 
@@ -31,6 +31,10 @@ export function loadSecret(dataDir) {
 export const subjectRef = (secret, userId) => crypto.createHash('sha256').update(String(userId) + secret).digest('hex').slice(0, 16);
 export const emailHash = (secret, email) => crypto.createHmac('sha256', secret).update(String(email)).digest('hex');
 export function maskEmail(email) {
+  // Телефон: +7******67 — код страны и две последние цифры.
+  if (String(email || '').startsWith('+')) return email.slice(0, 2) + '*'.repeat(Math.max(0, email.length - 4)) + email.slice(-2);
+  // Вход через VK ID или Яндекс ID без почты и телефона: vk:*** — только провайдер.
+  if (/^(vk|yandex):/.test(String(email || ''))) return email.split(':')[0] + ':***';
   const [local = '', domain = ''] = String(email || '').split('@');
   return `${local.slice(0, 1) || '?'}***@${domain}`;
 }
@@ -103,6 +107,7 @@ export function exportUser(app, u) {
       invisible: Boolean(u.invisible), notifyEmail: Boolean(u.notify_email), notifyPush: Boolean(u.notify_push), banned: Boolean(u.banned),
       ...detailsOut(u),
     },
+    linkedAccounts: db.all('SELECT provider, sub AS id, created_at AS linkedAt FROM oauth_ids WHERE user_id = ? ORDER BY created_at', u.id),
     consents: { processingAt: u.consent_at, publicAt: u.consent_public_at, version: u.consent_version, ip: u.consent_ip },
     wallet: { coins: u.coins, vipUntil: u.vip_until, boostUntil: u.boost_until },
     photos: db.all('SELECT * FROM photos WHERE user_id = ? ORDER BY pos, id', u.id).map(p => ({ src: abs(uploadSrc(p.file)), status: p.status, createdAt: p.created_at })),

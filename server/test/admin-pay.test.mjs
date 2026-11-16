@@ -1,66 +1,50 @@
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
-import http from 'node:http';
 import { after, before, test } from 'node:test';
-import { parseOpState } from '../../netlify/lib/robokassa.mjs';
 import { ADMIN, startServer } from './helpers.mjs';
+import { startTkassaMock } from './tkassa-mock.mjs';
 
-const md5 = s => crypto.createHash('md5').update(s).digest('hex');
-
-// Поддельный XML-интерфейс Робокассы: состояние счёта задаёт тест.
-const states = new Map();
-const hits = [];
-const xml = (result, state) => `<?xml version="1.0" encoding="utf-8"?>
-<OperationStateResponse xmlns="http://merchant.roboxchange.com/WebService/">
-  <Result><Code>${result}</Code></Result>
-  ${state ? `<State><Code>${state}</Code><RequestDate>2026-10-14T10:00:00+03:00</RequestDate></State>` : ''}
-</OperationStateResponse>`;
-const mock = http.createServer((req, res) => {
-  const u = new URL(req.url, 'http://x');
-  const inv = u.searchParams.get('InvoiceID');
-  hits.push({ path: u.pathname, inv, sig: u.searchParams.get('Signature'), login: u.searchParams.get('MerchantLogin') });
-  res.writeHead(200, { 'content-type': 'text/xml' });
-  res.end(states.has(inv) ? xml(0, states.get(inv)) : xml(3));
-});
-
-let srv, admin;
+let srv, admin, tk, states;
 before(async () => {
-  await new Promise(r => mock.listen(0, '127.0.0.1', r));
-  srv = await startServer({
-    ROBOKASSA_LOGIN: 'demo-shop', ROBOKASSA_PASS1: 'p1secret', ROBOKASSA_PASS2: 'p2secret',
-    ROBOKASSA_XML_URL: `http://127.0.0.1:${mock.address().port}/Merchant/WebService/Service.asmx`,
-  });
+  tk = await startTkassaMock();
+  srv = await startServer(tk.env);
   admin = srv.client();
   await admin.login(ADMIN);
+  // Состояние заказа в Т-Кассе: «оплачен» = CONFIRMED на полную сумму заказа.
+  states = {
+    set(inv, status) {
+      const o = srv.app.db.get('SELECT price FROM orders WHERE inv_id = ?', inv);
+      tk.orders.set(inv, { status, amount: Math.round((o?.price || 0) * 100) });
+    },
+  };
 });
-after(async () => { await srv.close(); mock.close(); });
+after(async () => { await srv.close(); await tk.close(); });
 
-const order = async (c, product) => new URL((await c.post('/api/pay', { product })).body.url).searchParams.get('InvId');
+const order = async (c, product) => (await c.post('/api/pay', { product })).body.invId;
 const wallet = async c => (await c.get('/api/me')).body.wallet;
+const checks = () => tk.hits.filter(h => h.method === 'CheckOrder');
 
-test('разбор ответа OpStateExt', () => {
-  assert.deepEqual(parseOpState(xml(0, 100)), { resultCode: 0, stateCode: 100, state: 'paid', paid: true });
-  assert.equal(parseOpState(xml(0, 5)).state, 'pending');
-  assert.equal(parseOpState(xml(0, 60)).state, 'refunded');
-  assert.equal(parseOpState(xml(3)).state, 'not_found');
-  assert.equal(parseOpState('мусор').state, 'error');
-});
-
-test('сверка счёта с Робокассой и начисление один раз', async () => {
+test('сверка заказа с Т-Кассой и начисление один раз', async () => {
   const a = await srv.user('check@example.ru');
   const inv = await order(a, 'coins_100');
-  states.set(inv, 5);
   let r = await admin.post('/api/admin/order-check', { invId: inv });
-  assert.deepEqual(r.body, { state: 'pending', code: 5, resultCode: 0, credited: false });
-  const hit = hits.at(-1);
-  assert.equal(hit.path, '/Merchant/WebService/Service.asmx/OpStateExt');
-  assert.equal(hit.login, 'demo-shop');
-  assert.equal(hit.sig, md5(`demo-shop:${inv}:p2secret`));
+  assert.deepEqual(r.body, { state: 'NOT_FOUND', paid: false, credited: false });
+  states.set(inv, 'FORM_SHOWED');
+  r = await admin.post('/api/admin/order-check', { invId: inv });
+  assert.deepEqual(r.body, { state: 'FORM_SHOWED', paid: false, credited: false });
+  const hit = checks().at(-1);
+  assert.equal(hit.tokenOk, true);
+  assert.equal(hit.body.OrderId, inv);
 
-  states.set(inv, 100);
+  // Оплачен на другую сумму — не начисляем.
+  tk.orders.set(inv, { status: 'CONFIRMED', amount: 100 });
+  r = await admin.post('/api/admin/order-check', { invId: inv });
+  assert.equal(r.body.credited, false);
+  assert.equal((await wallet(a)).coins, 0);
+
+  states.set(inv, 'CONFIRMED');
   r = await admin.post('/api/admin/order-check', { invId: inv });
   assert.equal(r.body.credited, true);
-  assert.equal(r.body.state, 'paid');
+  assert.equal(r.body.state, 'CONFIRMED');
   assert.equal((await wallet(a)).coins, 100);
   r = await admin.post('/api/admin/order-check', { invId: inv });
   assert.equal(r.body.credited, false);
@@ -73,7 +57,7 @@ test('список платежей, фильтры и итоги', async () => 
   const a = await srv.user('payer@example.ru', { name: 'Плательщик' });
   const inv1 = await order(a, 'vip_1m');
   const inv2 = await order(a, 'coins_550');
-  states.set(inv1, 100);
+  states.set(inv1, 'CONFIRMED');
   await admin.post('/api/admin/order-check', { invId: inv1 });
   const all = (await admin.get('/api/admin/orders')).body;
   const o1 = all.orders.find(o => o.invId === inv1);
@@ -100,7 +84,7 @@ test('возврат: отмена услуги на сайте', async () => {
   const a = await srv.user('refund@example.ru');
   const coinsInv = await order(a, 'coins_550');
   assert.equal((await admin.post('/api/admin/refund', { invId: coinsInv })).body.error, 'not_paid');
-  states.set(coinsInv, 100);
+  states.set(coinsInv, 'CONFIRMED');
   await admin.post('/api/admin/order-check', { invId: coinsInv });
   srv.app.db.run('UPDATE users SET coins = 100 WHERE id = ?', a.id); // часть монет уже потрачена
   const r = await admin.post('/api/admin/refund', { invId: coinsInv, note: 'Ошибочная покупка, возврат в кабинете 14.10' });
@@ -116,7 +100,7 @@ test('возврат: отмена услуги на сайте', async () => {
   assert.equal((await wallet(a)).coins, 0);
 
   const vipInv = await order(a, 'vip_3d');
-  states.set(vipInv, 100);
+  states.set(vipInv, 'CONFIRMED');
   await admin.post('/api/admin/order-check', { invId: vipInv });
   const before = (await wallet(a)).vipUntil;
   assert.ok(before > Date.now() + 2.9 * 864e5);
@@ -135,34 +119,36 @@ test('фоновая сверка: возраст счёта, пауза 30 ми
   const ancient = await order(a, 'coins_100');
   srv.app.db.run('UPDATE orders SET created_at = ? WHERE inv_id = ?', Date.now() - 10 * 60e3, old);
   srv.app.db.run('UPDATE orders SET created_at = ? WHERE inv_id = ?', Date.now() - 49 * 3600e3, ancient);
-  states.set(fresh, 100); states.set(old, 100); states.set(ancient, 100);
-  hits.length = 0;
+  states.set(fresh, 'CONFIRMED'); states.set(old, 'CONFIRMED'); states.set(ancient, 'CONFIRMED');
+  tk.hits.length = 0;
   await srv.checkOrders();
-  assert.ok(hits.some(h => h.inv === old));
-  assert.ok(!hits.some(h => h.inv === fresh || h.inv === ancient));
+  assert.ok(checks().some(h => h.body.OrderId === old));
+  assert.ok(!checks().some(h => h.body.OrderId === fresh || h.body.OrderId === ancient));
   assert.equal((await wallet(a)).coins, 100);
   assert.ok(srv.app.db.get('SELECT last_checked_at FROM orders WHERE inv_id = ?', old).last_checked_at > 0);
 
   // Только что проверенный (и уже оплаченный) не проверяется снова.
-  hits.length = 0;
+  tk.hits.length = 0;
   srv.app.db.run("UPDATE orders SET status = 'new' WHERE inv_id = ?", old);
   await srv.checkOrders();
-  assert.ok(!hits.some(h => h.inv === old));
+  assert.ok(!checks().some(h => h.body.OrderId === old));
   srv.app.db.run("UPDATE orders SET status = 'paid' WHERE inv_id = ?", old);
 
   // Сеть недоступна: сервер не падает, админ получает понятную ошибку.
-  const s2 = await startServer({
-    ROBOKASSA_LOGIN: 'demo-shop', ROBOKASSA_PASS1: 'p1secret', ROBOKASSA_PASS2: 'p2secret', ROBOKASSA_XML_URL: 'http://127.0.0.1:1/x',
-  });
+  const s2 = await startServer({ ...tk.env, TKASSA_API_URL: 'http://127.0.0.1:1/v2' });
   try {
     const b = await s2.user('offline@example.ru');
-    const inv = await order(b, 'coins_100');
+    // Платёж не создаётся: Т-Касса недоступна.
+    const p = await b.post('/api/pay', { product: 'coins_100' });
+    assert.equal(p.status, 502);
+    assert.equal(p.body.error, 'tkassa_unavailable');
+    const inv = s2.app.db.get('SELECT inv_id FROM orders ORDER BY created_at DESC LIMIT 1').inv_id;
     s2.app.db.run('UPDATE orders SET created_at = ? WHERE inv_id = ?', Date.now() - 10 * 60e3, inv);
     await s2.checkOrders();
     const adm = s2.client();
     await adm.login(ADMIN);
     const r = await adm.post('/api/admin/order-check', { invId: inv });
     assert.equal(r.status, 502);
-    assert.equal(r.body.error, 'robokassa_unavailable');
+    assert.equal(r.body.error, 'tkassa_unavailable');
   } finally { await s2.close(); }
 });

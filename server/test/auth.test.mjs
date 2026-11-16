@@ -13,7 +13,7 @@ test('config и заголовки безопасности', async () => {
   assert.equal(r.status, 200);
   assert.equal(r.body.live, true);
   assert.equal(r.body.devCodes, true);
-  assert.equal(r.body.robokassa, false);
+  assert.equal(r.body.payments, false);
   assert.equal(r.body.vapidPublicKey, null); // push выключен по умолчанию
   assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
   assert.match(r.headers.get('content-security-policy'), /frame-ancestors 'none'/);
@@ -28,7 +28,7 @@ test('статика: index, типы, запрет выхода из папки
   assert.equal(video.status, 206);
   assert.equal(video.headers.get('content-type'), 'video/mp4');
   assert.equal((await video.arrayBuffer()).byteLength, 100);
-  for (const p of ['/%2e%2e/%2e%2e/package.json', '/..%2f..%2fnetlify/lib/robokassa.mjs', '/.git/config', '/tools/make_demo_media.py']) {
+  for (const p of ['/%2e%2e/%2e%2e/package.json', '/..%2f..%2fserver/tkassa.mjs', '/.git/config', '/tools/make_demo_media.py']) {
     const r = await c.get(p);
     assert.notEqual(r.status, 200, p);
   }
@@ -107,12 +107,21 @@ test('анкета: проверки, согласие, 18+', async () => {
   assert.equal(r.body.user.name, 'Анна-Мария');
   assert.ok(r.body.user.consentAt > 0);
   assert.equal(r.body.user.consentPublicAt, r.body.user.consentAt);
-  assert.equal(r.body.user.consentVersion, '2026-10-14');
+  assert.equal(r.body.user.consentVersion, '2026-11-12');
   assert.equal(srv.app.db.get('SELECT consent_ip FROM users WHERE id = ?', r.body.user.id).consent_ip, '127.0.0.1');
   // Повторное сохранение — согласие уже есть.
   const r2 = await c.put('/api/profile', { ...good, city: 'Казань' });
   assert.equal(r2.body.user.city, 'Казань');
   assert.equal(r2.body.user.consentAt, r.body.user.consentAt);
+  // Повторное согласие по новой редакции документов.
+  srv.app.db.run("UPDATE users SET consent_version = '2026-10-26' WHERE id = ?", r.body.user.id);
+  assert.equal((await c.get('/api/config')).body.consentVersion, '2026-11-12');
+  assert.equal((await c.post('/api/consent', { consent: true })).body.error, 'consent_public_required');
+  assert.equal((await c.post('/api/consent', { consentPublic: true })).body.error, 'consent_required');
+  const r3 = await c.post('/api/consent', { consent: true, consentPublic: true });
+  assert.equal(r3.status, 200);
+  assert.equal(r3.body.user.consentVersion, '2026-11-12');
+  assert.ok(r3.body.user.consentAt >= r.body.user.consentAt);
 });
 
 test('приветствие от поддержки на русском и английском', async () => {
@@ -127,6 +136,13 @@ test('приветствие от поддержки на русском и ан
   await en.put('/api/profile', { name: 'John', birth: '1990-01-01', g: 'm', seek: 'f', city: 'London', consent: true, consentPublic: true, lang: 'en' });
   const st2 = await en.get('/api/state');
   assert.equal(st2.body.chats.support[0].text, 'Welcome to Love in Numbers! Ask us anything about the site, payments or your profile here.');
+
+  const de = srv.client();
+  await de.login('welcome-de@example.ru', 'de');
+  await de.put('/api/profile', { name: 'Lena', birth: '1990-01-01', g: 'f', seek: 'm', city: 'Berlin', consent: true, consentPublic: true, lang: 'de' });
+  const st3 = await de.get('/api/state');
+  assert.match(st3.body.chats.support[0].text, /^Willkommen bei „Liebe in Zahlen“!/);
+  assert.equal(srv.app.db.get('SELECT lang FROM users WHERE email = ?', 'welcome-de@example.ru').lang, 'de');
 });
 
 test('выход и удаление аккаунта вместе с файлами', async () => {
@@ -149,4 +165,22 @@ test('выход и удаление аккаунта вместе с файла
 
   await b.post('/api/auth/logout');
   assert.equal((await b.get('/api/me')).status, 401);
+});
+
+test('без CODE_LOGIN вход по коду только для админов, остальные — через VK ID и Яндекс ID', async () => {
+  const off = await startServer({ DEV_CODES: '' });
+  try {
+    const c = off.client();
+    const cfg = (await c.get('/api/config')).body;
+    assert.equal(cfg.codeLogin, false);
+    assert.equal(cfg.phoneLogin, false);
+    const s = await c.post('/api/auth/start', { email: 'new@lvc.test' });
+    assert.equal(s.status, 403);
+    assert.equal(s.body.error, 'code_login_off');
+    assert.equal((await c.post('/api/auth/verify', { email: 'new@lvc.test', code: '123456' })).body.error, 'code_login_off');
+    // Админ по-прежнему получает код (письмо пишется в журнал, пока почта не настроена).
+    assert.equal((await c.post('/api/auth/start', { email: 'admin@lvc.test' })).status, 200);
+    const code = off.app.mailer.outbox.at(-1).code;
+    assert.equal((await c.post('/api/auth/verify', { email: 'admin@lvc.test', code })).status, 200);
+  } finally { await off.close(); }
 });

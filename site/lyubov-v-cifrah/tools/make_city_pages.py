@@ -2,8 +2,7 @@
 
 Запуск из корня репозитория:
     python3 site/lyubov-v-cifrah/tools/make_city_pages.py --base-url https://example.ru
-Без --base-url подставляется заглушка https://ВАШ-ДОМЕН — её потом можно заменить одним запуском
-с настоящим адресом (или поиском-заменой по сайту).
+Без --base-url подставляется адрес сайта https://lyubovvcifrah.ru.
 
 Что создаётся (всё в site/lyubov-v-cifrah/):
     goroda/<slug>.html   — страница города: заголовок, описание, мини-калькулятор совместимости,
@@ -30,11 +29,8 @@ import urllib.parse
 HERE = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.normpath(os.path.join(HERE, ".."))
 OUT = os.path.join(SITE, "goroda")
-PLACEHOLDER = "https://ВАШ-ДОМЕН"
+PLACEHOLDER = "https://lyubovvcifrah.ru"
 BRAND = "Любовь в цифрах"
-DEV = "Жеребцов Сергей Владимирович"
-INN = "667807174690"
-EMAIL = "kot13061970@gmail.com"
 
 # (slug, название, «в …» предложный падеж, страна/регион, группа, вступление, идеи для свидания)
 CITIES = [
@@ -430,7 +426,7 @@ def footer(prefix):
     <a href="{prefix}oferta.html">Оферта, оплата и возврат</a>
   </nav>
   <p>{BRAND} — знакомства по дате рождения. Только для лиц старше 18 лет. Расчёты совместимости носят развлекательный характер.</p>
-  <p>Разработчик: {DEV}. ИНН {INN}. Почта: <a href="mailto:{EMAIL}">{EMAIL}</a>. © 2026</p>
+  <p>© 2026 Любовь в цифрах · ООО «ЦИФРА И РЕШЕНИЕ», ОГРН 1269600036452, ИНН 6684050640</p>
 </footer>
 </div>
 """
@@ -460,8 +456,9 @@ def city_page(c, base, all_cities):
          "dateModified": TODAY},
         breadcrumbs_ld(base, [("Главная", base + "/"), ("Города", base + "/goroda/"), (name, url)]),
     ]}
+    current = ' aria-current="page"'  # вне f-строки: Python до 3.12 не разрешает обратную косую черту внутри {}
     others = "\n".join(
-        f'    <li><a href="{o[0]}.html"{" aria-current=\"page\"" if o[0] == slug else ""}>{esc(o[1])}</a></li>' for o in all_cities)
+        f'    <li><a href="{o[0]}.html"{current if o[0] == slug else ""}>{esc(o[1])}</a></li>' for o in all_cities)
     ideas_html = "\n".join(f"        <li>{esc(i[0].upper() + i[1:])}</li>" for i in ideas)
     abroad = group in ("eu", "world")
     where = (f"Если вы недавно переехали, укажите в анкете город «{name}» — так вас найдут русскоязычные соседи, которые тоже ищут пару {prep}, "
