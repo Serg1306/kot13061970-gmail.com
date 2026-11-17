@@ -3,7 +3,6 @@
 @font-face { font-family: 'Forum'; src: url(fonts/Forum-400.woff2) format('woff2'); font-weight: 400; font-display: swap; }
 @font-face { font-family: 'Oswald'; src: url(fonts/Oswald-var.woff2) format('woff2'); font-weight: 200 700; font-display: swap; }
 @font-face { font-family: 'Caveat'; src: url(fonts/Caveat-var.woff2) format('woff2'); font-weight: 400 700; font-display: swap; }
-@font-face { font-family: 'PT Mono'; src: url(fonts/PTMono-400.woff2) format('woff2'); font-weight: 400; font-display: swap; }
 :root {
   --wine-950: #1f040b;
   --wine-900: #2e0611;
@@ -33,9 +32,10 @@
 .mx { --mx-paper: #fff5f3; --mx-ink: #1c0a0f; --red: #b3173f; --cal: 'Oswald', 'Golos Text', sans-serif; }
 .mx { background: var(--wine-700); }
 .mx .mx-cal { font-family: var(--cal); text-transform: uppercase; letter-spacing: .02em; margin: 0; }
-.mx { --hand: 'Caveat', cursive; --mono: 'PT Mono', ui-monospace, monospace; --strip: #fbf3f1; }
+.mx { --hand: 'Caveat', cursive; --mono: 'Golos Text', system-ui, sans-serif; --strip: #fbf3f1; }
 .mx .mx-hand { font-family: var(--hand); font-weight: 600; }
-.mx .mx-mono { font-family: var(--mono); letter-spacing: .04em; }
+.mx .mx-mono { font-family: var(--mono); letter-spacing: .02em; }
+.mx { font-variant-numeric: tabular-nums; }
 
 /* ---------- 1. Отрывной календарь + видео ---------- */
 .mx .mx-hero { height: 460vh; }
@@ -114,7 +114,8 @@
   .mx .mx-board[data-scene] .mx-strips { gap: 10px; overflow: visible; justify-content: center; padding: 0; }
   .mx .mx-board[data-scene] .mx-pstrip { width: var(--sw); padding: 5px 5px 0; gap: 5px; }
   .mx .mx-board[data-scene] .mx-pstrip:nth-child(2) { margin-top: 40px; } .mx .mx-board[data-scene] .mx-pstrip:nth-child(4) { margin-top: 24px; }
-  .mx .mx-board[data-scene] .mx-pstrip .mx-mono { font-size: 8px; padding: 3px 0 6px; white-space: nowrap; }
+  .mx .mx-board[data-scene] .mx-pstrip .mx-mono { font-size: 11px; padding: 3px 0 6px; white-space: nowrap; letter-spacing: 0; }
+  .mx .mx-pstrip .mx-tail { display: none; }
 }
 
 /* ---------- 3. Совпадение: два полароида ---------- */
@@ -149,7 +150,7 @@
 .mx .mx-booth h2 { margin: 0; font: 600 clamp(52px, 7vw, 100px)/.9 var(--hand); color: #ffc2d4; text-align: center; }
 .mx .mx-cabin { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(18px, 3vw, 40px); align-items: center; width: min(860px, 100%); padding: clamp(18px, 3vw, 34px); border-radius: 22px; background: var(--wine-950); box-shadow: inset 0 0 0 1px rgb(246 228 232 / .12), 0 30px 70px rgb(0 0 0 / .35); }
 .mx .mx-fields { display: grid; gap: 14px; }
-.mx .mx-fields label { display: grid; gap: 8px; font: 400 13px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--blush-3); }
+.mx .mx-fields label { display: grid; gap: 8px; font: 500 14px/1.2 var(--ui); color: var(--blush-2); }
 .mx .mx-fields input { padding: 14px 16px; border-radius: 10px; border: 0; background: #12020a; box-shadow: inset 0 0 0 1px rgb(246 228 232 / .14); font: 400 22px/1 var(--mono); color: #ffc2d4; }
 .mx .mx-fields button { justify-self: start; padding: 14px 24px; border-radius: 999px; border: 0; background: var(--pink); color: var(--wine-950); font-weight: 700; cursor: pointer; }
 @media (hover: hover) and (pointer: fine) { .mx .mx-fields button:hover { background: #ff7aa6; } }
@@ -316,3 +317,12 @@
   .mx .mx-ctas { bottom: 16px; gap: 8px; width: calc(100% - 24px); justify-content: center; }
   .mx .mx-ctas > a { font-size: 14px; padding-inline: 14px; }
 }
+
+/* «Двенадцать месяцев»: вместо пустых контурных номеров — листок календаря со знаками зодиака этого месяца */
+.mx .mx-leafm { width: clamp(200px, 20vw, 300px); }
+.mx .mx-leaf { aspect-ratio: 3 / 4; display: grid; align-content: center; justify-items: center; gap: .1em; position: relative; padding: 18px; border-radius: 6px; background: var(--mx-paper); color: var(--red); font: 600 clamp(26px, 2.6vw, 40px)/1 var(--cal); text-transform: uppercase; letter-spacing: .02em; text-align: center; overflow-wrap: anywhere; box-shadow: 0 24px 50px rgb(0 0 0 / .3); transform: rotate(var(--lr, -2deg)); }
+.mx .mx-leafm:nth-of-type(even) .mx-leaf { --lr: 2deg; }
+.mx .mx-leaf b { font-weight: 600; }
+.mx .mx-leaf b + b::before { content: "+"; display: block; font-size: .55em; color: var(--mx-ink); opacity: .5; margin: .15em 0; }
+.mx .mx-leaf .mx-ln { position: absolute; left: 16px; top: 14px; font: 500 16px/1 var(--cal); letter-spacing: .12em; color: var(--mx-ink); opacity: .55; }
+@media (max-width: 760px) { .mx .mx-leafm { width: 58vw; } .mx .mx-leaf { font-size: 28px; } }
