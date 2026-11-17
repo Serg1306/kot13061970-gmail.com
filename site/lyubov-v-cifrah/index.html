@@ -7,8 +7,8 @@
 <link rel="canonical" href="https://lyubovvcifrah.ru/">
 <meta name="description" content="Сайт знакомств, который подбирает партнёра по дате рождения: число судьбы, знак зодиака, восточный год и аркан пары.">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#f1e1f6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#24183a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#470a1b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#470a1b" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
@@ -63,6 +63,10 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+/* телефон как приложение (mobile-native): без серой вспышки при нажатии, без задержки 300 мс, текст кнопок не выделяется долгим нажатием */
+html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+:is(a, button, [role=button], summary, label, select) { touch-action: manipulation; }
+:is(button, [role=button], .g3, .t-btn, .btn) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
 body { margin: 0; background: var(--bg-mid); color: var(--ink); font: 400 1rem/1.6 var(--font-body); padding-inline: 1rem; overflow-x: hidden; }
 .wrap { max-width: var(--wrap); margin-inline: auto; }
@@ -98,7 +102,7 @@ button, input, select { font: inherit; color: inherit; }
 .city-chips button span { color: var(--muted); font-weight: 500; margin-left: .3rem; font-variant-numeric: tabular-nums; }
 .city-chips button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 .city-chips button[aria-pressed="true"] span { color: inherit; opacity: .75; }
-.city-chips button:hover { border-color: var(--ink); }
+@media (hover: hover) and (pointer: fine) { .city-chips button:hover { border-color: var(--ink); } }
 .city-tools { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; align-items: center; margin: 1rem 0 1.2rem; }
 .city-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: .9rem; }
 .city-grid .slide { margin-left: 0; width: 100%; }
@@ -109,14 +113,15 @@ button, input, select { font: inherit; color: inherit; }
 .carousel-head p { color: var(--muted); font-size: .92rem; }
 .carousel-nav { margin-left: auto; display: flex; gap: .4rem; flex: none; }
 .carousel-nav button { width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--card); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer; display: grid; place-items: center; }
-.carousel-nav button:hover { background: var(--ink); color: var(--paper); }
+@media (hover: hover) and (pointer: fine) { .carousel-nav button:hover { background: var(--ink); color: var(--paper); } }
 .track { display: flex; gap: .9rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: .2rem .1rem 1rem; scrollbar-width: none;
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 1.2rem, #000 calc(100% - 2.5rem), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 1.2rem, #000 calc(100% - 2.5rem), transparent 100%); }
 .track::-webkit-scrollbar { display: none; }
 .slide { flex: 0 0 172px; scroll-snap-align: start; position: relative; aspect-ratio: 4 / 5.4; border-radius: 20px; overflow: hidden; border: 0; padding: 0; cursor: pointer; background: var(--line); color: #fff; text-align: left; box-shadow: 0 6px 18px rgb(60 20 70 / .14); }
 .track .slide:first-child { margin-left: 1.3rem; }
 .slide img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; transition: transform .4s ease; }
-.slide:hover img, .slide:focus-visible img { transform: scale(1.05); }
+.slide:focus-visible img { transform: scale(1.05); }
+@media (hover: hover) and (pointer: fine) { .slide:hover img { transform: scale(1.05); } }
 .slide .shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgb(25 10 40 / .82) 100%); }
 .slide .info { position: absolute; left: .75rem; right: .75rem; bottom: .7rem; line-height: 1.3; }
 .slide .info b { display: block; font-size: 1.02rem; }
@@ -197,7 +202,7 @@ form.card { background: var(--card); border: 1px solid var(--line); border-radiu
 .side-me[aria-current="page"] { border-color: var(--ink); }
 .side-nav { display: grid; gap: .15rem; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: .5rem; }
 .side-nav button { display: flex; justify-content: space-between; align-items: center; gap: .5rem; border: 0; background: none; color: var(--ink); text-align: left; font-weight: 600; padding: .6rem .8rem; border-radius: 12px; cursor: pointer; }
-.side-nav button:hover { background: var(--paper); }
+@media (hover: hover) and (pointer: fine) { .side-nav button:hover { background: var(--paper); } }
 .side-nav button[aria-current="page"] { background: var(--ink); color: var(--paper); }
 .side-nav .n { font-variant-numeric: tabular-nums; font-size: .8rem; color: var(--muted); }
 .side-nav .n.hot:not(:empty) { background: var(--rose); color: #fff; border-radius: 999px; padding: .05rem .5rem; }
@@ -322,7 +327,7 @@ body.in-app #app { display: block; }
 .filter-checks .opt { display: flex; gap: .45rem; align-items: center; white-space: nowrap; font-size: .92rem; }
 .stickers { display: grid; grid-template-columns: repeat(auto-fill, minmax(2.6rem, 1fr)); gap: .3rem; padding: .5rem; background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-top: .4rem; }
 .stickers button { border: 0; background: none; font-size: 1.6rem; line-height: 1; padding: .3rem; border-radius: 10px; cursor: pointer; }
-.stickers button:hover { background: var(--paper); }
+@media (hover: hover) and (pointer: fine) { .stickers button:hover { background: var(--paper); } }
 .msg.sticker { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 .2rem; }
 .msg.sticker span { font-size: 3rem; line-height: 1.1; }
 .msg.sticker time { color: var(--muted) !important; }
@@ -348,7 +353,7 @@ body.in-app #app { display: block; }
 .badge { background: rgb(20 10 35 / .72); color: #fff; font-size: .78rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .3rem; }
 .badge svg { width: .8rem; height: .8rem; fill: currentColor; }
 .person .body { padding: .85rem 1rem 1rem; display: grid; gap: .55rem; }
-.person:hover { border-color: var(--ink); }
+@media (hover: hover) and (pointer: fine) { .person:hover { border-color: var(--ink); } }
 .person .head { display: flex; gap: .75rem; align-items: center; }
 .ava { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-size: 1.3rem; flex: none; }
 .ava.big { width: 84px; height: 84px; font-size: 2rem; }
@@ -383,7 +388,7 @@ img.ava { object-fit: cover; }
 .gifts { display: grid; grid-template-columns: repeat(5, 1fr); gap: .45rem; }
 .gift { border: 1.5px solid var(--line); background: var(--paper); border-radius: 14px; padding: .55rem .2rem; cursor: pointer; display: grid; gap: .1rem; justify-items: center; font-size: .78rem; color: var(--muted); }
 .gift .g { font-size: 1.7rem; line-height: 1.1; }
-.gift:hover { border-color: var(--rose); color: var(--ink); }
+@media (hover: hover) and (pointer: fine) { .gift:hover { border-color: var(--rose); color: var(--ink); } }
 .sent-gifts { font-size: 1.3rem; letter-spacing: .1em; }
 .joined { display: flex; flex-wrap: wrap; gap: 1.2rem 2rem; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 1.6rem; }
 .joined-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
@@ -407,10 +412,10 @@ img.ava { object-fit: cover; }
 .tile .main { position: absolute; left: .4rem; top: .4rem; }
 .tile .tools { position: absolute; right: .35rem; top: .35rem; display: flex; gap: .3rem; }
 .tile .tools button { width: 2rem; height: 2rem; border-radius: 50%; border: 0; background: rgb(20 10 35 / .72); color: #fff; cursor: pointer; display: grid; place-items: center; font-size: 1rem; line-height: 1; }
-.tile .tools button:hover { background: var(--rose); }
+@media (hover: hover) and (pointer: fine) { .tile .tools button:hover { background: var(--rose); } }
 .add-tile { aspect-ratio: 3 / 4; border-radius: 14px; border: 1.5px dashed var(--muted); background: none; cursor: pointer; display: grid; place-content: center; gap: .3rem; color: var(--muted); font-weight: 600; text-align: center; padding: .5rem; }
 .add-tile b { font-family: var(--font-display); font-weight: 400; font-size: 2.2rem; line-height: 1; color: var(--rose); }
-.add-tile:hover { border-color: var(--rose); color: var(--ink); }
+@media (hover: hover) and (pointer: fine) { .add-tile:hover { border-color: var(--rose); color: var(--ink); } }
 .add-tile:disabled { opacity: .5; cursor: progress; }
 
 /* галерея анкеты */
@@ -527,7 +532,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 
 /* безопасность: жалобы и блокировка */
 .linkish { background: none; border: 0; padding: .2rem 0; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: .88rem; }
-.linkish:hover { color: var(--rose); }
+@media (hover: hover) and (pointer: fine) { .linkish:hover { color: var(--rose); } }
 .login-mode .reg-only { display: none !important; }
 .edit-mode .consent-only { display: none !important; }
 /* вход до регистрации, как в приложениях знакомств: сначала номер и код из СМС, потом анкета */
@@ -542,7 +547,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 .oauth { display: grid; gap: .6rem; }
 .oauth-or { color: var(--muted); font-size: .88rem; text-align: center; }
 .oauth-btn { display: flex; align-items: center; justify-content: center; gap: .6rem; min-height: 48px; border-radius: 999px; font-weight: 600; text-decoration: none; transition: transform .15s, opacity .15s; }
-.oauth-btn:hover { opacity: .9; }
+@media (hover: hover) and (pointer: fine) { .oauth-btn:hover { opacity: .9; } }
 .oauth-btn:active { transform: scale(.98); }
 .oauth-btn b { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: .8rem; }
 .oauth-vk { background: #0077ff; color: #fff; }
@@ -687,7 +692,7 @@ body.in-app .cupids { display: none; }
 /* подсказки для первого сообщения */
 .icebreakers { display: flex; gap: .4rem; flex-wrap: wrap; padding: 0 .7rem .5rem; }
 .icebreakers button { border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 14px; padding: .4rem .7rem; font: 400 .85rem/1.3 var(--font-body); text-align: left; cursor: pointer; }
-.icebreakers button:hover { border-color: var(--rose); }
+@media (hover: hover) and (pointer: fine) { .icebreakers button:hover { border-color: var(--rose); } }
 .icebreakers .k { width: 100%; font-size: .78rem; color: var(--muted); }
 /* «Как считаем» на телефоне свёрнут */
 .how-more { display: none; }
@@ -735,9 +740,9 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .logo svg circle:last-child { fill: var(--t-blue); }
 .logo svg { isolation: isolate; }
 .top nav .btn { border: 0; background: none; padding: .55rem .8rem; font-size: var(--t-body); color: var(--t-ink); letter-spacing: 0; transition: background-color .2s; }
-.top nav .btn:hover { background: var(--t-surface); }
+@media (hover: hover) and (pointer: fine) { .top nav .btn:hover { background: var(--t-surface); } }
 .top nav .btn.solid { background: var(--t-accent); color: var(--t-accent-ink); padding-inline: 1.2rem; }
-.top nav .btn.solid:hover { background: var(--t-ink); color: var(--t-bg); }
+@media (hover: hover) and (pointer: fine) { .top nav .btn.solid:hover { background: var(--t-ink); color: var(--t-bg); } }
 
 /* общие детали главной */
 .t > section { margin-inline: -1rem; padding-inline: var(--t-pad); padding-block: calc(var(--t-gap) / 2); }
@@ -748,13 +753,13 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .t-btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 3.4rem; padding: 0 1.9rem; border: 0; border-radius: 999px;
   background: var(--t-accent); color: var(--t-accent-ink); font: 600 var(--t-body)/1 var(--font-body); text-decoration: none; cursor: pointer;
   transition: transform .2s var(--t-ease), background-color .2s, color .2s; }
-.t-btn:hover { transform: translateY(-2px); background: var(--t-ink); color: var(--t-bg); }
+@media (hover: hover) and (pointer: fine) { .t-btn:hover { transform: translateY(-2px); background: var(--t-ink); color: var(--t-bg); } }
 .t-btn:active { transform: scale(.97); }
 .t-btn.ghost { background: var(--t-surface); color: var(--t-ink); }
-.t-btn.ghost:hover { background: var(--t-ink); color: var(--t-bg); }
+@media (hover: hover) and (pointer: fine) { .t-btn.ghost:hover { background: var(--t-ink); color: var(--t-bg); } }
 .t-btn:focus-visible, .t-link:focus-visible, .t .slide:focus-visible, .t .city-chips button:focus-visible { outline: 3px solid var(--t-ink); outline-offset: 3px; }
 .t-link { color: var(--t-ink); font-weight: 600; text-underline-offset: .3em; text-decoration-thickness: 2px; transition: text-underline-offset .2s; }
-.t-link:hover { text-underline-offset: .45em; }
+@media (hover: hover) and (pointer: fine) { .t-link:hover { text-underline-offset: .45em; } }
 
 /* первый экран: огромные круги заходят справа */
 .t-hero { position: relative; min-height: min(calc(100svh - 5rem), 860px); display: flex; align-items: center; overflow: hidden; padding-block: 3rem 5rem !important; }
@@ -799,7 +804,7 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 /* анкеты сейчас: фото в кругах */
 .t-show .t-head { grid-template-columns: minmax(0, 5fr) minmax(0, 5fr) auto; }
 .t-show .carousel-nav button { border: 0; background: var(--t-surface); width: 3.2rem; height: 3.2rem; transition: background-color .2s, transform .2s var(--t-ease); }
-.t-show .carousel-nav button:hover { background: var(--t-ink); color: var(--t-bg); }
+@media (hover: hover) and (pointer: fine) { .t-show .carousel-nav button:hover { background: var(--t-ink); color: var(--t-bg); } }
 .t-show .carousel-nav button:active { transform: scale(.94); }
 .t-show .track { -webkit-mask-image: none; mask-image: none; gap: clamp(1rem, 2vw, 2rem); padding-bottom: 0; }
 .t-show .track .slide:first-child { margin-left: 0; }
@@ -850,15 +855,15 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 700; letter-spacing:
 .t-list > * { grid-column: 1; }
 .t-list .t-head { grid-column: 1 / -1; }
 .t .city-chips button { border: 0; background: var(--t-surface); padding: .6rem 1.05rem; font-size: var(--t-body); transition: background-color .2s; }
-.t .city-chips button:hover { background: var(--t-pink); }
+@media (hover: hover) and (pointer: fine) { .t .city-chips button:hover { background: var(--t-pink); } }
 .t .city-chips button[aria-pressed="true"] { background: var(--t-ink); color: var(--t-bg); }
 .t .seg label { border: 0; background: var(--t-surface); }
 .t .seg input:checked + label { background: var(--t-ink); color: var(--t-bg); }
 .t-list .city-grid { grid-template-columns: 1fr 1fr; gap: 1.6rem 4rem; }
 .t-list .slide { aspect-ratio: auto; border-radius: 0; background: none; color: var(--t-ink); overflow: visible; display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 0 1.2rem; align-items: center; padding: .2rem 0; transition: transform .2s var(--t-ease); }
-.t-list .slide:hover { transform: translateX(6px); }
+@media (hover: hover) and (pointer: fine) { .t-list .slide:hover { transform: translateX(6px); } }
 .t-list .slide img { width: 64px; height: 64px; border-radius: 50%; grid-row: span 2; }
-.t-list .slide:hover img { transform: none; }
+@media (hover: hover) and (pointer: fine) { .t-list .slide:hover img { transform: none; } }
 .t-list .slide .shade, .t-list .slide .vid { display: none; }
 .t-list .slide .info { position: static; grid-column: 2; }
 .t-list .slide .info b { font-size: var(--t-body); }
@@ -983,12 +988,12 @@ body:not(.in-app) { background: var(--t-bg); }
 :root[data-theme="dark"] #landing.t { --t-bg: #0d0d12; --t-surface: #17171e; --t-paper: #1d1d25; --t-ink: #f5f5f8; --t-muted: #a9a9b6; --t-accent: #4f7cff; --t-accent-ink: #ffffff; }
 body:not(.in-app) .top { position: absolute; top: 0; left: 0; right: 0; z-index: 20; max-width: none; padding-inline: var(--t-pad); }
 body:not(.in-app) .logo, body:not(.in-app) .top nav .btn { color: #fff; }
-body:not(.in-app) .top nav .btn:hover { background: rgb(255 255 255 / .12); }
+@media (hover: hover) and (pointer: fine) { body:not(.in-app) .top nav .btn:hover { background: rgb(255 255 255 / .12); } }
 body:not(.in-app) .top nav .btn.solid { background: #fff; color: #0d0d12; }
 .t-btn.grad { background: var(--brand); color: #fff; min-height: 3.8rem; padding-inline: 2.4rem; font-size: 1.15rem; box-shadow: 0 10px 30px -10px rgb(255 79 139 / .6); }
-.t-btn.grad:hover { background: var(--brand); color: #fff; filter: brightness(1.08); }
+@media (hover: hover) and (pointer: fine) { .t-btn.grad:hover { background: var(--brand); color: #fff; filter: brightness(1.08); } }
 .t-btn.glass { background: rgb(255 255 255 / .14); color: #fff; min-height: 3.8rem; padding-inline: 2rem; font-size: 1.15rem; backdrop-filter: blur(8px); }
-.t-btn.glass:hover { background: #fff; color: #0d0d12; }
+@media (hover: hover) and (pointer: fine) { .t-btn.glass:hover { background: #fff; color: #0d0d12; } }
 #landing .t-btn:not(.ghost):not(.glass) { background: var(--brand); color: #fff; }
 .dark-hero { min-height: 100svh !important; margin-top: 0; padding-block: 7rem 4rem !important; justify-content: center; text-align: center; color: #fff; background: #0d0d12; }
 .dark-hero .t-hero-copy { max-width: 52rem; margin-inline: auto; z-index: 3; }
@@ -1051,7 +1056,7 @@ body.more:not(.in-app) .top { position: static; background: #0d0d12; box-shadow:
 .foot-cols nav { display: grid; align-content: start; gap: .55rem; }
 .foot-cols h3 { font-size: var(--t-body); font-weight: 700; letter-spacing: 0; margin-bottom: .3rem; color: var(--t-ink); }
 .foot-cols a { color: var(--t-muted); text-decoration: none; }
-.foot-cols a:hover { color: var(--t-ink); text-decoration: underline; }
+@media (hover: hover) and (pointer: fine) { .foot-cols a:hover { color: var(--t-ink); text-decoration: underline; } }
 /* окно регистрации и входа поверх главной */
 #landing > .t-join { display: none; }
 body.join-open { overflow: hidden; }
@@ -1069,7 +1074,7 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
 .t-join .reg h2 { font-size: clamp(1.7rem, 1.3rem + 1.4vw, 2.3rem); margin: 0 3rem 1.2rem 0; }
 .t-join .t-tiles .main .card { border-radius: 14px; }
 .join-x { position: absolute; top: .8rem; right: .8rem; width: 2.6rem; height: 2.6rem; border: 0; border-radius: 50%; background: var(--t-surface); color: var(--t-ink); font-size: 1.6rem; line-height: 1; cursor: pointer; }
-.join-x:hover { background: var(--t-ink); color: var(--t-bg); }
+@media (hover: hover) and (pointer: fine) { .join-x:hover { background: var(--t-ink); color: var(--t-bg); } }
 @media (max-width: 760px) {
   .t-stories .stories { grid-template-columns: 1fr 1fr; gap: 8px; }
   .story figcaption { padding: 2rem .7rem .7rem; }
@@ -1103,7 +1108,7 @@ body.join-open #landing > .t-join { display: grid; position: fixed; inset: 0; z-
 .stamp.nope { right: 1.2rem; color: #ff4f6d; transform: rotate(14deg); opacity: var(--nope, 0); }
 .game .gc-actions { display: flex; justify-content: center; align-items: center; gap: 1.2rem; padding: 1rem 0 .4rem; }
 .game .round { width: 4.2rem; height: 4.2rem; border: 0; background: var(--card); box-shadow: 0 6px 20px -6px rgb(0 0 0 / .35); font-size: 1.7rem; transition: transform .15s ease-out; }
-.game .round:hover { transform: scale(1.08); }
+@media (hover: hover) and (pointer: fine) { .game .round:hover { transform: scale(1.08); } }
 .game .round:active { transform: scale(.92); }
 .game .round.no { color: #ff4f6d; }
 .game .round.yes { background: var(--brand); color: #fff; }
@@ -1141,7 +1146,7 @@ body.more:not(.in-app) .top { background: #2e0611; box-shadow: 0 0 0 100vmax #2e
 .t-foot { background: #2e0611; color: #f6e4e8; --t-ink: #f6e4e8; --t-muted: #dcbcc4; }
 /* светлые поля «два круга» (розовое и голубое) остаются светлыми — текст на них тёмный */
 .t .pricing .plan, #landing .f-pink, #landing .f-blue { --t-ink: #1f040b; --t-muted: #5b3a42; color: #1f040b; }
-.t .city-chips button:hover { color: #1f040b; }
+@media (hover: hover) and (pointer: fine) { .t .city-chips button:hover { color: #1f040b; } }
 /* выбор языка в шапке: выглядит как кнопка, список — системный */
 .top nav select.lang { appearance: none; -webkit-appearance: none; cursor: pointer; font: inherit; font-weight: 600; padding-right: 1.7rem !important;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23f6e4e8' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right .6rem center / 10px; }
@@ -1305,6 +1310,7 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
     <section class="mx-hero" data-scene aria-labelledby="mxH1">
       <div class="mx-stage">
         <div class="mx-pad">
+          <p class="mx-hint">Листайте, чтобы оторвать лист</p>
           <div class="mx-rings" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
           <div class="mx-sheet mx-final" data-range=".78 1">
             <p class="mx-top"><span>Аркан 19</span><span>Солнце</span></p>
@@ -1338,8 +1344,7 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
           <div class="mx-sticky mx-n2" data-range=".44 1"><b>Огонь + воздух</b>Стихии усиливают друг друга</div>
           <div class="mx-sticky mx-n3" data-range=".64 1"><b>Обезьяна + Дракон</b>Союзники по восточному кругу</div>
         </div>
-        <p class="mx-hint">Листайте, чтобы оторвать лист</p>
-        <a class="mx-city g3 g3-sm" href="#cities" id="mxCity"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1a5 5 0 0 0-5 5c0 3.6 5 9 5 9s5-5.4 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Анкеты в моём городе</a>
+        <div class="mx-ctas"><a class="mx-join g3 g3-brand g3-sm" href="#join" data-cta>Создать анкету</a><a class="mx-city g3 g3-sm" href="#cities" id="mxCity"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1a5 5 0 0 0-5 5c0 3.6 5 9 5 9s5-5.4 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Анкеты в моём городе</a></div>
       </div>
     </section>
   
@@ -1347,10 +1352,10 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
       <div class="mx-stage">
       <h2 id="mxBTitle" data-reveal>Каждый снимок —<br><span class="mx-hand">чья-то дата<i class="mx-ul" aria-hidden="true"></i></span></h2>
       <div class="mx-strips">
-        <div class="mx-pstrip" style="--i:0;--r:-4deg"><img style="--f:0" src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 20%"><img src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 80%"><p class="mx-mono">12.06.1997 · ♊ · 8</p></div>
-        <div class="mx-pstrip" style="--i:1;--r:3deg"><img style="--f:0" src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">03.11.1991 · ♏ · 7</p></div>
-        <div class="mx-pstrip" style="--i:2;--r:-2deg"><img style="--f:0" src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">28.01.1995 · ♒ · 8</p></div>
-        <div class="mx-pstrip" style="--i:3;--r:5deg"><img style="--f:0" src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">17.09.1989 · ♍ · 8</p></div>
+        <div class="mx-pstrip" style="--i:0;--r:-4deg"><img style="--f:0" src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 20%"><img src="media/avatar-f-15.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 80%"><p class="mx-mono">12.06.1997<span class="mx-tail"> · ♊︎ · 8</span></p></div>
+        <div class="mx-pstrip" style="--i:1;--r:3deg"><img style="--f:0" src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-m-8.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">03.11.1991<span class="mx-tail"> · ♏︎ · 7</span></p></div>
+        <div class="mx-pstrip" style="--i:2;--r:-2deg"><img style="--f:0" src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-f-10.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">28.01.1995<span class="mx-tail"> · ♒︎ · 8</span></p></div>
+        <div class="mx-pstrip" style="--i:3;--r:5deg"><img style="--f:0" src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async"><img src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:1;object-position:50% 15%"><img src="media/avatar-m-1.jpg" alt="" width="600" height="800" loading="lazy" decoding="async" style="--f:2;object-position:50% 85%"><p class="mx-mono">17.09.1989<span class="mx-tail"> · ♍︎ · 8</span></p></div>
       </div>
       <p class="mx-note-demo">Анкеты-примеры</p>
       </div>
@@ -1361,18 +1366,18 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
         <div class="mx-rail">
           <div class="mx-track">
             <h2 class="mx-lead" id="mxMTitle">Двенадцать<br>месяцев<br>любви</h2>
-            <div class="mx-month"><span class="mx-n">01</span><span class="mx-m">январь</span></div>
+            <div class="mx-month mx-leafm"><div class="mx-leaf"><span class="mx-ln">01</span><b>Козерог</b><b>Водолей</b></div><span class="mx-m">январь</span></div>
             <div class="mx-month mx-ph"><img src="media/pair-1.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">февраль</span></div>
-            <div class="mx-month"><span class="mx-n">03</span><span class="mx-m">март</span></div>
+            <div class="mx-month mx-leafm"><div class="mx-leaf"><span class="mx-ln">03</span><b>Рыбы</b><b>Овен</b></div><span class="mx-m">март</span></div>
             <div class="mx-month mx-ph"><img src="media/pair-4.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">апрель</span></div>
             <div class="mx-month mx-ph"><img src="media/pair-2.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">май</span></div>
-            <div class="mx-month"><span class="mx-n">06</span><span class="mx-m">июнь</span></div>
+            <div class="mx-month mx-leafm"><div class="mx-leaf"><span class="mx-ln">06</span><b>Близнецы</b><b>Рак</b></div><span class="mx-m">июнь</span></div>
             <div class="mx-month mx-ph"><img src="media/pair-6.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">июль</span></div>
             <div class="mx-month mx-ph"><img src="media/pair-7.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">август</span></div>
-            <div class="mx-month"><span class="mx-n">09</span><span class="mx-m">сентябрь</span></div>
+            <div class="mx-month mx-leafm"><div class="mx-leaf"><span class="mx-ln">09</span><b>Дева</b><b>Весы</b></div><span class="mx-m">сентябрь</span></div>
             <div class="mx-month mx-ph"><img src="media/pair-5.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">октябрь</span></div>
             <div class="mx-month mx-ph"><img src="media/pair-9.webp" alt="" width="600" height="800" loading="lazy" decoding="async"><span class="mx-m">ноябрь</span></div>
-            <div class="mx-month"><span class="mx-n">12</span><span class="mx-m">декабрь</span></div>
+            <div class="mx-month mx-leafm"><div class="mx-leaf"><span class="mx-ln">12</span><b>Стрелец</b><b>Козерог</b></div><span class="mx-m">декабрь</span></div>
           </div>
         </div>
         <div class="mx-progress" aria-hidden="true"></div>
