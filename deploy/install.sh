@@ -44,6 +44,15 @@ if [ "$need_node" = 1 ]; then
   apt-get install -y -qq nodejs >/dev/null
 fi
 ok "Node.js $(node --version), nginx, certbot установлены"
+# Т-Касса (securepay.tinkoff.ru) подписана российским корневым сертификатом Минцифры,
+# которого нет в стандартном наборе Ubuntu. Ставим его в системное хранилище; сайт (Node.js)
+# читает это хранилище через NODE_EXTRA_CA_CERTS в lyubov.service.
+for c in root sub; do
+  f=/usr/local/share/ca-certificates/russian_trusted_${c}_ca.crt
+  [ -s "$f" ] || curl -fsSL -o "$f" "https://gu-st.ru/content/lending/russian_trusted_${c}_ca_pem.crt" \
+    || { rm -f "$f"; warn "Не скачался сертификат Минцифры ($c): оплата через Т-Кассу может не работать"; }
+done
+update-ca-certificates >/dev/null 2>&1 || true
 
 say "2/8. Включаю защиту (межсетевой экран: открыты только SSH и сайт)"
 ufw allow OpenSSH >/dev/null
@@ -127,6 +136,7 @@ After=network.target
 User=lyubov
 Group=lyubov
 WorkingDirectory=$APP
+Environment=NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 ExecStart=/usr/bin/node --no-warnings server/server.mjs
 Restart=always
 RestartSec=3
