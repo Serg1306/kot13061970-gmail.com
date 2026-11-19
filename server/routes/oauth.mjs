@@ -19,7 +19,7 @@ const redirect = (res, location, cookies = []) => {
 };
 
 // Аккаунт по профилю провайдера: уже привязанный, иначе с тем же подтверждённым телефоном или почтой, иначе новый.
-function userFor(app, provider, p, lang, src) {
+function userFor(app, provider, p, lang, src, ref) {
   const { db } = app;
   const link = db.get('SELECT u.* FROM oauth_ids o JOIN users u ON u.id = o.user_id WHERE o.provider = ? AND o.sub = ?', provider, p.sub);
   if (link) return link;
@@ -28,7 +28,7 @@ function userFor(app, provider, p, lang, src) {
   if (!user) {
     const own = `${provider}:${p.sub}`;
     if ([...logins, own].some(l => isEmailBanned(app, l))) throw new HttpError(403, 'banned');
-    user = createUser(db, logins[0] || own, lang, src);
+    user = createUser(db, logins[0] || own, lang, src, ref);
   }
   db.run('INSERT OR IGNORE INTO oauth_ids (provider, sub, user_id, created_at) VALUES (?, ?, ?, ?)', provider, p.sub, user.id, Date.now());
   return user;
@@ -57,7 +57,7 @@ export default function oauthRoutes(route) {
     const q = url.searchParams;
     states.set(state, {
       provider: params.provider, verifier, t: Date.now(), lang: langOf(q.get('lang')),
-      src: adSource({ s: q.get('s'), m: q.get('m'), c: q.get('c') }),
+      src: adSource({ s: q.get('s'), m: q.get('m'), c: q.get('c') }), ref: q.get('r'),
     });
     const redirectUri = `${base(app, req)}/api/oauth/${params.provider}/callback`;
     redirect(res, authorizeUrl(params.provider, c, { state, challenge, redirectUri }), [stateCookie(app, req, state, STATE_TTL / 1000)]);
@@ -87,7 +87,7 @@ export default function oauthRoutes(route) {
       return fail('oauth_failed');
     }
     let user;
-    try { user = userFor(app, params.provider, profile, saved.lang, saved.src); } catch (e) {
+    try { user = userFor(app, params.provider, profile, saved.lang, saved.src, saved.ref); } catch (e) {
       if (e instanceof HttpError) return fail(e.code);
       throw e;
     }
