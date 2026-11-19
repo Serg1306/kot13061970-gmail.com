@@ -2003,14 +2003,23 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
     };
     requestAnimationFrame(step);
   }
+  // Цели Яндекс Метрики (работают, только если посетитель разрешил Метрику в окне cookie).
+  let metrikaGoalId = 0;
+  const goal = name => { try { if (metrikaGoalId && window.ym) window.ym(metrikaGoalId, 'reachGoal', name); } catch {} };
+  let calcGoalSent = false;
   function updateHero() {
     const a = $('#d1').value, b = $('#d2').value;
     if (valid(a) && valid(b)) drawRing(compat(a, b));
     renderCarousel();
     renderCities();
   }
-  $('#d1').addEventListener('input', updateHero);
-  $('#d2').addEventListener('input', updateHero);
+  // Цель «расчёт» — когда посетитель сам ввёл обе даты (подстановка из ссылки не считается).
+  const onDateInput = () => {
+    updateHero();
+    if (!calcGoalSent && valid($('#d1').value) && valid($('#d2').value)) { calcGoalSent = true; goal('calc_done'); }
+  };
+  $('#d1').addEventListener('input', onDateInput);
+  $('#d2').addEventListener('input', onDateInput);
 
   /* ---------- демо-анкеты ---------- */
   // Города мира для подсказок при вводе: «название по-русски|по-английски|страна|country».
@@ -2402,7 +2411,7 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
   });
   document.addEventListener('click', e => {
     const buy = e.target.closest('[data-buy]'), demo = e.target.closest('[data-demo]');
-    if (buy) startPayment(buy.dataset.buy, buy);
+    if (buy) { goal('pay_click'); startPayment(buy.dataset.buy, buy); }
     if (demo) {
       grant(demo.dataset.demo); if ($('#dlg').open) $('#dlg').close();
       addEvent('pay', null, `Начислено в демо-режиме: ${SHOP[demo.dataset.demo].title}.`);
@@ -3417,6 +3426,7 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
       return;
     }
     if (e.target.closest('[data-invite]')) {
+      goal('invite_share');
       const url = inviteUrl(), text = tr('Присоединяйся к «Любовь в цифрах» — знакомства по дате рождения');
       if (navigator.share) { try { await navigator.share({ title: tr('Любовь в цифрах'), text, url }); return; } catch (err) { if (err.name === 'AbortError') return; } }
       try { await navigator.clipboard.writeText(`${text}: ${url}`); toast('Ссылка скопирована: отправьте её друзьям.'); } catch { ask(`Отправьте друзьям ссылку: ${url}`, 'Готово'); }
@@ -4470,7 +4480,9 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
     },
     async register(user) {
       if (!LIVE.authed && !await LIVE.auth()) return;
+      const isNew = !LIVE.me?.name;
       const u = await LIVE.call('PUT', '/api/profile', { ...user, lang: LANG, consent: true, consentPublic: true }, $('#err')); if (!u) return;
+      if (isNew) goal('signup');
       const me = await LIVE.call('GET', '/api/me'); if (!me) return;
       await LIVE.start(me, true);
     },
@@ -4659,6 +4671,7 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
     const sc = document.createElement('script'); sc.async = true; sc.src = 'https://mc.yandex.ru/metrika/tag.js'; document.head.appendChild(sc);
     // Вебвизор выключен: он записывал бы экран, включая личную переписку.
     window.ym(+id, 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: false });
+    metrikaGoalId = +id;
   }
   // Запуск: если рядом есть сервер, работаем с настоящими анкетами, иначе — демо-режим в браузере.
   async function boot() {
