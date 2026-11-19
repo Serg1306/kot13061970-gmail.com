@@ -5,3 +5,4 @@ Disallow: /api/
 Disallow: /uploads/
 
 Sitemap: https://lyubovvcifrah.ru/sitemap.xml
+Sitemap: https://lyubovvcifrah.ru/sitemap-sovmestimost.xml
