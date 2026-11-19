@@ -1834,7 +1834,7 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
 <footer class="t-foot">
   <div class="foot-cols">
     <nav aria-labelledby="fcLegal"><h3 id="fcLegal">Правовая информация</h3><a href="oferta.html">Оферта, оплата и возврат</a><a href="terms.html">Пользовательское соглашение</a><a href="privacy.html">Политика конфиденциальности</a><a href="consent.html">Согласие на обработку данных</a><a href="recommendations.html">Правила рекомендаций</a></nav>
-    <nav aria-labelledby="fcService"><h3 id="fcService">Сервис</h3><a href="#how">Как это работает</a><a href="#calc">Калькулятор совместимости</a><a href="sovmestimost-znakov/">Совместимость знаков зодиака</a><a href="#prices">Цены</a><a href="goroda/">Знакомства по городам</a></nav>
+    <nav aria-labelledby="fcService"><h3 id="fcService">Сервис</h3><a href="#how">Как это работает</a><a href="sovmestimost.html">Калькулятор совместимости</a><a href="sovmestimost-znakov/">Совместимость знаков зодиака</a><a href="#prices">Цены</a><a href="goroda/">Знакомства по городам</a></nav>
     <nav aria-labelledby="fcHelp"><h3 id="fcHelp">Помощь</h3><a href="terms.html#rules">Правила сообщества</a><a href="terms.html#reports">Как пожаловаться</a><a href="mailto:b1.u@bk.ru">Поддержка: b1.u@bk.ru</a><span class="foot-hours">Ежедневно, 10:00–19:00 по Москве</span></nav>
   </div>
   <div class="t-foot-text"><button class="t-link cupid-switch" type="button" id="cupidToggle" aria-pressed="false" aria-label="Амуры: включить">Амуры</button>
@@ -2646,6 +2646,7 @@ input:is([type=checkbox], [type=radio]):not(.seg input):not(.interest-picks inpu
     closeJoin(true);
     const more = MORE.includes(h);
     document.body.classList.toggle('more', more);
+    if (more) document.getElementById(h)?.classList.add('seen');
     if (more && !document.body.classList.contains('in-app')) requestAnimationFrame(() => document.getElementById(h)?.scrollIntoView());
     heroVideos();
   }
