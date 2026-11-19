@@ -7,6 +7,7 @@ import { langOf, textFor } from '../langs.mjs';
 import { SUPPORT, addEvent, myPhotos, newUserId, sha256, userOut, walletOf } from '../model.mjs';
 import { deleteUser, exportUser, isEmailBanned } from '../pd.mjs';
 import { normPhone } from '../sms.mjs';
+import { referralStats, referrerOf } from '../referral.mjs';
 
 const CODE_TTL = 10 * 60 * 1000;
 const CODE_GAP = 60 * 1000;
@@ -64,12 +65,15 @@ export function adSource(src) {
 }
 
 // Новый пользователь: приветствие от поддержки и системное событие.
-export function createUser(db, email, lang, src = null) {
+// ref — код из ссылки-приглашения (id пригласившего); без рекламной метки такой человек считается пришедшим «invite».
+export function createUser(db, email, lang, src = null, ref = null) {
   const id = newUserId();
   const now = Date.now();
   const t = textFor(WELCOME, lang);
+  const refBy = referrerOf(db, ref);
   db.tx(() => {
-    db.run('INSERT INTO users (id, email, lang, src, created_at, last_seen) VALUES (?, ?, ?, ?, ?, ?)', id, email, lang, src, now, now);
+    db.run('INSERT INTO users (id, email, lang, src, ref_by, created_at, last_seen) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      id, email, lang, src ?? (refBy ? 'invite' : null), refBy, now, now);
     db.run("INSERT INTO messages (from_id, to_id, t, kind, text) VALUES (?, ?, ?, 'text', ?)", SUPPORT, id, now, t.support);
     addEvent(db, id, 'system', null, t.event);
   });
@@ -169,7 +173,7 @@ export default function authRoutes(route) {
     let user = db.get('SELECT * FROM users WHERE email = ?', email);
     if (!user) {
       if (isEmailBanned(app, email)) fail(403, 'banned');
-      user = createUser(db, email, row.lang, adSource(body.src));
+      user = createUser(db, email, row.lang, adSource(body.src), body.ref);
     }
     startSession(user.id);
     return { user: userOut(user) };
@@ -207,5 +211,7 @@ export default function authRoutes(route) {
     photos: myPhotos(app.db, user.id),
     admin: app.config.adminEmails.has(user.email),
     banned: Boolean(user.banned),
+    // Приглашения: сколько пришло по ссылке и за скольких начислен бонус.
+    ref: referralStats(app.db, user.id),
   }), { auth: 'user', banned: true });
 }

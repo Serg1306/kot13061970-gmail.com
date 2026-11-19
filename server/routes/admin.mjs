@@ -7,6 +7,7 @@ import { isSafeName } from '../media.mjs';
 import { ONLINE_MS, addEvent, dayStartMsk, messageOut, uploadSrc } from '../model.mjs';
 import { REASONS, deleteUser, destroySelfie } from '../pd.mjs';
 import { checkOrder, refundOrder } from './pay.mjs';
+import { rewardReferral } from '../referral.mjs';
 import { normEmail } from './auth.mjs';
 import { normPhone } from '../sms.mjs';
 
@@ -84,6 +85,8 @@ export default function adminRoutes(route) {
   route('POST', '/api/admin/photo', ({ app, body }) => {
     const r = app.db.run("UPDATE photos SET status = ? WHERE id = ?", body.approve ? 'approved' : 'rejected', Number(body.id));
     if (!r.changes) fail(404, 'not_found');
+    // Первое одобренное фото приглашённого — повод начислить бонус за приглашение.
+    if (body.approve) rewardReferral(app.db, app.db.get('SELECT user_id FROM photos WHERE id = ?', Number(body.id)).user_id);
     return { ok: true };
   }, opts);
 

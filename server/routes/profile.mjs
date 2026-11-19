@@ -4,6 +4,7 @@ import { LANGS, langOf } from '../langs.mjs';
 import { decodeImage, removeFile, saveFile } from '../media.mjs';
 import { isVip, myPhotos, userOut } from '../model.mjs';
 import { CHOICES, DETAIL_KEYS, parseDetails } from '../options.mjs';
+import { rewardReferral } from '../referral.mjs';
 
 const MAX_PHOTOS = 10;
 const invalid = field => fail(400, 'invalid', { field });
@@ -103,6 +104,7 @@ export default function profileRoutes(route) {
     const pos = db.get('SELECT COALESCE(MAX(pos), -1) + 1 AS p FROM photos WHERE user_id = ?', user.id).p;
     db.run('INSERT INTO photos (user_id, file, status, pos, created_at) VALUES (?, ?, ?, ?, ?)',
       user.id, file, config.autoApprove ? 'approved' : 'pending', pos, Date.now());
+    if (config.autoApprove) rewardReferral(db, user.id);
     return { photos: myPhotos(db, user.id) };
   }, { auth: 'user' });
 
