@@ -345,6 +345,9 @@ footer p { margin: .25rem 0; max-width: none; }
   .card { padding: 1.1rem; border-radius: 18px; }
   .hero .cta .btn { width: 100%; }
 }
+
+/* колёсики даты (wheel-date.js) в цветах страницы */
+:root { --wheel-bg: var(--paper); --wheel-ink: var(--ink); --wheel-muted: var(--muted); --wheel-line: var(--line); --wheel-accent: var(--rose); }
 """
 
 THEME_JS = "<script>try{var t=JSON.parse(localStorage.getItem('lvc.theme'));if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>"
@@ -541,6 +544,7 @@ def city_page(c, base, all_cities):
   </section>
 </main>
 """ + footer("../") + """<script src="compat.js" defer></script>
+<script src="../wheel-date.js" defer></script>
 </body>
 </html>
 """

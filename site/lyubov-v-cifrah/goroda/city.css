@@ -106,3 +106,6 @@ footer p { margin: .25rem 0; max-width: none; }
   .card { padding: 1.1rem; border-radius: 18px; }
   .hero .cta .btn { width: 100%; }
 }
+
+/* колёсики даты (wheel-date.js) в цветах страницы */
+:root { --wheel-bg: var(--paper); --wheel-ink: var(--ink); --wheel-muted: var(--muted); --wheel-line: var(--line); --wheel-accent: var(--rose); }

@@ -13,9 +13,9 @@
   const daysIn = (y, m) => new Date(y, m, 0).getDate();
   const nativeValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
 
-  // Цвета — бордовая гамма сайта; при желании их можно переопределить переменными --wd-* у родителя.
+  // Цвета — бордовая гамма сайта; на светлых страницах их задают переменные --wheel-bg, --wheel-ink, --wheel-muted, --wheel-line, --wheel-accent.
   const css = `
-.wd{--wd-bg:#1f040b;--wd-ink:#fff;--wd-muted:rgb(246 228 232 / .6);--wd-line:rgb(246 228 232 / .22);--wd-accent:#ff4f8b;--wd-rows:5;--wd-row:${ROW}px;
+.wd{--wd-bg:var(--wheel-bg,#1f040b);--wd-ink:var(--wheel-ink,#fff);--wd-muted:var(--wheel-muted,rgb(246 228 232 / .6));--wd-line:var(--wheel-line,rgb(246 228 232 / .22));--wd-accent:var(--wheel-accent,#ff4f8b);--wd-rows:5;--wd-row:${ROW}px;
   display:flex;gap:.4rem;position:relative;user-select:none;-webkit-user-select:none;margin-top:.3rem;max-width:22rem;width:100%}
 .wd.compact{--wd-rows:3;--wd-row:36px}
 .wd.compact .wd-col li{font-size:1.05rem}
