@@ -219,6 +219,25 @@
   .mx .mx-bpola:nth-of-type(2) { left: -14px; bottom: 3%; } .mx .mx-bpola:nth-of-type(4) { right: -14px; bottom: 2%; }
   .mx .mx-booth[data-scene] .mx-why { margin-top: 140px; font-size: 15px; }
 }
+/* фотобудка на невысоких телефонах (видимая область браузера до ~760px): всё содержимое должно влезть в экран,
+   иначе кнопка «Поделиться в сторис» обрезается снизу */
+@media (max-width: 760px) and (max-height: 800px) {
+  .mx .mx-booth[data-scene] .mx-stage { gap: 10px; padding: 12px 16px; }
+  .mx .mx-booth[data-scene] h2 { font-size: 40px; }
+  .mx .mx-booth[data-scene] .mx-cabin { padding: 12px; gap: 10px; }
+  .mx .mx-booth[data-scene] .mx-print { width: 100px; }
+  .mx .mx-booth[data-scene] .mx-print output { font-size: 34px; }
+  .mx .mx-slot { height: 120px; }
+  .mx .mx-booth[data-scene] .mx-why { margin-top: 110px; }
+  .mx .mx-booth .mx-share { padding: 12px 22px; }
+}
+@media (max-width: 760px) and (max-height: 680px) {
+  .mx .mx-booth[data-scene] h2 { font-size: 34px; }
+  .mx .mx-booth[data-scene] .mx-fields { gap: 8px; }
+  .mx .mx-booth[data-scene] .mx-fields input { padding: 8px 10px; font-size: 17px; }
+  .mx .mx-slot { height: 100px; }
+  .mx .mx-booth[data-scene] .mx-why { margin-top: 92px; }
+}
 /* «Сегодня»: число перелистывается (alive.js), на выходе лист отрывается и улетает */
 .mx .mx-big .mx-d.flip { animation: flipNum .12s ease-out; }
 @keyframes flipNum { from { transform: rotateX(80deg); opacity: .3; } to { transform: none; opacity: 1; } }
