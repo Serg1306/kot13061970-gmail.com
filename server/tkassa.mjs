@@ -2,7 +2,8 @@
 // Ключи берутся из переменных окружения сервера (.env) и никогда не попадают в браузер:
 //   TKASSA_TERMINAL — TerminalKey из личного кабинета (у тестового терминала в конце DEMO)
 //   TKASSA_PASSWORD — пароль терминала (им подписываются запросы и проверяются уведомления)
-//   TKASSA_RECEIPT  — "1", если подключена онлайн-касса (чеки 54-ФЗ); тогда передаём чек
+//   TKASSA_RECEIPT  — "1", если подключена онлайн-касса (чеки 54-ФЗ); тогда передаём чек.
+//                     В чеке обязательна почта или телефон покупателя, иначе банк отклонит платёж (ошибка 309).
 //   TKASSA_TAXATION — система налогообложения для чека: osn, usn_income, usn_income_outcome, esn, patent
 //   TKASSA_TAX      — ставка НДС для чека, по умолчанию none
 //   TKASSA_API_URL  — адрес API (меняется только в автотестах)
@@ -68,11 +69,16 @@ async function call(s, method, params) {
 }
 
 // Создать платёж (метод Init). Возвращает ссылку на платёжную форму.
-export async function initPayment(s, productKey, { invId, email = '', successUrl, failUrl, notificationUrl }) {
+export const isEmail = v => typeof v === 'string' && v.length <= 254 && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
+export const isPhone = v => typeof v === 'string' && /^\+\d{10,15}$/.test(v);
+
+export async function initPayment(s, productKey, { invId, email = '', phone = '', successUrl, failUrl, notificationUrl }) {
   const product = CATALOG[productKey];
   if (!product) throw new Error('unknown_product');
   const amount = kopecks(product.price);
-  const goodEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? email : '';
+  const goodEmail = isEmail(email) ? email : '';
+  const goodPhone = isPhone(phone) ? phone : '';
+  if (s.receipt && !goodEmail && !goodPhone) throw new Error('no_receipt_contact');
   const params = {
     Amount: amount, OrderId: invId, Description: `Любовь в цифрах: ${product.title}`.slice(0, 140),
     SuccessURL: successUrl, FailURL: failUrl, NotificationURL: notificationUrl,
@@ -80,7 +86,7 @@ export async function initPayment(s, productKey, { invId, email = '', successUrl
   };
   if (s.receipt) {
     params.Receipt = {
-      ...(goodEmail ? { Email: goodEmail } : {}), Taxation: s.taxation,
+      ...(goodEmail ? { Email: goodEmail } : {}), ...(goodPhone && !goodEmail ? { Phone: goodPhone } : {}), Taxation: s.taxation,
       Items: [{ Name: product.title, Price: amount, Quantity: 1, Amount: amount, Tax: s.tax, PaymentMethod: 'full_payment', PaymentObject: 'service' }],
     };
   }

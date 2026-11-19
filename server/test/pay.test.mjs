@@ -118,3 +118,32 @@ test('pay-confirm раньше уведомления: сервер сам сп�
   assert.equal(anon.body.wallet, undefined);
   assert.equal((await srv.client().post('/api/pay-confirm', { invId: '404' })).body.error, 'unknown_order');
 });
+
+test('чек 54-ФЗ: без почты и телефона просим почту, она уходит в чек и запоминается', async () => {
+  const tkr = await startTkassaMock();
+  const s2 = await startServer({ ...tkr.env, TKASSA_RECEIPT: '1' });
+  try {
+    // вход через VK ID без почты: логин вида vk:123
+    const c = await s2.user('buyer@example.ru');
+    s2.app.db.run("UPDATE users SET email = 'vk:123' WHERE id = ?", c.id);
+    assert.equal((await c.post('/api/pay', { product: 'vip_1m' })).body.error, 'need_email');
+    assert.equal((await c.post('/api/pay', { product: 'vip_1m', email: 'не почта' })).body.error, 'bad_email');
+    const r = await c.post('/api/pay', { product: 'vip_1m', email: ' Me@Example.ru ' });
+    assert.equal(r.status, 200);
+    let rc = tkr.hits.at(-1).body.Receipt;
+    assert.equal(rc.Email, 'me@example.ru');
+    assert.equal(rc.Taxation, 'usn_income');
+    assert.equal(rc.Items[0].Amount, 59900);
+    assert.equal(s2.app.db.get('SELECT receipt_email FROM users WHERE id = ?', c.id).receipt_email, 'me@example.ru');
+    // второй раз почту уже не спрашиваем
+    assert.equal((await c.post('/api/pay', { product: 'coins_100' })).status, 200);
+    assert.equal(tkr.hits.at(-1).body.Receipt.Email, 'me@example.ru');
+    // вход по телефону: чек уходит на телефон
+    const p = await s2.user('ph@example.ru');
+    s2.app.db.run("UPDATE users SET email = '+79991234567' WHERE id = ?", p.id);
+    assert.equal((await p.post('/api/pay', { product: 'coins_100' })).status, 200);
+    rc = tkr.hits.at(-1).body.Receipt;
+    assert.equal(rc.Phone, '+79991234567');
+    assert.equal(rc.Email, undefined);
+  } finally { await s2.close(); await tkr.close(); }
+});

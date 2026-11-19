@@ -1,7 +1,7 @@
 // Оплата через Т-Кассу. Запросы к API и подписи — в server/tkassa.mjs;
 // здесь привязка заказа к пользователю и начисление ровно один раз.
 import {
-  CATALOG, checkNotification, initPayment, isConfigured, newInvId, orderState, priceKopecks, settings,
+  CATALOG, checkNotification, initPayment, isConfigured, isEmail, isPhone, newInvId, orderState, priceKopecks, settings,
 } from '../tkassa.mjs';
 import { fail, text } from '../http.mjs';
 import { textFor } from '../langs.mjs';
@@ -118,6 +118,14 @@ export default function payRoutes(route) {
     const product = CATALOG[body.product];
     if (!product) fail(400, 'unknown_product');
     app.limiter.check(`pay:${user.id}`, 20, 3600e3);
+    // Куда отправить чек (54-ФЗ): почта из окна оплаты, почта или телефон входа, почта из прошлой оплаты.
+    // У входа через VK ID логин бывает вида vk:123 — тогда без почты от покупателя платёж не создаём.
+    const typed = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    if (typed && !isEmail(typed)) fail(400, 'bad_email');
+    const email = typed || (isEmail(user.email) ? user.email : '') || (isEmail(user.receipt_email) ? user.receipt_email : '');
+    const phone = isPhone(user.email) ? user.email : '';
+    if (s.receipt && !email && !phone) fail(400, 'need_email');
+    if (typed && typed !== user.email && typed !== user.receipt_email) db.run('UPDATE users SET receipt_email = ? WHERE id = ?', typed, user.id);
     // Номер заказа уникален: при совпадении берём другой.
     let invId;
     for (let i = 0; i < 5 && !invId; i++) {
@@ -130,7 +138,7 @@ export default function payRoutes(route) {
     const base = siteUrl(app, req);
     try {
       const p = await initPayment(s, body.product, {
-        invId, email: user.email,
+        invId, email, phone,
         successUrl: `${base}/?pay=ok&order=${invId}`, failUrl: `${base}/?pay=fail`, notificationUrl: `${base}/api/tkassa-notify`,
       });
       db.run('UPDATE orders SET payment_id = ? WHERE inv_id = ?', p.paymentId, invId);
