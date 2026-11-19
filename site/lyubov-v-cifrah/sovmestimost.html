@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Проверить совместимость по дате рождения — Любовь в цифрах</title>
+<link rel="canonical" href="https://lyubovvcifrah.ru/sovmestimost.html">
+<meta name="description" content="Бесплатная проверка совместимости пары по двум датам рождения: число судьбы, знак и стихия, восточный год и аркан пары. Без регистрации.">
+<meta name="rating" content="adult">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Любовь в цифрах">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Проверь совместимость по дате рождения 💖">
+<meta property="og:description" content="Две даты — и честный процент по четырём системам. Бесплатно, за 10 секунд.">
+<meta property="og:image" content="https://lyubovvcifrah.ru/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#470a1b">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Те же цвета и шрифты, что на главной странице */
+:root {
+  /* бордовая гамма, как на главной */
+  --paper: #1f040b; --bg-pink: #470a1b; --card: #2e0611;
+  --ink: #f6e4e8; --muted: #d4b8c0; --line: #6b2238;
+  --rose: #ff7aa6; --sea: #8eaaff; --sun: #f2b84a; --plum: #c3a2ff; --btn: #d42a64;
+  --font-display: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --font-script: "Great Vibes", "Segoe Script", cursive;
+  --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #470a1b; color: var(--ink); font: 400 1rem/1.6 var(--font-body); min-height: 100vh; }
+a { color: var(--rose); }
+:focus-visible { outline: 2px solid var(--plum); outline-offset: 3px; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.logo { font-family: var(--font-script); font-size: 2.1rem; line-height: 1; color: var(--ink); text-decoration: none; }
+.age { border: 1.5px solid var(--ink); border-radius: 999px; padding: .1rem .6rem; font-weight: 700; font-size: .85rem; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.9rem, 6vw, 2.8rem); line-height: 1.12; margin: 0 0 .6rem; }
+.lead { color: var(--muted); margin: 0 0 1.5rem; }
+.card { background: var(--card); border-radius: 24px; padding: 1.4rem; box-shadow: inset 0 0 0 1px rgb(246 228 232 / .12); }
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 520px) { .dates { grid-template-columns: 1fr; } }
+label { display: block; font-weight: 600; font-size: .9rem; margin-bottom: .3rem; }
+.you label { color: var(--rose); } .them label { color: var(--sea); }
+input[type=date] { width: 100%; min-height: 52px; font: inherit; font-size: 1.05rem; color: var(--ink); background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: .65rem .8rem; }
+.btn { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border-radius: 999px; padding: .75rem 1.3rem; font: 600 1rem var(--font-body); cursor: pointer; text-decoration: none; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); }
+.btn.rose { background: var(--btn); border-color: var(--btn); color: #fff; }
+.btn.wide { width: 100%; margin-top: 1.2rem; }
+.result { margin-top: 1.5rem; display: none; }
+.result.on { display: block; }
+.total { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.pct { font-family: var(--font-display); font-weight: 700; font-size: 4rem; line-height: 1; color: #fff; }
+.pct small { font-size: 2rem; }
+.verdict { font-weight: 600; font-size: 1.1rem; }
+.parts { list-style: none; padding: 0; margin: 1.2rem 0 0; display: grid; gap: .9rem; }
+.parts li { display: grid; gap: .25rem; }
+.row { display: flex; justify-content: space-between; font-weight: 600; }
+.bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 99px; }
+.why { color: var(--muted); font-size: .92rem; }
+.locked { position: relative; }
+.locked .why { filter: blur(4px); user-select: none; }
+.unlock { margin-top: 1.2rem; padding: 1rem 1.2rem; border-radius: 18px; background: color-mix(in srgb, var(--bg-pink) 45%, var(--card)); border: 1.5px dashed var(--rose); }
+.unlock b { display: block; margin-bottom: .5rem; }
+.share { margin-top: 1.2rem; }
+.share p { margin: 0 0 .5rem; font-weight: 600; }
+.share-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.share-row .btn { padding: .5rem 1rem; font-size: .92rem; }
+.how { margin-top: 2rem; }
+.how h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 0 0 .8rem; }
+.how ul { padding-left: 1.2rem; margin: 0; }
+footer { margin-top: 2.5rem; color: var(--muted); font-size: .85rem; }
+footer a { color: inherit; }
+.toast { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: .6rem 1rem; border-radius: 12px; font-size: .9rem; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.on { opacity: 1; }
+.cookie-note { position: fixed; left: 1rem; right: 1rem; bottom: 1rem; max-width: 640px; margin: 0 auto; background: var(--card); color: var(--ink); border: 1.5px solid var(--line); border-radius: 18px; padding: .9rem 1rem; display: grid; gap: .6rem; box-shadow: 0 10px 40px rgba(35, 22, 58, .15); font-size: .9rem; }
+.cookie-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+.cookie-btns .btn { padding: .45rem .9rem; font-size: .9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="logo" href="/">Любовь в цифрах</a>
+    <span class="age" title="Сервис для совершеннолетних">18+</span>
+  </header>
+
+  <h1>Проверьте совместимость по дате рождения</h1>
+  <p class="lead">Две даты — и честный процент по четырём системам: число судьбы, знак и стихия, восточный год и аркан пары. Бесплатно и без регистрации. Даты никуда не отправляются: расчёт идёт прямо в вашем браузере.</p>
+
+  <form class="card" id="form" novalidate>
+    <div class="dates">
+      <div class="you"><label for="d1">Ваша дата рождения</label><input type="date" id="d1" required min="1920-01-01" max="2010-12-31"></div>
+      <div class="them"><label for="d2">Дата рождения партнёра</label><input type="date" id="d2" required min="1920-01-01" max="2010-12-31"></div>
+    </div>
+    <button class="btn rose wide" type="submit">Узнать совместимость</button>
+
+    <div class="result" id="result" aria-live="polite">
+      <div class="total"><div class="pct" id="pct">0<small>%</small></div><div class="verdict" id="verdict"></div></div>
+      <ul class="parts" id="parts"></ul>
+
+      <div class="unlock">
+        <b>Подробный разбор каждой системы и анкеты людей с совместимостью выше 80% — после регистрации.</b>
+        <a class="btn rose" id="cta" href="/?utm_source=sovmestimost&amp;utm_medium=calc#join">Найти свою пару бесплатно</a>
+      </div>
+
+      <div class="share">
+        <p>Поделитесь результатом — пусть друзья проверят свою пару:</p>
+        <div class="share-row">
+          <a class="btn" id="shTg" target="_blank" rel="noopener">Telegram</a>
+          <a class="btn" id="shVk" target="_blank" rel="noopener">ВКонтакте</a>
+          <a class="btn" id="shWa" target="_blank" rel="noopener">WhatsApp</a>
+          <button class="btn" type="button" id="shCopy">Скопировать ссылку</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <section class="how">
+    <h2>Как считается процент</h2>
+    <ul>
+      <li><b>Число судьбы, 30%.</b> Складываем все цифры даты до одной (11 и 22 оставляем). Числа из одной «семьи» понимают друг друга без слов.</li>
+      <li><b>Знак и стихия, 25%.</b> Огонь дружит с воздухом, земля с водой, противоположные знаки дают притяжение.</li>
+      <li><b>Восточный год, 25%.</b> Двенадцать животных образуют четыре треугольника союзников.</li>
+      <li><b>Аркан пары, 20%.</b> Арканы дней рождения складываются в аркан пары с толкованием.</li>
+    </ul>
+    <p>Подробнее — в <a href="recommendations.html">правилах подбора анкет</a>.</p>
+  </section>
+
+  <footer>
+    <p>Расчёт носит развлекательный характер. Сервис знакомств для лиц старше 18 лет.</p>
+    <p>ООО «ЦИФРА И РЕШЕНИЕ», ИНН 6684050640, ОГРН 1269600036452 · <a href="mailto:b1.u@bk.ru">b1.u@bk.ru</a><br>
+    <a href="oferta.html">Оферта</a> · <a href="terms.html">Пользовательское соглашение</a> · <a href="privacy.html">Политика конфиденциальности</a></p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="compat.js"></script>
+<script>
+(() => {
+  // Номер счётчика Яндекс Метрики приходит с сервера (/api/config, metrikaId), как на главной.
+  // Пока номер не задан на сервере, Метрика не загружается.
+  let METRIKA_ID = '';
+
+  const $ = s => document.querySelector(s);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('lvc.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('lvc.' + k, JSON.stringify(v)); } catch {} }
+  };
+  const goal = name => { if (window.ym && METRIKA_ID) window.ym(+METRIKA_ID, 'reachGoal', name); };
+  const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2500); };
+
+  // Реферальный код из ссылки приглашения (?ref=КОД) сохраняется так же, как метки рекламы,
+  // чтобы при регистрации его можно было передать на сервер.
+  const q = new URLSearchParams(location.search);
+  if (q.get('ref') && !store.get('ref')) store.set('ref', q.get('ref').slice(0, 40));
+  // Метки первого визита (как на главной): utm_source, utm_medium, utm_campaign.
+  if (!store.get('src') && q.get('utm_source')) store.set('src', { s: q.get('utm_source'), m: q.get('utm_medium') || '', c: q.get('utm_campaign') || '' });
+
+  const SHARE_URL = 'https://lyubovvcifrah.ru/sovmestimost.html?utm_source=share&utm_medium=calc';
+  function setShare(pct) {
+    const text = `Наша совместимость по дате рождения — ${pct}% 💖 Проверь свою пару`;
+    const u = encodeURIComponent(SHARE_URL), t = encodeURIComponent(text);
+    $('#shTg').href = `https://t.me/share/url?url=${u}&text=${t}`;
+    $('#shVk').href = `https://vk.com/share.php?url=${u}&title=${t}`;
+    $('#shWa').href = `https://wa.me/?text=${t}%20${u}`;
+    $('#shCopy').onclick = async () => {
+      goal('share_click');
+      if (navigator.share) { try { await navigator.share({ title: 'Любовь в цифрах', text, url: SHARE_URL }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+      try { await navigator.clipboard.writeText(`${text}: ${SHARE_URL}`); toast('Ссылка скопирована'); }
+      catch { prompt('Скопируйте ссылку:', SHARE_URL); }
+    };
+  }
+  ['#shTg', '#shVk', '#shWa'].forEach(s => $(s).addEventListener('click', () => goal('share_click')));
+  $('#cta').addEventListener('click', () => goal('cta_click'));
+
+  const valid = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
+  $('#form').addEventListener('submit', e => {
+    e.preventDefault();
+    const a = $('#d1').value, b = $('#d2').value;
+    if (!valid(a) || !valid(b)) return toast('Укажите обе даты рождения');
+    const r = window.LVC.compat(a, b);
+    $('#pct').innerHTML = `${r.total}<small>%</small>`;
+    $('#verdict').textContent = window.LVC.verdictOf(r.total);
+    $('#parts').innerHTML = r.parts.map((p, i) => `
+      <li class="${i > 0 ? 'locked' : ''}">
+        <div class="row"><span>${p.t}</span><span>${p.v}%</span></div>
+        <div class="bar"><i style="width:${p.v}%;background:${p.c}"></i></div>
+        <div class="why">${i > 0 ? 'Подробный разбор откроется после регистрации' : p.why}</div>
+      </li>`).join('');
+    $('#result').classList.add('on');
+    setShare(r.total);
+    goal('calc_done');
+  });
+
+  // Cookie и Метрика: тот же выбор и та же память, что на главной (lvc.cookieOk).
+  function startMetrika(id) {
+    window.ym = window.ym || function () { (window.ym.a = window.ym.a || []).push(arguments); }; window.ym.l = Date.now();
+    const sc = document.createElement('script'); sc.async = true; sc.src = 'https://mc.yandex.ru/metrika/tag.js'; document.head.appendChild(sc);
+    window.ym(+id, 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: false });
+  }
+  function cookieConsent() {
+  const hasYm = /^\d+$/.test(METRIKA_ID);
+  const ok = store.get('cookieOk');
+  if (ok === 'all' && hasYm) startMetrika(METRIKA_ID);
+  else if (!ok) {
+    const n = document.createElement('div'); n.className = 'cookie-note'; n.setAttribute('role', 'region'); n.setAttribute('aria-label', 'Cookie');
+    n.innerHTML = hasYm
+      ? '<span>Мы используем cookie, чтобы сайт работал. С вашего разрешения включим Яндекс Метрику — статистику посещений. Подробнее — в <a href="privacy.html#ru-10">политике конфиденциальности</a>.</span><span class="cookie-btns"><button class="btn" type="button" data-ck="essential">Только нужные</button><button class="btn rose" type="button" data-ck="all">Принять</button></span>'
+      : '<span>Мы используем cookie и память браузера, чтобы сайт работал. Подробнее — в <a href="privacy.html#ru-10">политике конфиденциальности</a>.</span><span class="cookie-btns"><button class="btn rose" type="button" data-ck="essential">Понятно</button></span>';
+    n.onclick = e => { const b = e.target.closest('[data-ck]'); if (!b) return; store.set('cookieOk', b.dataset.ck); n.remove(); if (b.dataset.ck === 'all' && hasYm) startMetrika(METRIKA_ID); };
+    document.body.appendChild(n);
+  }
+  }
+  fetch('/api/config').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+    .then(cfg => { if (/^\d+$/.test(String(cfg.metrikaId || ''))) METRIKA_ID = String(cfg.metrikaId); cookieConsent(); });
+})();
+</script>
+</body>
+</html>
