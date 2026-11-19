@@ -231,6 +231,11 @@
   .mx .mx-booth[data-scene] .mx-why { margin-top: 110px; }
   .mx .mx-booth .mx-share { padding: 12px 22px; }
 }
+/* на телефоне сцена фотобудки не обрезается: если содержимое выше экрана (колёсики дат, нижняя панель браузера),
+   сцена растёт вниз, и в конце прокрутки кнопка «Поделиться в сторис» всегда видна целиком */
+@media (max-width: 760px) {
+  .mx .mx-booth[data-scene] .mx-stage { height: auto; min-height: 100vh; min-height: 100svh; overflow: visible; padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+}
 @media (max-width: 760px) and (max-height: 680px) {
   .mx .mx-booth[data-scene] h2 { font-size: 34px; }
   .mx .mx-booth[data-scene] .mx-fields { gap: 8px; }
