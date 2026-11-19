@@ -102,7 +102,7 @@ export function exportUser(app, u) {
     service: 'Любовь в цифрах',
     exportedAt: new Date().toISOString(),
     profile: {
-      id: u.id, email: u.email, name: u.name, birth: u.birth, g: u.g, seek: u.seek, city: u.city, about: u.about, lang: u.lang,
+      id: u.id, email: u.email, receiptEmail: u.receipt_email || null, name: u.name, birth: u.birth, g: u.g, seek: u.seek, city: u.city, about: u.about, lang: u.lang,
       createdAt: u.created_at, lastSeen: u.last_seen, verifyStatus: u.verify_status, hideAge: Boolean(u.hide_age),
       invisible: Boolean(u.invisible), notifyEmail: Boolean(u.notify_email), notifyPush: Boolean(u.notify_push), banned: Boolean(u.banned),
       ...detailsOut(u),
