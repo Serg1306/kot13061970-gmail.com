@@ -291,3 +291,27 @@ test('кто может мне писать: все, только взаимны
   // Анкета сообщает настройку, чтобы сайт заранее подсказал
   assert.equal((await vip.get(`/api/people/${lo2.id}?peek=1`)).body.person.writes, 'compat70');
 });
+
+test('ответ на сообщение: цитата только из своей переписки', async () => {
+  const a = await srv.user('reply-a@example.ru');
+  const b = await srv.user('reply-b@example.ru');
+  const c = await srv.user('reply-c@example.ru');
+  await mutualLike(a, b);
+  await mutualLike(a, c);
+  const first = (await a.post('/api/messages', { to: b.id, text: 'Пойдём в кино в субботу?' })).body.message;
+  const other = (await a.post('/api/messages', { to: c.id, text: 'Привет' })).body.message;
+  const r = await b.post('/api/messages', { to: a.id, text: 'Давай!', replyTo: first.id });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.body.message.reply, { id: first.id, from: a.id, text: 'Пойдём в кино в субботу?' });
+  // В ленте и в синхронизации цитата тоже есть.
+  const st = (await a.get('/api/state')).body;
+  assert.deepEqual(st.chats[b.id].at(-1).reply, r.body.message.reply);
+  // Чужая переписка, несуществующее и кривое id — ошибка.
+  assert.equal((await b.post('/api/messages', { to: a.id, text: 'x', replyTo: other.id })).body.field, 'replyTo');
+  assert.equal((await b.post('/api/messages', { to: a.id, text: 'x', replyTo: 999999 })).body.field, 'replyTo');
+  assert.equal((await b.post('/api/messages', { to: a.id, text: 'x', replyTo: 'abc' })).body.field, 'replyTo');
+  // Длинное сообщение цитируется коротко.
+  const long = (await a.post('/api/messages', { to: b.id, text: 'а'.repeat(500) })).body.message;
+  assert.equal((await b.post('/api/messages', { to: a.id, text: 'ок', replyTo: long.id })).body.message.reply.text.length, 140);
+  assert.equal((await b.post('/api/messages', { to: a.id, text: 'без ответа' })).body.message.reply, undefined);
+});
