@@ -2,7 +2,7 @@
 import { fail } from '../http.mjs';
 import { LANGS, langOf } from '../langs.mjs';
 import { decodeImage, removeFile, saveFile } from '../media.mjs';
-import { isVip, myPhotos, userOut } from '../model.mjs';
+import { WRITE_POLICIES, isVip, myPhotos, userOut } from '../model.mjs';
 import { CHOICES, DETAIL_KEYS, parseDetails } from '../options.mjs';
 import { rewardReferral } from '../referral.mjs';
 
@@ -87,6 +87,10 @@ export default function profileRoutes(route) {
       if (typeof body[key] !== 'boolean') invalid(key);
       if (body[key] && (key === 'hideAge' || key === 'invisible') && !isVip(user)) fail(403, 'vip_required');
       sets.push(`${col} = ?`); vals.push(body[key] ? 1 : 0);
+    }
+    if (body.writePolicy !== undefined) {
+      if (!WRITE_POLICIES.includes(body.writePolicy)) invalid('writePolicy');
+      sets.push('write_policy = ?'); vals.push(body.writePolicy);
     }
     if (body.lang !== undefined) {
       if (!LANGS.includes(body.lang)) invalid('lang');

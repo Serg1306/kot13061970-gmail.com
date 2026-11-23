@@ -2,7 +2,7 @@
 import { fail } from '../http.mjs';
 import { decodeAudio, decodeImage, removeFile, saveFile } from '../media.mjs';
 import {
-  BOOST_COST, DAY, FREE_LIKES, GIFTS, SUPPORT, addEvent, canTalk, friendsOf, hiddenIds, isVip, likesToday,
+  BOOST_COST, DAY, FREE_LIKES, GIFTS, SUPPORT, addEvent, talkBlock, friendsOf, hiddenIds, isVip, likesToday,
   messageOut, mutual, visibleUser, walletOf,
 } from '../model.mjs';
 import { endpointAllowed } from '../push.mjs';
@@ -43,7 +43,8 @@ function checkTalk(app, user, to) {
   if (to === SUPPORT) return;
   if (user.banned) fail(403, 'banned');
   if (!user.name) fail(409, 'profile_required');
-  if (!canTalk(app.db, user, to)) fail(403, 'not_allowed');
+  const why = talkBlock(app.db, user, to);
+  if (why) fail(403, why);
 }
 
 export default function actionRoutes(route) {

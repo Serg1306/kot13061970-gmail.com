@@ -248,3 +248,36 @@ test('push выключен по умолчанию', async () => {
   assert.equal(r.body.error, 'push_disabled');
   assert.equal(srv.app.push.publicKey, null);
 });
+
+test('кто может мне писать: все, только взаимные, совместимость от 70%', async () => {
+  const vip = await srv.user('wp-vip@example.ru', { birth: '1990-05-01' });
+  srv.app.db.run('UPDATE users SET vip_until = ? WHERE id = ?', Date.now() + 864e5, vip.id);
+  const hi = await srv.user('wp-hi@example.ru', { birth: '1992-03-24' }); // совместимость 70%
+  const lo = await srv.user('wp-lo@example.ru', { birth: '1995-02-14' });
+  const { compatPct } = await import('../compat.mjs');
+  assert.ok(compatPct('1990-05-01', '1992-03-24') >= 70);
+  assert.ok(compatPct('1990-05-01', '1995-02-14') < 70, 'нужна пара с низкой совместимостью');
+  const send = (to, text = 'Привет!') => vip.post('/api/messages', { to: to.id, text });
+
+  assert.equal((await hi.put('/api/settings', { writePolicy: 'nope' })).status, 400);
+  // По умолчанию VIP может написать первым
+  assert.equal((await send(lo)).status, 200);
+  // Только взаимные: VIP без взаимной симпатии не может
+  assert.equal((await lo.put('/api/settings', { writePolicy: 'mutual' })).body.user.writePolicy, 'mutual');
+  const r = await send(lo, 'Ещё раз');
+  assert.equal(r.status, 403);
+  assert.equal(r.body.error, 'policy_mutual');
+  // …а если человек ответил, переписка продолжается
+  await lo.post('/api/like', { id: vip.id }); await vip.post('/api/like', { id: lo.id });
+  assert.equal((await send(lo, 'Теперь взаимно')).status, 200);
+  // Совместимость от 70%
+  await hi.put('/api/settings', { writePolicy: 'compat70' });
+  assert.equal((await send(hi)).status, 200);
+  const lo2 = await srv.user('wp-lo2@example.ru', { birth: '1995-02-14' });
+  await lo2.put('/api/settings', { writePolicy: 'compat70' });
+  const r2 = await send(lo2);
+  assert.equal(r2.status, 403);
+  assert.equal(r2.body.error, 'policy_compat');
+  // Анкета сообщает настройку, чтобы сайт заранее подсказал
+  assert.equal((await vip.get(`/api/people/${lo2.id}?peek=1`)).body.person.writes, 'compat70');
+});
