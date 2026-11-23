@@ -45,6 +45,7 @@ export function messageOut(m) {
   if (m.src) o.src = uploadSrc(m.src);
   if (m.dur != null) o.dur = m.dur;
   if (m.spam) o.spam = true;
+  if (m.reply_to) o.reply = { id: m.reply_to, from: m.reply_from, text: m.reply_text || '' };
   return o;
 }
 

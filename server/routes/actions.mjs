@@ -37,10 +37,24 @@ function target(db, me, id) {
 
 function insertMessage(app, from, to, fields) {
   const { db, notify } = app;
-  const r = db.run('INSERT INTO messages (from_id, to_id, t, kind, text, src, dur, spam) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    from.id, to, Date.now(), fields.kind, fields.text ?? null, fields.src ?? null, fields.dur ?? null, fields.spam ? 1 : null);
+  const q = fields.reply;
+  const r = db.run(`INSERT INTO messages (from_id, to_id, t, kind, text, src, dur, spam, reply_to, reply_from, reply_text)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    from.id, to, Date.now(), fields.kind, fields.text ?? null, fields.src ?? null, fields.dur ?? null, fields.spam ? 1 : null,
+    q?.id ?? null, q?.from ?? null, q?.text ?? null);
   if (to !== SUPPORT && !fields.spam) notify.message(from, to);
   return messageOut(db.get('SELECT * FROM messages WHERE id = ?', r.lastInsertRowid));
+}
+
+// «Ответить на сообщение»: цитировать можно только сообщение из этой же переписки.
+// Цитату сохраняем копией (до 140 знаков), чтобы она показывалась, даже когда исходное сообщение уже за пределами ленты.
+function replyOf(db, me, to, id) {
+  if (id == null) return null;
+  if (!Number.isInteger(id) || id < 1) fail(400, 'invalid', { field: 'replyTo' });
+  const m = db.get('SELECT * FROM messages WHERE id = ? AND ((from_id = ? AND to_id = ?) OR (from_id = ? AND to_id = ?))', id, me, to, to, me);
+  if (!m) fail(400, 'invalid', { field: 'replyTo' });
+  const text = m.kind === 'voice' ? '🎤' : m.kind === 'call' ? '📞' : String(m.text || '').slice(0, 140);
+  return { id: m.id, from: m.from_id, text };
 }
 
 function checkTalk(app, user, to) {
@@ -89,7 +103,8 @@ export default function actionRoutes(route) {
     if (!text || text.length > 2000) fail(400, 'invalid', { field: 'text' });
     const replied = body.to === SUPPORT || wrote(app.db, body.to, user.id);
     checkText(text, replied);
-    return { message: insertMessage(app, user, body.to, { kind: 'text', text, spam: !replied && looksLikeSpam(text) }) };
+    const reply = replyOf(app.db, user.id, body.to, body.replyTo);
+    return { message: insertMessage(app, user, body.to, { kind: 'text', text, reply, spam: !replied && looksLikeSpam(text) }) };
   }, { auth: 'user', banned: true });
 
   route('POST', '/api/messages/voice', ({ app, user, body }) => {
@@ -97,8 +112,9 @@ export default function actionRoutes(route) {
     checkTalk(app, user, body.to);
     const dur = Math.round(Number(body.dur));
     if (!Number.isFinite(dur) || dur < 1 || dur > 120) fail(400, 'invalid', { field: 'dur' });
+    const reply = replyOf(app.db, user.id, body.to, body.replyTo);
     const src = saveFile(app.config.uploadsDir, decodeAudio(body.dataUrl));
-    return { message: insertMessage(app, user, body.to, { kind: 'voice', src, dur }) };
+    return { message: insertMessage(app, user, body.to, { kind: 'voice', src, dur, reply }) };
   }, { auth: 'user', banned: true });
 
   route('POST', '/api/messages/read', ({ app, user, body }) => {
