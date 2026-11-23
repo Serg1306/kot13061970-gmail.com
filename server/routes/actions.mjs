@@ -15,6 +15,11 @@ const str = v => (typeof v === 'string' ? v.trim() : '');
 const CARD_RE = /(?:\d[ -]?){12,18}\d/;
 const LINK_RE = /(?:https?:\/\/|www\.|t\.me\/|wa\.me\/|[a-z0-9-]+\.(?:ru|com|net|org|рф|su|me|io|info|ly|link|site|online|xyz|app|club|pro|biz|cc)(?![a-z0-9]))/i;
 const PHONE_RE = /(?:\+?\d[\s().-]*){10,}/;
+// Похоже на рекламу в первом сообщении: зовут в мессенджер или называют цену. Такие сообщения доходят,
+// но у получателя свёрнуты с кнопками «Показать» и «Пожаловаться», и о них не приходят уведомления.
+const MESSENGER_RE = /(?:телеграм|телегр|телег[уеиа]|телегe|(?<![a-zа-яё])(?:тг|tg|тгк)(?![a-zа-яё])|telegram|teleg|whats\s?app|ватс?ап|вотс?ап|viber|вайбер|(?<![\w.])@[a-z0-9_]{4,})/i;
+const PRICE_RE = /(?:\d[\d\s.,]*\s?(?:₽|руб|р\.|\$|€|usd|eur|у\.?\s?е\.|тыс|т\.\s?р)|(?:₽|\$|€)\s?\d|(?<![а-яё])(?:прайс|цена|стоимость|оплат[аиу])(?![а-яё]))/i;
+export const looksLikeSpam = text => MESSENGER_RE.test(text) || PRICE_RE.test(text);
 
 export function checkText(text, linksAllowed) {
   if (CARD_RE.test(text)) fail(400, 'blocked_card');
@@ -32,9 +37,9 @@ function target(db, me, id) {
 
 function insertMessage(app, from, to, fields) {
   const { db, notify } = app;
-  const r = db.run('INSERT INTO messages (from_id, to_id, t, kind, text, src, dur) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    from.id, to, Date.now(), fields.kind, fields.text ?? null, fields.src ?? null, fields.dur ?? null);
-  if (to !== SUPPORT) notify.message(from, to);
+  const r = db.run('INSERT INTO messages (from_id, to_id, t, kind, text, src, dur, spam) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    from.id, to, Date.now(), fields.kind, fields.text ?? null, fields.src ?? null, fields.dur ?? null, fields.spam ? 1 : null);
+  if (to !== SUPPORT && !fields.spam) notify.message(from, to);
   return messageOut(db.get('SELECT * FROM messages WHERE id = ?', r.lastInsertRowid));
 }
 
@@ -82,8 +87,9 @@ export default function actionRoutes(route) {
     checkTalk(app, user, body.to);
     const text = str(body.text);
     if (!text || text.length > 2000) fail(400, 'invalid', { field: 'text' });
-    checkText(text, body.to === SUPPORT || wrote(app.db, body.to, user.id));
-    return { message: insertMessage(app, user, body.to, { kind: 'text', text }) };
+    const replied = body.to === SUPPORT || wrote(app.db, body.to, user.id);
+    checkText(text, replied);
+    return { message: insertMessage(app, user, body.to, { kind: 'text', text, spam: !replied && looksLikeSpam(text) }) };
   }, { auth: 'user', banned: true });
 
   route('POST', '/api/messages/voice', ({ app, user, body }) => {
