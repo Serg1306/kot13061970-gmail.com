@@ -1,6 +1,7 @@
 // Общие правила: как отдавать анкеты, кто кого видит, кто кому может писать.
 import crypto from 'node:crypto';
 import { detailsOut } from './options.mjs';
+import { compatPct } from './compat.mjs';
 
 export const SUPPORT = 'support';
 export const DAY = 24 * 3600 * 1000;
@@ -29,7 +30,7 @@ export function userOut(u) {
     id: u.id, email: u.email, name: u.name, birth: u.birth, g: u.g, seek: u.seek, city: u.city, about: u.about,
     lang: u.lang, verified: u.verify_status === 'approved', verifyStatus: u.verify_status,
     hideAge: Boolean(u.hide_age) && vip, invisible: Boolean(u.invisible) && vip,
-    notifyEmail: Boolean(u.notify_email), notifyPush: Boolean(u.notify_push),
+    notifyEmail: Boolean(u.notify_email), notifyPush: Boolean(u.notify_push), writePolicy: writePolicy(u),
     consentAt: u.consent_at, consentPublicAt: u.consent_public_at ?? null, consentVersion: u.consent_version ?? null,
     createdAt: u.created_at, ...detailsOut(u),
   };
@@ -84,11 +85,28 @@ export const areFriends = (db, a, b) =>
   Boolean(db.get("SELECT 1 FROM friends WHERE status = 'ok' AND ((from_id = ? AND to_id = ?) OR (from_id = ? AND to_id = ?))", a, b, b, a));
 const wroteTo = (db, from, to) => Boolean(db.get('SELECT 1 FROM messages WHERE from_id = ? AND to_id = ? LIMIT 1', from, to));
 
-// Писать (и звонить) можно: при взаимной симпатии, друзьям, с VIP, в ответ тому, кто написал первым, и в поддержку.
+// Кто может мне писать (настройка пользователя): все (по обычным правилам), только при взаимной симпатии,
+// или VIP без взаимности — только при совместимости от 70%.
+export const WRITE_POLICIES = ['all', 'mutual', 'compat70'];
+export const COMPAT_MIN = 70;
+export const writePolicy = u => (WRITE_POLICIES.includes(u?.write_policy) ? u.write_policy : 'all');
+
+// Писать (и звонить) можно: при взаимной симпатии, друзьям, в ответ тому, кто написал первым, и в поддержку.
+// С VIP — и без взаимности, если получатель это разрешил в настройке «Кто может мне писать».
 export function canTalk(db, me, otherId) {
-  if (otherId === SUPPORT) return true;
-  if (!visibleUser(db, me, otherId)) return false;
-  return isVip(me) || mutual(db, me.id, otherId) || areFriends(db, me.id, otherId) || wroteTo(db, otherId, me.id);
+  return talkBlock(db, me, otherId) === null;
+}
+// Почему нельзя писать: null — можно, 'not_allowed' — общие правила, 'policy_mutual' / 'policy_compat' — настройка получателя.
+export function talkBlock(db, me, otherId) {
+  if (otherId === SUPPORT) return null;
+  const other = visibleUser(db, me, otherId);
+  if (!other) return 'not_allowed';
+  if (mutual(db, me.id, otherId) || areFriends(db, me.id, otherId) || wroteTo(db, otherId, me.id)) return null;
+  if (!isVip(me)) return 'not_allowed';
+  const policy = writePolicy(other);
+  if (policy === 'mutual') return 'policy_mutual';
+  if (policy === 'compat70' && !((compatPct(me.birth, other.birth) ?? 0) >= COMPAT_MIN)) return 'policy_compat';
+  return null;
 }
 
 // Анкеты для показа другим: только одобренные фото, подарки, VIP/поднятие/онлайн.
@@ -111,6 +129,7 @@ export function peopleOut(db, users, viewerId, now = Date.now()) {
       verified: u.verify_status === 'approved', hideAge: Boolean(u.hide_age) && vip, vip,
       boosted: u.boost_until > now,
       online: !(u.invisible && vip) && now - u.last_seen < ONLINE_MS,
+      writes: writePolicy(u),
       media: media.get(u.id) || [], gifts: giftMap.get(u.id) || [], ...detailsOut(u),
     };
   });
