@@ -152,3 +152,21 @@ test('фоновая сверка: возраст счёта, пауза 30 ми
     assert.equal(r.body.error, 'tkassa_unavailable');
   } finally { await s2.close(); }
 });
+
+test('недорогие покупки: 30 монет за 29 ₽ и поднятие анкеты за 49 ₽, возврат снимает поднятие', async () => {
+  const a = await srv.user('cheap@example.ru');
+  const coins = await order(a, 'coins_30');
+  assert.equal(srv.app.db.get('SELECT price FROM orders WHERE inv_id = ?', coins).price, 29);
+  states.set(coins, 'CONFIRMED');
+  assert.equal((await admin.post('/api/admin/order-check', { invId: coins })).body.credited, true);
+  assert.equal((await wallet(a)).coins, 30);
+
+  const boost = await order(a, 'boost_1d');
+  assert.equal(srv.app.db.get('SELECT price FROM orders WHERE inv_id = ?', boost).price, 49);
+  states.set(boost, 'CONFIRMED');
+  assert.equal((await admin.post('/api/admin/order-check', { invId: boost })).body.credited, true);
+  const until = (await wallet(a)).boostUntil;
+  assert.ok(until > Date.now() + 23 * 3600e3 && until <= Date.now() + 24 * 3600e3 + 1000);
+  assert.equal((await admin.post('/api/admin/refund', { invId: boost, note: 'тест' })).status, 200);
+  assert.ok((await wallet(a)).boostUntil <= Date.now());
+});

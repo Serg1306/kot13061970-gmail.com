@@ -31,6 +31,9 @@ export function creditOrder(db, invId) {
       db.run('UPDATE users SET vip_until = MAX(vip_until, ?) + ? WHERE id = ?', now, product.vipDays * DAY, order.user_id);
     }
     if (product.coins) db.run('UPDATE users SET coins = coins + ? WHERE id = ?', product.coins, order.user_id);
+    if (product.boostDays) {
+      db.run('UPDATE users SET boost_until = MAX(boost_until, ?) + ? WHERE id = ?', now, product.boostDays * DAY, order.user_id);
+    }
     const lang = db.get('SELECT lang FROM users WHERE id = ?', order.user_id)?.lang;
     addEvent(db, order.user_id, 'system', null, textFor(PAID_TEXT, lang)(product.title));
     return true;
@@ -61,6 +64,7 @@ export function refundOrder(db, invId, note) {
     if (order.user_id && product) {
       if (product.coins) db.run('UPDATE users SET coins = MAX(0, coins - ?) WHERE id = ?', product.coins, order.user_id);
       if (product.vipDays) db.run('UPDATE users SET vip_until = MAX(?, vip_until - ?) WHERE id = ?', now, product.vipDays * DAY, order.user_id);
+      if (product.boostDays) db.run('UPDATE users SET boost_until = MAX(?, boost_until - ?) WHERE id = ?', now, product.boostDays * DAY, order.user_id);
       const lang = db.get('SELECT lang FROM users WHERE id = ?', order.user_id)?.lang;
       addEvent(db, order.user_id, 'system', null, textFor(REFUND_TEXT, lang)(product.title));
     }
