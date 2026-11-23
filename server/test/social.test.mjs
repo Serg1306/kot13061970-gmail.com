@@ -200,6 +200,28 @@ test('поддержка: обращение и ответ модератора'
   assert.ok(chat.find(x => x.to === 'support').read);
 });
 
+test('поддержка: модератор находит любого пользователя и пишет первым, пользователь отвечает', async () => {
+  const a = await srv.user('dm@example.ru', { name: 'Ангелина', city: 'Екатеринбург' });
+  const noq = await a.get('/api/admin/users?q=x');
+  assert.equal(noq.status, 403);
+  // Поиск по имени и городу без учёта регистра, в том числе кириллицей
+  for (const q of ['ангелина', 'ЕКАТЕРИНБУРГ', 'dm@example', a.id]) {
+    const found = await admin.get('/api/admin/users?q=' + encodeURIComponent(q));
+    assert.ok(found.body.users.some(u => u.id === a.id), q);
+  }
+  assert.ok(!(await admin.get('/api/admin/queue')).body.support.some(t => t.user.id === a.id), 'только приветствие — не обращение');
+  const sent = await admin.post('/api/admin/support', { userId: a.id, text: 'Здравствуйте! Это разработчик сайта.' });
+  assert.equal(sent.status, 200);
+  assert.ok((await admin.get('/api/admin/queue')).body.support.some(t => t.user.id === a.id), 'переписка видна после первого сообщения');
+  const chat = (await a.get('/api/state')).body.chats.support;
+  assert.equal(chat.at(-1).text, 'Здравствуйте! Это разработчик сайта.');
+  await a.post('/api/messages', { to: 'support', text: 'Добрый день, спасибо!' });
+  const t = (await admin.get('/api/admin/queue')).body.support.find(x => x.user.id === a.id);
+  assert.equal(t.unread, 1);
+  const open = await admin.get(`/api/admin/support?userId=${a.id}`);
+  assert.equal(open.body.messages.at(-1).text, 'Добрый день, спасибо!');
+});
+
 test('проверка селфи: модератор видит селфи и главное фото', async () => {
   const a = await srv.user('selfie@example.ru');
   await a.post('/api/photos', { dataUrl: JPEG });
