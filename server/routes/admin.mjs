@@ -29,11 +29,14 @@ const mainPhoto = (db, userId) => {
 };
 const userById = (db, id) => db.get('SELECT * FROM users WHERE id = ?', id);
 
+// Переписки поддержки: где писал пользователь или где поддержка написала первой (кроме одного приветствия при регистрации).
 function supportThreads(db) {
   const rows = db.all(`SELECT CASE WHEN from_id = 'support' THEN to_id ELSE from_id END AS uid, MAX(t) AS last,
       SUM(CASE WHEN to_id = 'support' AND read = 0 THEN 1 ELSE 0 END) AS unread,
-      SUM(CASE WHEN to_id = 'support' THEN 1 ELSE 0 END) AS incoming
-    FROM messages WHERE from_id = 'support' OR to_id = 'support' GROUP BY uid HAVING incoming > 0 ORDER BY unread > 0 DESC, last DESC LIMIT 200`);
+      SUM(CASE WHEN to_id = 'support' THEN 1 ELSE 0 END) AS incoming,
+      SUM(CASE WHEN from_id = 'support' THEN 1 ELSE 0 END) AS outgoing
+    FROM messages WHERE from_id = 'support' OR to_id = 'support' GROUP BY uid
+    HAVING incoming > 0 OR outgoing > 1 ORDER BY unread > 0 DESC, last DESC LIMIT 200`);
   return rows.map(r => {
     const lastMsg = db.get(`SELECT * FROM messages WHERE (from_id = 'support' AND to_id = :u) OR (from_id = :u AND to_id = 'support')
       ORDER BY t DESC, id DESC LIMIT 1`, { u: r.uid });
@@ -122,6 +125,20 @@ export default function adminRoutes(route) {
     const r = app.db.run('UPDATE users SET banned = 0 WHERE id = ?', String(body.userId));
     if (!r.changes) fail(404, 'not_found');
     return { ok: true };
+  }, opts);
+
+  // Поиск пользователя, чтобы написать ему от имени поддержки: по имени, почте или логину, id, городу.
+  // Без запроса — последние активные.
+  route('GET', '/api/admin/users', ({ app, url }) => {
+    const { db } = app;
+    const q = String(url.searchParams.get('q') || '').trim().slice(0, 100);
+    // lower() в SQLite не понимает кириллицу, поэтому ищем в JS по последним 20 000 анкетам.
+    const needle = q.toLowerCase();
+    const hit = u => u.id === q || [u.name, u.email, u.city].some(v => v && String(v).toLowerCase().includes(needle));
+    const rows = q
+      ? db.all('SELECT * FROM users ORDER BY last_seen DESC LIMIT 20000').filter(hit).slice(0, 30)
+      : db.all('SELECT * FROM users ORDER BY last_seen DESC LIMIT 30');
+    return { users: rows.map(u => ({ ...brief(u), city: u.city || null, lastSeen: u.last_seen || null, photo: mainPhoto(db, u.id) })) };
   }, opts);
 
   // Переписка с пользователем; открытие отмечает его сообщения прочитанными.

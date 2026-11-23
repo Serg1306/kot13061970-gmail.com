@@ -145,6 +145,8 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
   const rub = n => Number(n || 0).toLocaleString('ru-RU') + ' ₽';
   const isoDay = t => new Date(t + 3 * 3600e3).toISOString().slice(0, 10);
   const pay = { status: '', q: '', data: null };
+  // Поиск пользователя, чтобы написать ему первым
+  const find = { q: '', users: null };
   const pd = { from: isoDay(Date.now()).slice(0, 8) + '01', to: isoDay(Date.now()), rows: null };
 
   // CSV для Excel: разделитель «;», в начале BOM, чтобы кириллица открывалась без «кракозябр».
@@ -279,9 +281,13 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
       ${queue.banned.length ? `<div class="list">${queue.banned.map(u => `<div class="card row" style="justify-content:space-between">${person(u)}<span class="row"><button class="btn" data-act="unban" data-id="${esc(u.id)}">Разбанить</button><button class="btn" data-act="delban" data-id="${esc(u.id)}">Удалить данные</button></span></div>`).join('')}</div>` : empty('Никого.')}`,
 
     support: () => {
-      if (!queue.support.length) return empty('Обращений пока нет.');
-      return `<div class="support${thread ? ' open' : ''}">
-        <div class="threads">${queue.support.map(t => `
+      const found = find.users ? (find.users.length ? `<div class="list">${find.users.map(u => `
+          <div class="card row" style="justify-content:space-between">${person(u)}<span class="muted">${esc(u.city || '')}${u.lastSeen ? ' · был(а) ' + when(u.lastSeen) : ''}</span>
+          <button class="btn rose" data-thread="${esc(u.id)}">Написать</button></div>`).join('')}</div>` : '<p class="muted">Никого не нашлось.</p>') : '';
+      return `<form id="findUser" class="filters"><label>Написать любому пользователю: имя, почта, id или город<input name="q" type="search" value="${esc(find.q)}" placeholder="например, Анна или Москва"></label>
+          <button class="btn" type="submit">Найти</button></form>${found}
+        <div class="support${thread ? ' open' : ''}">
+        <div class="threads">${queue.support.length ? '' : '<p class="muted">Обращений пока нет.</p>'}${queue.support.map(t => `
           <button class="btn thread" data-thread="${esc(t.user.id)}" aria-current="${thread?.user.id === t.user.id}">
             <b>${esc(t.user.name || t.user.email)}</b>${t.unread ? `<span class="badge">${t.unread}</span>` : ''}<br>
             <span class="muted">${esc((t.last?.text || '').slice(0, 60))}</span></button>`).join('')}</div>
@@ -290,7 +296,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
           <div class="msgs">${thread.messages.map(m => `<div class="msg${m.from === 'support' ? ' mine' : ''}">${esc(m.kind === 'voice' ? '🎤 голосовое сообщение' : m.text)}<span class="t">${when(m.t)}</span></div>`).join('')}</div>
           <form id="reply"><label class="muted" for="replyText">Ответ от имени поддержки</label><textarea id="replyText" maxlength="4000" required></textarea>
           <p class="row" style="margin:.6rem 0 0"><button class="btn rose" type="submit">Отправить</button></p></form>`
-        : '<p class="muted">Выберите обращение слева.</p>'}</div></div>`;
+        : '<p class="muted">Выберите обращение слева или найдите пользователя выше и нажмите «Написать».</p>'}</div></div>`;
     },
 
     pay: () => {
@@ -372,7 +378,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
   // ---------- Действия ----------
   $('#view').addEventListener('click', async e => {
     const t = e.target.closest('[data-thread]');
-    if (t) return openThread(t.dataset.thread);
+    if (t) { find.users = null; return openThread(t.dataset.thread); }
     if (e.target.closest('[data-back]')) { thread = null; return render(); }
     const b = e.target.closest('[data-act]');
     if (!b) return;
@@ -425,6 +431,12 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
         await loadPd();
       } catch (err) { alert(err.status === 404 ? 'Пользователь с такой почтой не найден.' : 'Не получилось: ' + err.message); }
       return;
+    }
+    if (f.id === 'findUser') {
+      e.preventDefault(); find.q = f.q.value.trim();
+      try { find.users = (await api('GET', '/api/admin/users?q=' + encodeURIComponent(find.q))).users; }
+      catch (err) { alert('Не получилось: ' + err.message); }
+      return render();
     }
     if (f.id !== 'reply') return;
     e.preventDefault();
