@@ -26,9 +26,19 @@ test('сообщения: кому можно писать, фильтр кар�
   assert.equal((await a.post('/api/messages', { to: b.id, text: 'мой номер +7 (999) 123-45-67' })).body.error, 'blocked_link');
   assert.equal((await a.post('/api/messages', { to: b.id, text: 'x'.repeat(2001) })).body.field, 'text');
 
+  // Зовут в мессенджер или называют цену в первом сообщении: доходит, но помечено как спам и без уведомлений.
+  const spam = await a.post('/api/messages', { to: b.id, text: 'пиши в телегу, недорого 3000 руб' });
+  assert.equal(spam.status, 200);
+  assert.equal(spam.body.message.spam, true);
+  const got = (await b.get('/api/state')).body.chats[a.id];
+  assert.equal(got.find(x => x.id === spam.body.message.id).spam, true);
+  assert.ok(!got.find(x => x.text === 'Привет!').spam);
+
   // После ответа собеседника ссылки можно, карты — никогда.
   await b.post('/api/messages', { to: a.id, text: 'Привет, как дела?' });
   assert.equal((await a.post('/api/messages', { to: b.id, text: 'вот сайт example.ru' })).status, 200);
+  // После ответа цены и мессенджеры не прячем.
+  assert.ok(!(await a.post('/api/messages', { to: b.id, text: 'кофе за 300 руб, мой тг @anna_cafe' })).body.message.spam);
   assert.equal((await a.post('/api/messages', { to: b.id, text: '4276-1234-5678-9012' })).body.error, 'blocked_card');
 
   // Третий без симпатии не может, с VIP — может; получатель может ответить.

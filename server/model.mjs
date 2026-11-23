@@ -44,6 +44,7 @@ export function messageOut(m) {
   if (m.text != null) o.text = m.text;
   if (m.src) o.src = uploadSrc(m.src);
   if (m.dur != null) o.dur = m.dur;
+  if (m.spam) o.spam = true;
   return o;
 }
 
