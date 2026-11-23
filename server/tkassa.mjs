@@ -15,6 +15,9 @@ export const CATALOG = {
   vip_3d: { title: 'VIP-статус на 3 дня', price: 199, vipDays: 3 },
   vip_1m: { title: 'VIP-статус на 30 дней', price: 599, vipDays: 30 },
   vip_3m: { title: 'VIP-статус на 90 дней', price: 1290, vipDays: 90 },
+  // Недорогие покупки «на пробу»: первый платёж без раздумий.
+  coins_30: { title: '30 монет', price: 29, coins: 30 },
+  boost_1d: { title: 'Поднятие анкеты на сутки', price: 49, boostDays: 1 },
   coins_100: { title: '100 монет', price: 99, coins: 100 },
   coins_550: { title: '550 монет', price: 449, coins: 550 },
   coins_1200: { title: '1200 монет', price: 890, coins: 1200 },
