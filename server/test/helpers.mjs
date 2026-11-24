@@ -16,7 +16,7 @@ export const WEBM = 'data:audio/webm;codecs=opus;base64,' + Buffer.concat([Buffe
 
 export async function startServer(env = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lvc-test-'));
-  const instance = createApp({ DATA_DIR: dataDir, DEV_CODES: '1', ADMIN_EMAILS: ADMIN, ...env }, { log: null });
+  const instance = createApp({ DATA_DIR: dataDir, DEV_CODES: '1', ADMIN_EMAILS: ADMIN, FACE_CHECK: '0', ...env }, { log: null });
   const port = await instance.listen(0, '127.0.0.1');
   const base = `http://127.0.0.1:${port}`;
   return {
