@@ -106,9 +106,9 @@ export default function profileRoutes(route) {
     if (count >= MAX_PHOTOS) fail(400, 'too_many');
     const file = saveFile(config.uploadsDir, decodeImage(body.dataUrl));
     const pos = db.get('SELECT COALESCE(MAX(pos), -1) + 1 AS p FROM photos WHERE user_id = ?', user.id).p;
-    db.run('INSERT INTO photos (user_id, file, status, pos, created_at) VALUES (?, ?, ?, ?, ?)',
-      user.id, file, config.autoApprove ? 'approved' : 'pending', pos, Date.now());
-    if (config.autoApprove) rewardReferral(db, user.id);
+    // Фото видно сразу; модератор смотрит новые фото в админке и удаляет неподходящие.
+    db.run("INSERT INTO photos (user_id, file, status, pos, created_at) VALUES (?, ?, 'approved', ?, ?)", user.id, file, pos, Date.now());
+    rewardReferral(db, user.id);
     return { photos: myPhotos(db, user.id) };
   }, { auth: 'user' });
 

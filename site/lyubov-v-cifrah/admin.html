@@ -114,7 +114,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
 
   <section id="panel" hidden>
     <nav class="tabs" role="tablist">
-      <button class="btn tab" role="tab" data-tab="photos">Фото на модерации<span class="badge" data-count="photos" hidden></span></button>
+      <button class="btn tab" role="tab" data-tab="photos">Новые фото<span class="badge" data-count="photos" hidden></span></button>
       <button class="btn tab" role="tab" data-tab="verify">Подтверждение<span class="badge" data-count="verify" hidden></span></button>
       <button class="btn tab" role="tab" data-tab="reports">Жалобы<span class="badge" data-count="reports" hidden></span></button>
       <button class="btn tab" role="tab" data-tab="support">Поддержка<span class="badge" data-count="support" hidden></span></button>
@@ -250,10 +250,10 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
   const VIEWS = {
     photos: () => queue.photos.length ? `<div class="grid">${queue.photos.map(p => `
       <article class="card">
-        <a href="${esc(p.src)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(p.src)}" alt="Фото на модерации" loading="lazy"></a>
+        <a href="${esc(p.src)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(p.src)}" alt="Новое фото" loading="lazy"></a>
         <p class="who" style="margin:.6rem 0">${person({ name: p.name, email: p.email })}<br><span class="muted">${when(p.t)}</span></p>
-        <div class="row"><button class="btn ok" data-act="photo" data-id="${p.id}" data-ok="1">Одобрить</button><button class="btn" data-act="photo" data-id="${p.id}" data-ok="0">Отклонить</button></div>
-      </article>`).join('')}</div>` : empty('Новых фото нет.'),
+        <div class="row"><button class="btn ok" data-act="photo" data-id="${p.id}" data-ok="1">Оставить</button><button class="btn" data-act="photo" data-id="${p.id}" data-ok="0">Удалить с сайта</button></div>
+      </article>`).join('')}</div>` : empty('Новых фото нет. Фото публикуются сразу после загрузки, здесь — те, что вы ещё не смотрели.'),
 
     verify: () => queue.verifications.length ? `<div class="list">${queue.verifications.map(v => `
       <article class="card">

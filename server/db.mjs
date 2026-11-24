@@ -194,8 +194,9 @@ CREATE TABLE IF NOT EXISTS banned_emails (
 
 // Колонки, добавленные после первого выпуска: в старой базе их создаём через ALTER TABLE.
 const COLUMNS = {
-  users: { receipt_email: 'TEXT', consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT', src: 'TEXT', marital: 'TEXT', body: 'TEXT', drink: 'TEXT', edu: 'TEXT', home: 'TEXT', income: 'TEXT', job: 'TEXT', langs: 'TEXT', ref_by: 'TEXT', ref_paid: 'INTEGER', write_policy: 'TEXT' },
+  users: { receipt_email: 'TEXT', consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT', src: 'TEXT', marital: 'TEXT', body: 'TEXT', drink: 'TEXT', edu: 'TEXT', home: 'TEXT', income: 'TEXT', job: 'TEXT', langs: 'TEXT', ref_by: 'TEXT', ref_paid: 'INTEGER', write_policy: 'TEXT', avatar_done: 'INTEGER' },
   messages: { spam: 'INTEGER', reply_to: 'INTEGER', reply_from: 'TEXT', reply_text: 'TEXT' },
+  photos: { checked: 'INTEGER' },
   orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER', payment_id: 'TEXT' },
 };
 
@@ -203,9 +204,15 @@ function migrate(raw) {
   for (const [table, cols] of Object.entries(COLUMNS)) {
     const have = new Set(raw.prepare(`PRAGMA table_info(${table})`).all().map(c => c.name));
     for (const [name, type] of Object.entries(cols)) {
-      if (!have.has(name)) raw.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+      if (have.has(name)) continue;
+      raw.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+      // Модерация фото стала последующей: всё, что уже было решено, считаем просмотренным.
+      if (table === 'photos' && name === 'checked') raw.exec("UPDATE photos SET checked = 1 WHERE status <> 'pending'");
     }
   }
+  // Фото публикуются сразу (решение владельца 24.11.2026). Оставшиеся «на модерации» одобряем,
+  // а в админке они остаются в списке «Новые фото» (checked пустой), чтобы их можно было удалить.
+  raw.exec("UPDATE photos SET status = 'approved' WHERE status = 'pending'");
 }
 
 export function openDb(file) {

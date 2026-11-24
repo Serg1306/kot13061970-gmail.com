@@ -7,7 +7,6 @@ import { isSafeName } from '../media.mjs';
 import { ONLINE_MS, addEvent, dayStartMsk, messageOut, uploadSrc } from '../model.mjs';
 import { REASONS, deleteUser, destroySelfie } from '../pd.mjs';
 import { checkOrder, refundOrder } from './pay.mjs';
-import { rewardReferral } from '../referral.mjs';
 import { normEmail } from './auth.mjs';
 import { normPhone } from '../sms.mjs';
 
@@ -68,8 +67,9 @@ export default function adminRoutes(route) {
 
   route('GET', '/api/admin/queue', ({ app }) => {
     const { db } = app;
+    // Новые фото: уже опубликованы, модератор их ещё не смотрел.
     const photos = db.all(`SELECT p.id, p.user_id, p.file, p.created_at, u.name, u.email FROM photos p JOIN users u ON u.id = p.user_id
-      WHERE p.status = 'pending' ORDER BY p.created_at LIMIT 200`)
+      WHERE p.status = 'approved' AND p.checked IS NULL ORDER BY p.created_at LIMIT 200`)
       .map(p => ({ id: p.id, userId: p.user_id, name: p.name, email: p.email, src: uploadSrc(p.file), t: p.created_at }));
     const verifications = db.all("SELECT * FROM users WHERE verify_status = 'pending' ORDER BY verify_at LIMIT 100").map(u => ({
       userId: u.id, name: u.name, email: u.email, gesture: u.verify_gesture, t: u.verify_at,
@@ -86,10 +86,9 @@ export default function adminRoutes(route) {
   }, opts);
 
   route('POST', '/api/admin/photo', ({ app, body }) => {
-    const r = app.db.run("UPDATE photos SET status = ? WHERE id = ?", body.approve ? 'approved' : 'rejected', Number(body.id));
+    // «Оставить» — фото просмотрено; «Удалить» — фото скрыто с сайта (у владельца оно отмечено как отклонённое).
+    const r = app.db.run('UPDATE photos SET status = ?, checked = 1 WHERE id = ?', body.approve ? 'approved' : 'rejected', Number(body.id));
     if (!r.changes) fail(404, 'not_found');
-    // Первое одобренное фото приглашённого — повод начислить бонус за приглашение.
-    if (body.approve) rewardReferral(app.db, app.db.get('SELECT user_id FROM photos WHERE id = ?', Number(body.id)).user_id);
     return { ok: true };
   }, opts);
 

@@ -66,7 +66,7 @@ Signal       = { id, from: id, t: ms, data: object }
   - возраст ≥ 18 (`under_18`);
   - два отдельных согласия по 152-ФЗ, оба обязательны при первом сохранении: `consent: true` — на обработку (`consent_required`) и `consentPublic: true` — на распространение, ст. 10.1, анкету видят другие (`consent_public_required`). Записываются `consentAt`, `consentPublicAt`, `consentVersion` (из `CONSENT_VERSION`) и IP. При следующих сохранениях согласия не нужны.
 - `PUT /api/settings { hideAge?, invisible?, notifyEmail?, notifyPush?, lang? }` → `{ user }`. `hideAge`/`invisible` = true только с активным VIP (`403 vip_required`).
-- `POST /api/photos { dataUrl }` (jpeg/png/webp — тип проверяется по сигнатуре файла, `bad_image`; ≤ 4 МБ после декодирования, `413 too_large`; максимум 10 фото → `too_many`) → `{ photos: Photo[] }`. При `AUTO_APPROVE=1` сразу `approved`, иначе `pending` до модерации. Работает и до заполнения анкеты.
+- `POST /api/photos { dataUrl }` (jpeg/png/webp — тип проверяется по сигнатуре файла, `bad_image`; ≤ 4 МБ после декодирования, `413 too_large`; максимум 10 фото → `too_many`) → `{ photos: Photo[] }`. Фото сразу `approved` (видно всем); модератор смотрит новые фото в admin.html и может скрыть (`rejected`). При первом входе через VK ID / Яндекс ID аватарка оттуда становится первым фото, если своих фото нет (один раз). Работает и до заполнения анкеты.
 - `DELETE /api/photos/:id` → `{ photos }`; `PUT /api/photos/order { ids }` → `{ photos }` (перечисленные идут первыми в указанном порядке, остальные — после).
 - `POST /api/verify { dataUrl, gesture }` — селфи с жестом (gesture 1–100 символов) для значка «фото проверено» → `{ user }` (verifyStatus = pending). Селфи не публикуется, его видят только модераторы.
 
@@ -127,7 +127,7 @@ Signal       = { id, from: id, t: ms, data: object }
      reports: [{ id, t, reason, text, from: {id,name,email,banned}, target: {id,name,email,banned,photo}, count }],
      support: [{ user: {id,name,email,banned}, unread, last: Message }], banned: [{id,name,email,banned}],
      stats: { users, today, online, paid, paidToday, revenue, messagesToday, banned } }`
-- `POST /api/admin/photo { id, approve }`, `POST /api/admin/verify { userId, approve }` (пользователю — событие `system`), `POST /api/admin/report { id, action: "dismiss"|"ban" }` (бан закрывает все открытые жалобы на этого человека), `POST /api/admin/unban { userId }`.
+- `POST /api/admin/photo { id, approve }` (`approve: true` — «Оставить», фото уходит из списка новых; `false` — скрыть с сайта), `POST /api/admin/verify { userId, approve }` (пользователю — событие `system`), `POST /api/admin/report { id, action: "dismiss"|"ban" }` (бан закрывает все открытые жалобы на этого человека), `POST /api/admin/unban { userId }`.
 - `GET /api/admin/support?userId=` → `{ user, messages }` (отмечает обращения прочитанными); ответ: `POST /api/admin/support { userId, text }` → `{ message }` — у пользователя появляется сообщение от `"support"` (+ push).
 - `GET /api/admin/file/:name` — селфи для проверки (хранятся в `DATA_DIR/private`, не в `/uploads`). Селфи удаляется после решения модератора или через 30 дней, с записью в журнал уничтожения.
 
@@ -155,7 +155,7 @@ Signal       = { id, from: id, t: ms, data: object }
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | отправка писем (SMTPS 465 или STARTTLS 587) |
 | `CODE_LOGIN` | `1` — вход по коду из СМС или письма для всех; иначе только для `ADMIN_EMAILS` (`403 code_login_off`) |
 | `DEV_CODES` | `1` — показывать код входа в ответе (только для проверки!) |
-| `AUTO_APPROVE` | `1` — фото без модерации |
+| `AVATAR_HOSTS` | домены для скачивания аватарок VK ID / Яндекс ID |
 | `PUSH_ENABLED` | `1` — включить Web Push (по умолчанию выключен, нужен для этого уведомление РКН о трансграничной передаче) |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | push; если не заданы, сервер создаёт ключи и хранит в `DATA_DIR/vapid.json` (только при `PUSH_ENABLED=1`) |
 | `CONSENT_VERSION` | редакция текстов согласий, записывается с каждым согласием (по умолчанию `2026-10-14`) |

@@ -12,7 +12,7 @@ after(() => srv.close());
 
 const person = async (c, id) => (await c.get('/api/people')).body.people.find(p => p.id === id);
 
-test('фото: загрузка, проверка типа, лимит, порядок, удаление, модерация', async () => {
+test('фото: загрузка, проверка типа, лимит, порядок, удаление, последующая модерация', async () => {
   const a = await srv.user('photos@example.ru');
   const b = await srv.user('viewer@example.ru');
   assert.equal((await a.post('/api/photos', { dataUrl: FAKE_IMG })).body.error, 'bad_image');
@@ -23,7 +23,7 @@ test('фото: загрузка, проверка типа, лимит, пор�
   let photos;
   for (let i = 0; i < 10; i++) photos = (await a.post('/api/photos', { dataUrl: i % 2 ? PNG : JPEG })).body.photos;
   assert.equal(photos.length, 10);
-  assert.ok(photos.every(p => p.status === 'pending' && /^\/uploads\/[a-f0-9]{32}\.(jpg|png)$/.test(p.src)));
+  assert.ok(photos.every(p => p.status === 'approved' && /^\/uploads\/[a-f0-9]{32}\.(jpg|png)$/.test(p.src)));
   assert.equal((await a.post('/api/photos', { dataUrl: JPEG })).body.error, 'too_many');
 
   // Файл отдаётся с правильным типом.
@@ -39,16 +39,21 @@ test('фото: загрузка, проверка типа, лимит, пор�
   assert.equal((await fetch(srv.base + photos[9].src)).status, 404);
   assert.equal((await b.del(`/api/photos/${ids[0]}`)).status, 404);
 
-  // На модерации чужим не видно.
-  assert.deepEqual((await person(b, a.id)).media, []);
-  const queue = await admin.get('/api/admin/queue');
+  // Фото видны сразу и попадают в «Новые фото» админки; «Удалить с сайта» скрывает фото, «Оставить» убирает из списка.
+  assert.equal((await person(b, a.id)).media.length, 9);
+  let queue = await admin.get('/api/admin/queue');
   assert.equal(queue.status, 200);
   assert.ok(queue.body.photos.some(p => p.id === ids[3]));
   assert.equal((await b.get('/api/admin/queue')).status, 403);
   await admin.post('/api/admin/photo', { id: ids[3], approve: true });
   await admin.post('/api/admin/photo', { id: ids[0], approve: false });
+  queue = (await admin.get('/api/admin/queue')).body;
+  assert.ok(!queue.photos.some(p => p.id === ids[3] || p.id === ids[0]));
+  assert.ok(queue.photos.some(p => p.id === ids[1]));
   const media = (await person(b, a.id)).media;
-  assert.deepEqual(media, [{ type: 'photo', src: reordered[0].src }]);
+  assert.equal(media.length, 8);
+  assert.equal(media[0].src, reordered[0].src);
+  assert.ok(!media.some(m => m.src === reordered[1].src));
   const mine = (await a.get('/api/me')).body.photos;
   assert.equal(mine[0].status, 'approved');
   assert.equal(mine[1].status, 'rejected');
@@ -59,12 +64,27 @@ test('фото: загрузка, проверка типа, лимит, пор�
   assert.deepEqual(guest.body.people.find(p => p.id === a.id).media, media);
 });
 
-test('AUTO_APPROVE=1 одобряет фото сразу', async () => {
-  const s2 = await startServer({ AUTO_APPROVE: '1' });
+test('обновление базы: фото «на модерации» одобряются, решённые раньше не попадают в «Новые фото»', async () => {
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const { DatabaseSync } = await import('node:sqlite');
+  const { openDb } = await import('../db.mjs');
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'lvc-mig-')), 'old.db');
+  // Старая база: таблица фото без колонки checked.
+  const old = new DatabaseSync(file);
+  old.exec(`CREATE TABLE photos (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, file TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending', pos INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`);
+  old.exec("INSERT INTO photos (user_id, file, status, created_at) VALUES ('u', 'a.jpg', 'pending', 1), ('u', 'b.jpg', 'approved', 1), ('u', 'c.jpg', 'rejected', 1)");
+  old.close();
+  const db = openDb(file);
   try {
-    const a = await s2.user('auto@example.ru');
-    assert.equal((await a.post('/api/photos', { dataUrl: JPEG })).body.photos[0].status, 'approved');
-  } finally { await s2.close(); }
+    assert.deepEqual(db.all('SELECT file, status, checked FROM photos ORDER BY id').map(r => ({ ...r })), [
+      { file: 'a.jpg', status: 'approved', checked: null },
+      { file: 'b.jpg', status: 'approved', checked: 1 },
+      { file: 'c.jpg', status: 'rejected', checked: 1 },
+    ]);
+  } finally { db.raw.close(); }
 });
 
 test('список людей скрывает заблокированных и забаненных, визиты и гости', async () => {

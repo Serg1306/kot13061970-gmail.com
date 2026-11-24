@@ -5,6 +5,8 @@ import { langOf } from '../langs.mjs';
 import { authorizeUrl, fetchProfile, pkce } from '../oauth.mjs';
 import { isEmailBanned } from '../pd.mjs';
 import { normPhone } from '../sms.mjs';
+import { decodeImage, saveFile } from '../media.mjs';
+import { rewardReferral } from '../referral.mjs';
 import { adSource, createUser, normEmail } from './auth.mjs';
 
 const STATE_COOKIE = 'lvc_o';
@@ -32,6 +34,41 @@ function userFor(app, provider, p, lang, src, ref) {
   }
   db.run('INSERT OR IGNORE INTO oauth_ids (provider, sub, user_id, created_at) VALUES (?, ?, ?, ?)', provider, p.sub, user.id, Date.now());
   return user;
+}
+
+// Аватарка из VK ID / Яндекс ID становится первым фото анкеты — один раз и только если своих фото нет
+// (если человек потом удалит её, при следующем входе она не вернётся). Ошибки не мешают входу.
+const AVATAR_MAX = 4 * 1024 * 1024;
+const hostOk = (app, url) => {
+  try {
+    const u = new URL(url), h = u.hostname.toLowerCase();
+    return /^https?:$/.test(u.protocol) && app.config.avatarHosts.some(a => h === a || h.endsWith('.' + a));
+  } catch { return false; }
+};
+async function importAvatar(app, user, url) {
+  const { db } = app;
+  if (!url || db.get('SELECT avatar_done FROM users WHERE id = ?', user.id)?.avatar_done) return;
+  if (db.get('SELECT 1 FROM photos WHERE user_id = ? LIMIT 1', user.id)) { db.run('UPDATE users SET avatar_done = 1 WHERE id = ?', user.id); return; }
+  if (!hostOk(app, url)) return app.log.error(`аватарка: чужой адрес ${new URL(url).hostname}`);
+  try {
+    // Переадресации проходим сами, проверяя каждый адрес: ходим только на серверы VK и Яндекса.
+    let res, next = url;
+    for (let hop = 0; hop < 4 && next; hop++) {
+      if (!hostOk(app, next)) throw new Error('переадресация на чужой адрес');
+      res = await fetch(next, { redirect: 'manual', signal: AbortSignal.timeout(8000) });
+      next = res.status >= 300 && res.status < 400 && res.headers.get('location') ? new URL(res.headers.get('location'), next).href : '';
+    }
+    if (!res?.ok) throw new Error(`ответ ${res?.status}`);
+    if (Number(res.headers.get('content-length')) > AVATAR_MAX) throw new Error('слишком большая');
+    const buf = Buffer.from(await res.arrayBuffer());
+    const file = saveFile(app.config.uploadsDir, decodeImage(`data:image/jpeg;base64,${buf.toString('base64')}`, AVATAR_MAX));
+    db.tx(() => {
+      if (db.get('SELECT 1 FROM photos WHERE user_id = ? LIMIT 1', user.id)) return;
+      db.run("INSERT INTO photos (user_id, file, status, pos, created_at) VALUES (?, ?, 'approved', 0, ?)", user.id, file, Date.now());
+      db.run('UPDATE users SET avatar_done = 1 WHERE id = ?', user.id);
+    });
+    rewardReferral(db, user.id);
+  } catch (e) { app.log.error(`аватарка: ${e.message || e.code}`); }
 }
 
 export default function oauthRoutes(route) {
@@ -92,6 +129,7 @@ export default function oauthRoutes(route) {
       throw e;
     }
     startSession(user.id);
+    await importAvatar(app, user, profile.avatar);
     if (!user.name) {
       const hints = app.oauthHints ??= new Map();
       const now = Date.now();

@@ -30,7 +30,7 @@ export function referrerOf(db, code) {
 export const referralStats = (db, userId) =>
   db.get('SELECT COUNT(*) AS invited, COUNT(ref_paid) AS rewarded FROM users WHERE ref_by = ?', userId);
 
-// Вызывается после одобрения фото (или сразу при загрузке, если модерация выключена).
+// Вызывается при загрузке фото (фото публикуются сразу, модерация последующая).
 export function rewardReferral(db, userId, now = Date.now()) {
   db.tx(() => {
     const u = db.get('SELECT id, lang, ref_by, ref_paid, banned FROM users WHERE id = ?', userId);
