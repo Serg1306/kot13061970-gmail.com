@@ -1,7 +1,7 @@
 // Вход через VK ID и Яндекс ID (OAuth 2.0 с PKCE). Ключи — в .env сервера, в браузер не попадают:
 //   VK_CLIENT_ID                         — ID приложения VK ID (id.vk.com/about/business/go)
 //   YANDEX_CLIENT_ID, YANDEX_CLIENT_SECRET — ClientID и Client secret приложения Яндекс ID (oauth.yandex.ru)
-//   VK_ID_URL, YANDEX_OAUTH_URL, YANDEX_LOGIN_URL — адреса API (меняются только в автотестах)
+//   VK_ID_URL, YANDEX_OAUTH_URL, YANDEX_LOGIN_URL, YANDEX_AVATARS_URL — адреса API (меняются только в автотестах)
 // Адрес возврата: PUBLIC_URL + /api/oauth/vk/callback (или /yandex/callback), его же указывают в настройках приложений.
 import crypto from 'node:crypto';
 
@@ -18,6 +18,7 @@ export function oauthConfig(env) {
       secret: env.YANDEX_CLIENT_SECRET,
       base: trim(env.YANDEX_OAUTH_URL || 'https://oauth.yandex.ru'),
       info: trim(env.YANDEX_LOGIN_URL || 'https://login.yandex.ru'),
+      avatars: trim(env.YANDEX_AVATARS_URL || 'https://avatars.yandex.net'),
     } : null,
   };
 }
@@ -66,7 +67,9 @@ export async function fetchProfile(provider, c, { code, verifier, deviceId, stat
     const sub = String(u.user_id || t.user_id || '');
     if (!/^\d+$/.test(sub)) throw new Error('VK ID: нет user_id');
     // Почту из VK не берём: VK не гарантирует, что она подтверждена. Телефон VK подтверждает всегда.
-    return { sub, phone: u.phone || '', email: '', name: u.first_name || '', birth: isoDate(u.birthday), g: u.sex === 1 ? 'f' : u.sex === 2 ? 'm' : '' };
+    // Заглушки VK (камера, удалённый профиль) аватаркой не считаем.
+    const avatar = typeof u.avatar === 'string' && !/camera_|deactivated_|community_/.test(u.avatar) ? u.avatar : '';
+    return { sub, phone: u.phone || '', email: '', name: u.first_name || '', birth: isoDate(u.birthday), g: u.sex === 1 ? 'f' : u.sex === 2 ? 'm' : '', avatar };
   }
   const t = await call(`${c.base}/token`, form({
     grant_type: 'authorization_code', code, code_verifier: verifier, client_id: c.clientId, client_secret: c.secret,
@@ -77,5 +80,7 @@ export async function fetchProfile(provider, c, { code, verifier, deviceId, stat
   return {
     sub, phone: u.default_phone?.number || '', email: u.default_email || '', name: u.first_name || '',
     birth: isoDate(u.birthday), g: u.sex === 'female' ? 'f' : u.sex === 'male' ? 'm' : '',
+    // Аватарка приходит, если у приложения есть доступ «Портрет пользователя» (login:avatar).
+    avatar: !u.is_avatar_empty && /^[\w/-]+$/.test(u.default_avatar_id || '') ? `${c.avatars}/get-yapic/${u.default_avatar_id}/islands-200` : '',
   };
 }

@@ -44,7 +44,9 @@ export function loadConfig(env = process.env) {
     // Вход и регистрация по коду из СМС или письма. По умолчанию выключены: регистрация только через VK ID и Яндекс ID.
     // Админы из ADMIN_EMAILS входят по коду всегда (страница /#admin-login).
     codeLogin: env.CODE_LOGIN === '1' || env.DEV_CODES === '1',
-    autoApprove: env.AUTO_APPROVE === '1',
+    // Аватарку из VK ID и Яндекс ID скачиваем только с этих доменов (и их поддоменов).
+    avatarHosts: String(env.AVATAR_HOSTS || 'userapi.com,vk.com,vk.me,vkuserphoto.ru,avatars.yandex.net,avatars.mds.yandex.net')
+      .split(',').map(h => h.trim().toLowerCase()).filter(Boolean),
     vapid: {
       publicKey: env.VAPID_PUBLIC_KEY || '',
       privateKey: env.VAPID_PRIVATE_KEY || '',

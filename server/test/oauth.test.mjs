@@ -2,16 +2,22 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import http from 'node:http';
 import { after, before, test } from 'node:test';
-import { startServer } from './helpers.mjs';
+import { JPEG, startServer } from './helpers.mjs';
 
 // Поддельные VK ID и Яндекс ID: код «good-<id>» выдаёт токен человека <id>, проверяют PKCE.
 function startProviderMock() {
   const challenges = new Map();
   const people = {
-    vk: { 11: { user_id: 11, first_name: 'Аня', birthday: '4.3.1992', sex: 1, phone: '79120000011', email: 'anya@mail.test' } },
+    vk: {
+      11: { user_id: 11, first_name: 'Аня', birthday: '4.3.1992', sex: 1, phone: '79120000011', email: 'anya@mail.test' },
+      12: { user_id: 12, first_name: 'Глеб', phone: '79120000012', avatar: '{url}/img/a.jpg' },
+      13: { user_id: 13, first_name: 'Дина', phone: '79120000013', avatar: '{url}/img/evil' },
+      14: { user_id: 14, first_name: 'Ева', phone: '79120000014', avatar: 'https://vk.com/images/camera_200.png' },
+    },
     ya: {
       21: { id: '21', first_name: 'Борис', birthday: '1988-07-15', sex: 'male', default_email: 'Boris@Ya.test', default_phone: { number: '+79120000021' } },
       22: { id: '22', first_name: 'Вера', birthday: null, sex: null, default_email: 'old@lvc.test' },
+      23: { id: '23', first_name: 'Жанна', default_email: 'zhanna@ya.test', default_avatar_id: '123/abc', is_avatar_empty: false },
     },
   };
   const server = http.createServer((req, res) => {
@@ -27,7 +33,14 @@ function startProviderMock() {
         if (!pkceOk || !q.device_id || q.client_id !== 'vk-app') return send(400, { error: 'invalid_grant' });
         return send(200, { access_token: 'vk-' + id, user_id: +id });
       }
-      if (u.pathname === '/vk/oauth2/user_info') return send(200, { user: people.vk[q.access_token.slice(3)] });
+      if (u.pathname === '/vk/oauth2/user_info') {
+        const p = { ...people.vk[q.access_token.slice(3)] };
+        if (p.avatar) p.avatar = p.avatar.replace('{url}', `http://127.0.0.1:${server.address().port}`);
+        return send(200, { user: p });
+      }
+      if (u.pathname === '/img/a.jpg') { res.writeHead(200, { 'content-type': 'image/jpeg' }); return res.end(Buffer.from(JPEG.split(',')[1], 'base64')); }
+      if (u.pathname === '/img/evil') { res.writeHead(302, { location: 'http://169.254.169.254/latest' }); return res.end(); }
+      if (u.pathname === '/yapic/get-yapic/123/abc/islands-200') { res.writeHead(302, { location: '/img/a.jpg' }); return res.end(); }
       if (u.pathname === '/ya/token') {
         if (!pkceOk || q.client_secret !== 'ya-secret') return send(400, { error: 'invalid_grant', error_description: 'bad code' });
         return send(200, { access_token: 'ya-' + id });
@@ -48,6 +61,7 @@ before(async () => {
     PUBLIC_URL: 'https://lyubovvcifrah.ru',
     VK_CLIENT_ID: 'vk-app', VK_ID_URL: mock.url + '/vk',
     YANDEX_CLIENT_ID: 'ya-app', YANDEX_CLIENT_SECRET: 'ya-secret', YANDEX_OAUTH_URL: mock.url + '/ya', YANDEX_LOGIN_URL: mock.url + '/ya-login',
+    YANDEX_AVATARS_URL: mock.url + '/yapic', AVATAR_HOSTS: '127.0.0.1',
   });
 });
 after(async () => { await srv.close(); mock.close(); });
@@ -136,4 +150,26 @@ test('защита: чужой state, отмена у провайдера, пл
   const bad = await get(`/api/oauth/yandex/callback?code=forged&state=${st3}`, cookieOf(s3, 'lvc_o'));
   assert.equal(bad.headers.get('location'), '/?auth_err=oauth_failed#join');
   assert.equal(cookieOf(bad, 'lvc_s'), undefined);
+});
+
+test('аватарка из VK ID и Яндекс ID становится первым фото, один раз', async () => {
+  const photos = email => srv.app.db.all('SELECT p.* FROM photos p JOIN users u ON u.id = p.user_id WHERE u.email = ?', email);
+  await signIn('vk', 12, { extra: '&device_id=d12' });
+  const [ph] = photos('+79120000012');
+  assert.equal(ph?.status, 'approved', 'фото видно сразу');
+  assert.equal(ph.checked, null, 'и попадает в «Новые фото» админки');
+  // Удалил аватарку — при следующем входе она не возвращается.
+  srv.app.db.run('DELETE FROM photos WHERE id = ?', ph.id);
+  await signIn('vk', 12, { extra: '&device_id=d12' });
+  assert.equal(photos('+79120000012').length, 0);
+
+  // Яндекс: адрес аватарки по default_avatar_id, переадресация на разрешённый хост проходит.
+  await signIn('yandex', 23);
+  assert.equal(photos('zhanna@ya.test').length, 1);
+  // Переадресация на чужой адрес и заглушка VK — без фото, но вход работает.
+  const evil = await signIn('vk', 13, { extra: '&device_id=d13' });
+  assert.ok(evil.session);
+  assert.equal(photos('+79120000013').length, 0);
+  await signIn('vk', 14, { extra: '&device_id=d14' });
+  assert.equal(photos('+79120000014').length, 0);
 });
