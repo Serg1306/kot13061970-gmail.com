@@ -251,6 +251,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
     photos: () => queue.photos.length ? `<div class="grid">${queue.photos.map(p => `
       <article class="card">
         <a href="${esc(p.src)}" target="_blank" rel="noopener"><img class="thumb" src="${esc(p.src)}" alt="Новое фото" loading="lazy"></a>
+        ${p.noFace ? '<p style="margin:.6rem 0 0;color:#c0392b;font-weight:600">Лицо не найдено: возможно, это картинка, а не фото человека</p>' : ''}
         <p class="who" style="margin:.6rem 0">${person({ name: p.name, email: p.email })}<br><span class="muted">${when(p.t)}</span></p>
         <div class="row"><button class="btn ok" data-act="photo" data-id="${p.id}" data-ok="1">Оставить</button><button class="btn" data-act="photo" data-id="${p.id}" data-ok="0">Удалить с сайта</button></div>
       </article>`).join('')}</div>` : empty('Новых фото нет. Фото публикуются сразу после загрузки, здесь — те, что вы ещё не смотрели.'),

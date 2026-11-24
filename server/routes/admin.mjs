@@ -68,9 +68,10 @@ export default function adminRoutes(route) {
   route('GET', '/api/admin/queue', ({ app }) => {
     const { db } = app;
     // Новые фото: уже опубликованы, модератор их ещё не смотрел.
-    const photos = db.all(`SELECT p.id, p.user_id, p.file, p.created_at, u.name, u.email FROM photos p JOIN users u ON u.id = p.user_id
-      WHERE p.status = 'approved' AND p.checked IS NULL ORDER BY p.created_at LIMIT 200`)
-      .map(p => ({ id: p.id, userId: p.user_id, name: p.name, email: p.email, src: uploadSrc(p.file), t: p.created_at }));
+    // Фото, где проверка не нашла лица, — первыми.
+    const photos = db.all(`SELECT p.id, p.user_id, p.file, p.created_at, p.face, u.name, u.email FROM photos p JOIN users u ON u.id = p.user_id
+      WHERE p.status = 'approved' AND p.checked IS NULL ORDER BY (p.face = 0) DESC, p.created_at LIMIT 200`)
+      .map(p => ({ id: p.id, userId: p.user_id, name: p.name, email: p.email, src: uploadSrc(p.file), t: p.created_at, noFace: p.face === 0 }));
     const verifications = db.all("SELECT * FROM users WHERE verify_status = 'pending' ORDER BY verify_at LIMIT 100").map(u => ({
       userId: u.id, name: u.name, email: u.email, gesture: u.verify_gesture, t: u.verify_at,
       selfie: u.verify_file ? `/api/admin/file/${u.verify_file}` : null, photo: mainPhoto(db, u.id),

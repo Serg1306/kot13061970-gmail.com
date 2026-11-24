@@ -6,6 +6,7 @@ import { authorizeUrl, fetchProfile, pkce } from '../oauth.mjs';
 import { isEmailBanned } from '../pd.mjs';
 import { normPhone } from '../sms.mjs';
 import { decodeImage, saveFile } from '../media.mjs';
+import { faceOk } from '../photos.mjs';
 import { rewardReferral } from '../referral.mjs';
 import { adSource, createUser, normEmail } from './auth.mjs';
 
@@ -61,10 +62,13 @@ async function importAvatar(app, user, url) {
     if (!res?.ok) throw new Error(`ответ ${res?.status}`);
     if (Number(res.headers.get('content-length')) > AVATAR_MAX) throw new Error('слишком большая');
     const buf = Buffer.from(await res.arrayBuffer());
-    const file = saveFile(app.config.uploadsDir, decodeImage(`data:image/jpeg;base64,${buf.toString('base64')}`, AVATAR_MAX));
+    const img = decodeImage(`data:image/jpeg;base64,${buf.toString('base64')}`, AVATAR_MAX);
+    // Аватарка без лица (картинка, логотип) не подходит: фото в анкете — только реальные люди.
+    if (!faceOk(app, img.buf)) { db.run('UPDATE users SET avatar_done = 1 WHERE id = ?', user.id); throw new Error('на аватарке нет лица'); }
+    const file = saveFile(app.config.uploadsDir, img);
     db.tx(() => {
       if (db.get('SELECT 1 FROM photos WHERE user_id = ? LIMIT 1', user.id)) return;
-      db.run("INSERT INTO photos (user_id, file, status, pos, created_at) VALUES (?, ?, 'approved', 0, ?)", user.id, file, Date.now());
+      db.run("INSERT INTO photos (user_id, file, status, pos, created_at, face) VALUES (?, ?, 'approved', 0, ?, ?)", user.id, file, Date.now(), app.config.faceCheck ? 1 : null);
       db.run('UPDATE users SET avatar_done = 1 WHERE id = ?', user.id);
     });
     rewardReferral(db, user.id);

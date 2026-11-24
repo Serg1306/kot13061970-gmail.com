@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS banned_emails (
 const COLUMNS = {
   users: { receipt_email: 'TEXT', consent_public_at: 'INTEGER', consent_version: 'TEXT', consent_ip: 'TEXT', ban_reason: 'TEXT', goal: 'TEXT', interests: 'TEXT', height: 'INTEGER', kids: 'TEXT', smoke: 'TEXT', src: 'TEXT', marital: 'TEXT', body: 'TEXT', drink: 'TEXT', edu: 'TEXT', home: 'TEXT', income: 'TEXT', job: 'TEXT', langs: 'TEXT', ref_by: 'TEXT', ref_paid: 'INTEGER', write_policy: 'TEXT', avatar_done: 'INTEGER' },
   messages: { spam: 'INTEGER', reply_to: 'INTEGER', reply_from: 'TEXT', reply_text: 'TEXT' },
-  photos: { checked: 'INTEGER' },
+  photos: { checked: 'INTEGER', face: 'INTEGER' },
   orders: { confirmed_at: 'INTEGER', refunded_at: 'INTEGER', refund_note: 'TEXT', last_checked_at: 'INTEGER', payment_id: 'TEXT' },
 };
 

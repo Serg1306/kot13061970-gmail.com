@@ -14,6 +14,7 @@ import { sha256 } from './model.mjs';
 import { createNotifier } from './notify.mjs';
 import { destroySelfie, loadSecret, purgeBannedEmails } from './pd.mjs';
 import { createPush } from './push.mjs';
+import { scanFaces } from './photos.mjs';
 import { createSms } from './sms.mjs';
 import actionRoutes from './routes/actions.mjs';
 import adminRoutes from './routes/admin.mjs';
@@ -199,19 +200,22 @@ export function createApp(env = process.env, { log = console } = {}) {
   const checkOrders = () => checkPendingOrders(app).catch(e => logger.warn(`сверка счетов: ${e.message}`));
   const payTimer = setInterval(checkOrders, 10 * 60e3);
   payTimer.unref();
+  // Проверка лиц на уже загруженных фото (после обновления — один раз, дальше только новые без отметки).
+  const faces = scanFaces(app);
 
   const server = http.createServer((req, res) => { handle(req, res); });
   server.requestTimeout = 60e3;
   server.headersTimeout = 20e3;
 
   return {
-    app, server, cleanup, checkOrders,
+    app, server, cleanup, checkOrders, faces,
     listen(port = config.port, host = config.host) {
       return new Promise(resolve => server.listen(port, host, () => resolve(server.address().port)));
     },
     close() {
       clearInterval(timer);
       clearInterval(payTimer);
+      faces.stop();
       server.closeAllConnections?.();
       return new Promise(resolve => server.close(() => { db.close(); resolve(); }));
     },

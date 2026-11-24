@@ -4,6 +4,7 @@ import { LANGS, langOf } from '../langs.mjs';
 import { decodeImage, removeFile, saveFile } from '../media.mjs';
 import { WRITE_POLICIES, isVip, myPhotos, userOut } from '../model.mjs';
 import { CHOICES, DETAIL_KEYS, parseDetails } from '../options.mjs';
+import { faceOk } from '../photos.mjs';
 import { rewardReferral } from '../referral.mjs';
 
 const MAX_PHOTOS = 10;
@@ -104,10 +105,13 @@ export default function profileRoutes(route) {
     const { db, config } = app;
     const count = db.get('SELECT COUNT(*) AS n FROM photos WHERE user_id = ?', user.id).n;
     if (count >= MAX_PHOTOS) fail(400, 'too_many');
-    const file = saveFile(config.uploadsDir, decodeImage(body.dataUrl));
+    const img = decodeImage(body.dataUrl);
+    // Только реальные люди: без лица на фото не публикуем.
+    if (!faceOk(app, img.buf)) fail(422, 'no_face');
+    const file = saveFile(config.uploadsDir, img);
     const pos = db.get('SELECT COALESCE(MAX(pos), -1) + 1 AS p FROM photos WHERE user_id = ?', user.id).p;
     // Фото видно сразу; модератор смотрит новые фото в админке и удаляет неподходящие.
-    db.run("INSERT INTO photos (user_id, file, status, pos, created_at) VALUES (?, ?, 'approved', ?, ?)", user.id, file, pos, Date.now());
+    db.run("INSERT INTO photos (user_id, file, status, pos, created_at, face) VALUES (?, ?, 'approved', ?, ?, ?)", user.id, file, pos, Date.now(), config.faceCheck ? 1 : null);
     rewardReferral(db, user.id);
     return { photos: myPhotos(db, user.id) };
   }, { auth: 'user' });
