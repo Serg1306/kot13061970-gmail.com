@@ -284,7 +284,8 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
     support: () => {
       const found = find.users ? (find.users.length ? `<div class="list">${find.users.map(u => `
           <div class="card row" style="justify-content:space-between">${person(u)}<span class="muted">${esc(u.city || '')}${u.lastSeen ? ' · был(а) ' + when(u.lastSeen) : ''}</span>
-          <button class="btn rose" data-thread="${esc(u.id)}">Написать</button></div>`).join('')}</div>` : '<p class="muted">Никого не нашлось.</p>') : '';
+          <span class="row"><button class="btn" data-full="${esc(u.id)}" data-on="${u.fullAccess ? '' : '1'}" title="Все возможности VIP, подарки, поднятие анкеты и разборы — бесплатно">${u.fullAccess ? '✓ Полный доступ — снять' : 'Дать полный доступ'}</button>
+          <button class="btn rose" data-thread="${esc(u.id)}">Написать</button></span></div>`).join('')}</div>` : '<p class="muted">Никого не нашлось.</p>') : '';
       return `<form id="findUser" class="filters"><label>Написать любому пользователю: имя, почта, id или город<input name="q" type="search" value="${esc(find.q)}" placeholder="например, Анна или Москва"></label>
           <button class="btn" type="submit">Найти</button></form>${found}
         <div class="support${thread ? ' open' : ''}">
@@ -380,6 +381,15 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
   $('#view').addEventListener('click', async e => {
     const t = e.target.closest('[data-thread]');
     if (t) { find.users = null; return openThread(t.dataset.thread); }
+    const fa = e.target.closest('[data-full]');
+    if (fa) {
+      fa.disabled = true;
+      try {
+        await api('POST', '/api/admin/full-access', { userId: fa.dataset.full, on: Boolean(fa.dataset.on) });
+        find.users = (await api('GET', '/api/admin/users?q=' + encodeURIComponent(find.q))).users;
+      } catch (err) { alert('Не получилось изменить доступ: ' + err.message); }
+      return render();
+    }
     if (e.target.closest('[data-back]')) { thread = null; return render(); }
     const b = e.target.closest('[data-act]');
     if (!b) return;

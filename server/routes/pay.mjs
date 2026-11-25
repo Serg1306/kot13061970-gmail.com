@@ -124,6 +124,18 @@ export default function payRoutes(route) {
     const product = CATALOG[body.product];
     if (!product) fail(400, 'unknown_product');
     app.limiter.check(`pay:${user.id}`, 20, 3600e3);
+    // Полный доступ (выдаёт администратор): разборы открываются без оплаты, заказ на 0 ₽ сразу оплачен.
+    if (user.full_access && product.birthReport) {
+      if (!validBirth(body.birth)) fail(400, 'invalid', { field: 'birth' });
+      const had = db.get("SELECT inv_id FROM orders WHERE user_id = ? AND product = 'birth_report' AND status = 'paid' AND pair_a = ?", user.id, body.birth);
+      if (had) fail(409, 'already_bought', { invId: had.inv_id });
+      for (let i = 0; i < 5; i++) {
+        const inv = newInvId(), now = Date.now();
+        const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at, paid_at, pair_a) VALUES (?, ?, 'birth_report', 0, 'paid', ?, ?, ?)", inv, user.id, now, now, body.birth);
+        if (r.changes) return { invId: inv, free: true };
+      }
+      fail(503, 'try_again');
+    }
     // Куда отправить чек (54-ФЗ): почта из окна оплаты, почта или телефон входа, почта из прошлой оплаты.
     // У входа через VK ID логин бывает вида vk:123 — тогда без почты от покупателя платёж не создаём.
     const typed = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';

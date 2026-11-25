@@ -230,8 +230,9 @@ export default function actionRoutes(route) {
   route('POST', '/api/boost', ({ app, user }) => {
     const { db } = app;
     const now = Date.now();
+    const cost = user.full_access ? 0 : BOOST_COST;
     const r = db.run('UPDATE users SET coins = coins - ?, boost_until = MAX(boost_until, ?) + ? WHERE id = ? AND coins >= ?',
-      BOOST_COST, now, DAY, user.id, BOOST_COST);
+      cost, now, DAY, user.id, cost);
     if (!r.changes) fail(400, 'no_coins');
     return { wallet: walletOf(fresh(db, user.id)) };
   });
@@ -242,7 +243,8 @@ export default function actionRoutes(route) {
     if (!price) fail(400, 'invalid', { field: 'kind' });
     const other = target(db, user, body.to);
     db.tx(() => {
-      const r = db.run('UPDATE users SET coins = coins - ? WHERE id = ? AND coins >= ?', price, user.id, price);
+      const cost = user.full_access ? 0 : price;
+      const r = db.run('UPDATE users SET coins = coins - ? WHERE id = ? AND coins >= ?', cost, user.id, cost);
       if (!r.changes) fail(400, 'no_coins');
       db.run('INSERT INTO gifts (from_id, to_id, kind, t) VALUES (?, ?, ?, ?)', user.id, other.id, body.kind, Date.now());
       addEvent(db, other.id, 'gift', user.id, body.kind);

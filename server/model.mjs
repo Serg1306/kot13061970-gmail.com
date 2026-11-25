@@ -12,7 +12,8 @@ export const GIFTS = { rose: 10, coffee: 15, heart: 20, bear: 40, star: 50 };
 
 export const newUserId = () => crypto.randomBytes(8).toString('hex');
 export const sha256 = s => crypto.createHash('sha256').update(s).digest('hex');
-export const isVip = (u, now = Date.now()) => Boolean(u && u.vip_until > now);
+// «Полный доступ» (users.full_access) выдаёт администратор: все возможности VIP без покупки, без значка VIP.
+export const isVip = (u, now = Date.now()) => Boolean(u && (u.vip_until > now || u.full_access));
 export const uploadSrc = file => `/uploads/${file}`;
 
 // Начало текущих суток по Москве (UTC+3) — с него считается дневной лимит симпатий.
@@ -21,7 +22,7 @@ export function dayStartMsk(now = Date.now()) {
   return Math.floor((now + off) / DAY) * DAY - off;
 }
 
-export const walletOf = u => ({ coins: u.coins, vipUntil: u.vip_until, boostUntil: u.boost_until });
+export const walletOf = u => ({ coins: u.coins, vipUntil: u.vip_until, boostUntil: u.boost_until, ...(u.full_access ? { full: true } : {}) });
 
 export function userOut(u) {
   if (!u || !u.name) return null;
@@ -128,7 +129,7 @@ export function peopleOut(db, users, viewerId, now = Date.now()) {
     const vip = isVip(u, now);
     return {
       id: u.id, name: u.name, birth: u.birth, g: u.g, city: u.city, about: u.about,
-      verified: u.verify_status === 'approved', hideAge: Boolean(u.hide_age) && vip, vip,
+      verified: u.verify_status === 'approved', hideAge: Boolean(u.hide_age) && vip, vip: u.vip_until > now,
       boosted: u.boost_until > now,
       online: !(u.invisible && vip) && now - u.last_seen < ONLINE_MS,
       writes: writePolicy(u),
