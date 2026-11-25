@@ -138,7 +138,14 @@ export default function adminRoutes(route) {
     const rows = q
       ? db.all('SELECT * FROM users ORDER BY last_seen DESC LIMIT 20000').filter(hit).slice(0, 30)
       : db.all('SELECT * FROM users ORDER BY last_seen DESC LIMIT 30');
-    return { users: rows.map(u => ({ ...brief(u), city: u.city || null, lastSeen: u.last_seen || null, photo: mainPhoto(db, u.id) })) };
+    return { users: rows.map(u => ({ ...brief(u), city: u.city || null, lastSeen: u.last_seen || null, photo: mainPhoto(db, u.id), fullAccess: Boolean(u.full_access) })) };
+  }, opts);
+
+  // Полный доступ: все возможности VIP, подарки, поднятие и разборы — бесплатно, без значка VIP. Для владельца и тестов.
+  route('POST', '/api/admin/full-access', ({ app, body }) => {
+    const r = app.db.run('UPDATE users SET full_access = ? WHERE id = ?', body.on ? 1 : 0, String(body.userId || ''));
+    if (!r.changes) fail(404, 'not_found');
+    return { ok: true, fullAccess: Boolean(body.on) };
   }, opts);
 
   // Переписка с пользователем; открытие отмечает его сообщения прочитанными.
