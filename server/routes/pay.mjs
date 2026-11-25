@@ -6,6 +6,7 @@ import {
 import { fail, text } from '../http.mjs';
 import { textFor } from '../langs.mjs';
 import { DAY, addEvent, walletOf } from '../model.mjs';
+import { birthReport } from '../birthReport.mjs';
 import { pairReport, validBirth } from '../pairReport.mjs';
 
 const PAID_TEXT = {
@@ -130,11 +131,11 @@ export default function payRoutes(route) {
     const email = typed || (isEmail(user.email) ? user.email : '') || (isEmail(user.receipt_email) ? user.receipt_email : '');
     const phone = isPhone(user.email) ? user.email : '';
     if (s.receipt && !email && !phone) fail(400, 'need_email');
-    // Разбор пары: даты обеих сторон; одну и ту же пару второй раз не продаём.
-    const pair = product.pairReport ? [body.pair?.a, body.pair?.b] : [null, null];
-    if (product.pairReport) {
-      if (!pair.every(validBirth)) fail(400, 'invalid', { field: 'pair' });
-      const had = db.get("SELECT inv_id FROM orders WHERE user_id = ? AND product = 'pair_report' AND status = 'paid' AND pair_a = ? AND pair_b = ?", user.id, ...pair);
+    // Разборы: личный — дата рождения (pair_a), пары — даты обеих сторон. Одну и ту же дату (пару) второй раз не продаём.
+    const pair = product.pairReport ? [body.pair?.a, body.pair?.b] : product.birthReport ? [body.birth, null] : [null, null];
+    if (product.pairReport || product.birthReport) {
+      if (!pair.filter((x, i) => i === 0 || product.pairReport).every(validBirth)) fail(400, 'invalid', { field: product.pairReport ? 'pair' : 'birth' });
+      const had = db.get("SELECT inv_id FROM orders WHERE user_id = ? AND product = ? AND status = 'paid' AND pair_a = ? AND pair_b IS ?", user.id, body.product, ...pair);
       if (had) fail(409, 'already_bought', { invId: had.inv_id });
     }
     if (typed && typed !== user.email && typed !== user.receipt_email) db.run('UPDATE users SET receipt_email = ? WHERE id = ?', typed, user.id);
@@ -161,17 +162,20 @@ export default function payRoutes(route) {
     }
   }, { auth: 'user' });
 
-  // Купленные разборы пар (для профиля) и сам разбор: только по оплаченному заказу этого пользователя.
-  route('GET', '/api/pair-reports', ({ app, user }) => ({
-    reports: app.db.all("SELECT inv_id, pair_a, pair_b, paid_at FROM orders WHERE user_id = ? AND product = 'pair_report' AND status = 'paid' ORDER BY paid_at DESC", user.id)
-      .map(o => ({ invId: o.inv_id, a: o.pair_a, b: o.pair_b, paidAt: o.paid_at })),
+  // Купленные разборы (для профиля) и сам разбор: только по оплаченному заказу этого пользователя.
+  // kind: birth — личный разбор по дате рождения, pair — разбор пары (продавался до декабря 2026).
+  const KIND = { birth_report: 'birth', pair_report: 'pair' };
+  route('GET', '/api/reports', ({ app, user }) => ({
+    reports: app.db.all("SELECT inv_id, product, pair_a, pair_b, paid_at FROM orders WHERE user_id = ? AND product IN ('birth_report', 'pair_report') AND status = 'paid' ORDER BY paid_at DESC", user.id)
+      .map(o => ({ invId: o.inv_id, kind: KIND[o.product], a: o.pair_a, b: o.pair_b, paidAt: o.paid_at })),
   }), { auth: 'user' });
 
-  route('GET', '/api/pair-report', ({ app, user, url }) => {
-    const o = app.db.get("SELECT * FROM orders WHERE inv_id = ? AND user_id = ? AND product = 'pair_report'", String(url.searchParams.get('inv') || ''), user.id);
+  route('GET', '/api/report', ({ app, user, url }) => {
+    const o = app.db.get("SELECT * FROM orders WHERE inv_id = ? AND user_id = ? AND product IN ('birth_report', 'pair_report')", String(url.searchParams.get('inv') || ''), user.id);
     if (!o || !o.pair_a) fail(404, 'not_found');
     if (o.status !== 'paid') fail(402, 'not_paid');
-    return { invId: o.inv_id, report: pairReport(o.pair_a, o.pair_b) };
+    const kind = KIND[o.product];
+    return { invId: o.inv_id, kind, report: kind === 'birth' ? birthReport(o.pair_a) : pairReport(o.pair_a, o.pair_b) };
   }, { auth: 'user' });
 
   // Уведомление Т-Кассы об изменении платежа (NotificationURL). Ответ — строка OK, иначе Т-Касса повторит.

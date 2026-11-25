@@ -117,11 +117,11 @@ footer a { color: inherit; }
       </div>
 
       <div class="report-offer">
-        <h2>Полный разбор пары <span>99 ₽</span></h2>
-        <p>Бесплатно вы видите общий процент. В полном разборе — все четыре системы подробно и советы для вашей пары:</p>
-        <ul><li>Где вам легко</li><li>Где будет искрить</li><li>Как говорить друг с другом</li><li>Удачные даты для свидания</li><li>Советы для пары</li></ul>
+        <h2>Полный разбор по дате рождения <span>99 ₽</span></h2>
+        <p>Личный разбор по вашей дате рождения — пять систем подробно:</p>
+        <ul><li>Главное: сильные стороны и ловушки</li><li>Нумерология и число судьбы</li><li>Знак, стихия и восточный год</li><li>Матрица судьбы: пять главных арканов</li><li>Вы в любви и кого искать</li><li>Личный год и удачные дни для свиданий</li></ul>
         <a class="btn rose" id="reportBtn" href="/?utm_source=sovmestimost&amp;utm_medium=report#report">Открыть полный разбор</a>
-        <p class="fine">Оплата картой или через СБП, чек придёт на почту. Разбор сохранится в вашем профиле.</p>
+        <p class="fine">Разбор считается по первой дате — вашей. Оплата картой или через СБП, чек придёт на почту. Разбор сохранится в вашем профиле.</p>
       </div>
 
       <div class="share">
@@ -193,8 +193,8 @@ footer a { color: inherit; }
   }
   ['#shTg', '#shVk', '#shWa'].forEach(s => $(s).addEventListener('click', () => goal('share_click')));
   $('#cta').addEventListener('click', () => goal('cta_click'));
-  // Полный разбор пары: даты передаём главной через память браузера, там вход и оплата.
-  $('#reportBtn').addEventListener('click', () => { goal('report_click'); store.set('reportPair', { a: $('#d1').value, b: $('#d2').value }); store.set('reportWant', true); });
+  // Полный разбор по дате рождения: дату передаём главной через память браузера, там вход и оплата.
+  $('#reportBtn').addEventListener('click', () => { goal('report_click'); store.set('reportBirth', $('#d1').value); store.set('reportWant', true); });
 
   const valid = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
   $('#form').addEventListener('submit', e => {

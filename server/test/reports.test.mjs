@@ -35,14 +35,14 @@ test('покупка разбора: пара обязательна, досту
   const inv = r.body.invId;
   assert.equal(tk.hits.at(-1).body.Amount, 9900);
 
-  assert.equal((await a.get('/api/pair-report?inv=' + inv)).status, 402);
-  assert.deepEqual((await a.get('/api/pair-reports')).body.reports, []);
+  assert.equal((await a.get('/api/report?inv=' + inv)).status, 402);
+  assert.deepEqual((await a.get('/api/reports')).body.reports, []);
 
   assert.equal(await (await notify(notification(inv, 9900))).text(), 'OK');
-  const rep = await a.get('/api/pair-report?inv=' + inv);
+  const rep = await a.get('/api/report?inv=' + inv);
   assert.equal(rep.status, 200);
   assert.equal(rep.body.report.total, 93);
-  const list = (await a.get('/api/pair-reports')).body.reports;
+  const list = (await a.get('/api/reports')).body.reports;
   assert.equal(list.length, 1);
   assert.equal(list[0].invId, inv);
   assert.equal(list[0].a, PAIR.a);
@@ -54,14 +54,14 @@ test('покупка разбора: пара обязательна, досту
 
   // Чужой разбор не открывается, без входа — тоже.
   const b = await srv.user('other@example.ru');
-  assert.equal((await b.get('/api/pair-report?inv=' + inv)).status, 404);
-  assert.equal((await srv.client().get('/api/pair-report?inv=' + inv)).status, 401);
-  assert.equal((await a.get('/api/pair-report?inv=999999')).status, 404);
+  assert.equal((await b.get('/api/report?inv=' + inv)).status, 404);
+  assert.equal((await srv.client().get('/api/report?inv=' + inv)).status, 401);
+  assert.equal((await a.get('/api/report?inv=999999')).status, 404);
 
   // Возврат закрывает доступ.
   refundOrder(srv.app.db, inv, 'тест');
-  assert.equal((await a.get('/api/pair-report?inv=' + inv)).status, 402);
-  assert.deepEqual((await a.get('/api/pair-reports')).body.reports, []);
+  assert.equal((await a.get('/api/report?inv=' + inv)).status, 402);
+  assert.deepEqual((await a.get('/api/reports')).body.reports, []);
 });
 
 test('удаление анкеты стирает даты пары из заказов', async () => {
@@ -72,4 +72,38 @@ test('удаление анкеты стирает даты пары из зак
   const o = srv.app.db.get('SELECT pair_a, pair_b FROM orders WHERE inv_id = ?', inv);
   assert.equal(o.pair_a, null);
   assert.equal(o.pair_b, null);
+});
+
+test('личный разбор по дате рождения: расчёт', async () => {
+  const { birthReport, matrix } = await import('../birthReport.mjs');
+  assert.deepEqual(matrix({ y: 1988, m: 2, d: 17 }), { A: 17, B: 2, C: 4, D: 1, E: 2 });
+  const r = birthReport('1988-02-17', Date.parse('2026-11-25T12:00:00Z'));
+  assert.equal(r.num, 9);
+  assert.equal(r.sign, 'Водолей');
+  assert.deepEqual(r.sections.map(s => s.key), ['main', 'num', 'zod', 'east', 'matrix', 'love', 'year', 'days', 'tips']);
+  assert.ok(r.sections.find(s => s.key === 'days').items.length > 0);
+  // Все даты от 1930 до сегодня считаются без ошибок и пустых текстов.
+  for (let t = Date.UTC(1930, 0, 1); t < Date.now(); t += 37 * 864e5) {
+    const b = new Date(t).toISOString().slice(0, 10);
+    const s = JSON.stringify(birthReport(b));
+    assert.ok(!/undefined|NaN|null/.test(s), b);
+  }
+});
+
+test('покупка личного разбора: дата обязательна, доступ после оплаты', async () => {
+  const a = await srv.user('birth@example.ru');
+  assert.equal((await a.post('/api/pay', { product: 'birth_report' })).body.error, 'invalid');
+  assert.equal((await a.post('/api/pay', { product: 'birth_report', birth: '1988-02-30' })).status, 400);
+  const inv = (await a.post('/api/pay', { product: 'birth_report', birth: PAIR.a })).body.invId;
+  assert.equal(tk.hits.at(-1).body.Amount, 9900);
+  assert.equal((await a.get('/api/report?inv=' + inv)).status, 402);
+  await notify(notification(inv, 9900));
+  const rep = await a.get('/api/report?inv=' + inv);
+  assert.equal(rep.body.kind, 'birth');
+  assert.equal(rep.body.report.birth, PAIR.a);
+  assert.deepEqual((await a.get('/api/reports')).body.reports.map(x => [x.kind, x.a, x.b]), [['birth', PAIR.a, null]]);
+  const again = await a.post('/api/pay', { product: 'birth_report', birth: PAIR.a });
+  assert.equal(again.body.error, 'already_bought');
+  assert.equal(again.body.invId, inv);
+  assert.equal((await a.post('/api/pay', { product: 'birth_report', birth: PAIR.b })).status, 200);
 });
