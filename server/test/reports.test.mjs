@@ -76,11 +76,20 @@ test('удаление анкеты стирает даты пары из зак
 
 test('личный разбор по дате рождения: расчёт', async () => {
   const { birthReport, matrix } = await import('../birthReport.mjs');
-  assert.deepEqual(matrix({ y: 1988, m: 2, d: 17 }), { A: 17, B: 2, C: 4, D: 1, E: 2 });
+  const mx = matrix({ y: 1988, m: 2, d: 17 });
+  assert.deepEqual([mx.A, mx.B, mx.C, mx.D, mx.E], [17, 2, 4, 1, 2]);
+  assert.deepEqual([mx.sky, mx.earth, mx.personal], [3, 21, 2]);
+  const { pythagoras, peaks } = await import('../birthReport.mjs');
+  const pq = pythagoras({ y: 1988, m: 2, d: 17 });
+  assert.deepEqual(pq.work, [36, 9, 34, 7]);
+  assert.equal(pq.counts[8], 2);
+  assert.deepEqual(peaks({ y: 1988, m: 2, d: 17 }, 9).ages[0], [0, 27]);
   const r = birthReport('1988-02-17', Date.parse('2026-11-25T12:00:00Z'));
   assert.equal(r.num, 9);
   assert.equal(r.sign, 'Водолей');
-  assert.deepEqual(r.sections.map(s => s.key), ['main', 'num', 'zod', 'east', 'matrix', 'love', 'year', 'days', 'tips']);
+  assert.deepEqual(r.sections.map(s => s.key), ['main', 'num', 'day', 'pyth', 'zod', 'east', 'matrix', 'purpose', 'love', 'work', 'energy', 'peaks', 'year', 'months', 'days', 'tips']);
+  // Разбор подробный: не меньше 12 тысяч знаков текста.
+  assert.ok(JSON.stringify(r.sections).length > 12000);
   assert.ok(r.sections.find(s => s.key === 'days').items.length > 0);
   // Все даты от 1930 до сегодня считаются без ошибок и пустых текстов.
   for (let t = Date.UTC(1930, 0, 1); t < Date.now(); t += 37 * 864e5) {
