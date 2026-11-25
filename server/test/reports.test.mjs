@@ -87,9 +87,9 @@ test('личный разбор по дате рождения: расчёт', a
   const r = birthReport('1988-02-17', Date.parse('2026-11-25T12:00:00Z'));
   assert.equal(r.num, 9);
   assert.equal(r.sign, 'Водолей');
-  assert.deepEqual(r.sections.map(s => s.key), ['main', 'num', 'day', 'pyth', 'zod', 'east', 'matrix', 'purpose', 'love', 'work', 'energy', 'peaks', 'year', 'months', 'days', 'tips']);
-  // Разбор подробный: не меньше 12 тысяч знаков текста.
-  assert.ok(JSON.stringify(r.sections).length > 12000);
+  assert.deepEqual(r.sections.map(s => s.key), ['main', 'num', 'day', 'pyth', 'lines', 'zod', 'east', 'matrix', 'rod', 'arcyear', 'purpose', 'love', 'match', 'work', 'energy', 'peaks', 'year', 'months', 'week', 'days', 'tips']);
+  // Разбор подробный: не меньше 25 тысяч знаков текста.
+  assert.ok(JSON.stringify(r.sections).length > 25000);
   assert.ok(r.sections.find(s => s.key === 'days').items.length > 0);
   // Все даты от 1930 до сегодня считаются без ошибок и пустых текстов.
   for (let t = Date.UTC(1930, 0, 1); t < Date.now(); t += 37 * 864e5) {
