@@ -137,7 +137,7 @@ export function exportUser(app, u) {
     orders: db.all('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at', u.id).map(o => ({
       invId: o.inv_id, product: o.product, title: CATALOG[o.product]?.title || o.product, price: o.price, status: o.status,
       createdAt: o.created_at, paidAt: o.paid_at, refundedAt: o.refunded_at,
-      ...(o.pair_a ? { pair: [o.pair_a, o.pair_b] } : {}),
+      ...(o.pair_b ? { pair: [o.pair_a, o.pair_b] } : o.pair_a ? { birth: o.pair_a } : {}),
     })),
     events: db.all('SELECT t, kind, text FROM events WHERE user_id = ? ORDER BY t', u.id),
     pushSubscriptions: db.get('SELECT COUNT(*) AS n FROM push_subs WHERE user_id = ?', u.id).n,
