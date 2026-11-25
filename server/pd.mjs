@@ -74,6 +74,8 @@ export function deleteUser(app, id, { reason = 'user_request', operator = 'по�
       emailHash(app.secret, u.email), u.ban_reason || 'ban', Date.now());
     }
     db.run('DELETE FROM messages WHERE from_id = :id OR to_id = :id', { id });
+    // Счета храним для бухгалтерии, но даты рождения из разборов пар удаляем вместе с аккаунтом.
+    db.run('UPDATE orders SET pair_a = NULL, pair_b = NULL WHERE user_id = ?', id);
     db.run('DELETE FROM users WHERE id = ?', id); // остальное удаляется каскадом, у счетов user_id становится NULL
     logDestruction(app, { userId: id, email: u.email, categories: ACCOUNT_CATEGORIES, reason, operator });
   });
@@ -135,6 +137,7 @@ export function exportUser(app, u) {
     orders: db.all('SELECT * FROM orders WHERE user_id = ? ORDER BY created_at', u.id).map(o => ({
       invId: o.inv_id, product: o.product, title: CATALOG[o.product]?.title || o.product, price: o.price, status: o.status,
       createdAt: o.created_at, paidAt: o.paid_at, refundedAt: o.refunded_at,
+      ...(o.pair_a ? { pair: [o.pair_a, o.pair_b] } : {}),
     })),
     events: db.all('SELECT t, kind, text FROM events WHERE user_id = ? ORDER BY t', u.id),
     pushSubscriptions: db.get('SELECT COUNT(*) AS n FROM push_subs WHERE user_id = ?', u.id).n,

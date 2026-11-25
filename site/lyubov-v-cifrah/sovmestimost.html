@@ -68,6 +68,12 @@ input[type=date] { width: 100%; min-height: 52px; font: inherit; font-size: 1.05
 .locked .why { filter: blur(4px); user-select: none; }
 .unlock { margin-top: 1.2rem; padding: 1rem 1.2rem; border-radius: 18px; background: color-mix(in srgb, var(--bg-pink) 45%, var(--card)); border: 1.5px dashed var(--rose); }
 .unlock b { display: block; margin-bottom: .5rem; }
+.report-offer { margin-top: 1.2rem; padding: 1rem 1.2rem; border-radius: 18px; background: var(--paper); border: 1.5px solid var(--rose); }
+.report-offer h2 { margin: 0 0 .3rem; font-size: 1.25rem; }
+.report-offer h2 span { color: var(--rose); white-space: nowrap; }
+.report-offer p { margin: 0 0 .4rem; color: var(--muted); font-size: .95rem; }
+.report-offer ul { margin: 0 0 .9rem; padding-left: 1.2rem; }
+.report-offer .fine { font-size: .82rem; margin: .6rem 0 0; }
 .share { margin-top: 1.2rem; }
 .share p { margin: 0 0 .5rem; font-weight: 600; }
 .share-row { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -108,6 +114,14 @@ footer a { color: inherit; }
       <div class="unlock">
         <b>Подробный разбор каждой системы и анкеты людей с совместимостью выше 80% — после регистрации.</b>
         <a class="btn rose" id="cta" href="/?utm_source=sovmestimost&amp;utm_medium=calc#join">Найти свою пару бесплатно</a>
+      </div>
+
+      <div class="report-offer">
+        <h2>Полный разбор пары <span>99 ₽</span></h2>
+        <p>Бесплатно вы видите общий процент. В полном разборе — все четыре системы подробно и советы для вашей пары:</p>
+        <ul><li>Где вам легко</li><li>Где будет искрить</li><li>Как говорить друг с другом</li><li>Удачные даты для свидания</li><li>Советы для пары</li></ul>
+        <a class="btn rose" id="reportBtn" href="/?utm_source=sovmestimost&amp;utm_medium=report#report">Открыть полный разбор</a>
+        <p class="fine">Оплата картой или через СБП, чек придёт на почту. Разбор сохранится в вашем профиле.</p>
       </div>
 
       <div class="share">
@@ -179,6 +193,8 @@ footer a { color: inherit; }
   }
   ['#shTg', '#shVk', '#shWa'].forEach(s => $(s).addEventListener('click', () => goal('share_click')));
   $('#cta').addEventListener('click', () => goal('cta_click'));
+  // Полный разбор пары: даты передаём главной через память браузера, там вход и оплата.
+  $('#reportBtn').addEventListener('click', () => { goal('report_click'); store.set('reportPair', { a: $('#d1').value, b: $('#d2').value }); store.set('reportWant', true); });
 
   const valid = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
   $('#form').addEventListener('submit', e => {

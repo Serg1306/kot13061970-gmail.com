@@ -21,6 +21,8 @@ export const CATALOG = {
   coins_100: { title: '100 монет', price: 99, coins: 100 },
   coins_550: { title: '550 монет', price: 449, coins: 550 },
   coins_1200: { title: '1200 монет', price: 890, coins: 1200 },
+  // Полный разбор одной пары (даты — в заказе, pair_a и pair_b).
+  pair_report: { title: 'Полный разбор пары', price: 99, pairReport: true },
 };
 
 export const API_URL = 'https://securepay.tinkoff.ru/v2';
