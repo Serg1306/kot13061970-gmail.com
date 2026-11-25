@@ -14,6 +14,9 @@ function load() {
   return LVC;
 }
 
+// Все функции расчёта сайта (parse, lifePath, zodiac, eastern, compat…).
+export const lvc = () => load();
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 // Процент совместимости 0–100 или null, если у кого-то нет даты рождения.

@@ -6,6 +6,7 @@ import {
 import { fail, text } from '../http.mjs';
 import { textFor } from '../langs.mjs';
 import { DAY, addEvent, walletOf } from '../model.mjs';
+import { pairReport, validBirth } from '../pairReport.mjs';
 
 const PAID_TEXT = {
   ru: t => `Оплата получена: ${t}. Спасибо!`,
@@ -129,13 +130,20 @@ export default function payRoutes(route) {
     const email = typed || (isEmail(user.email) ? user.email : '') || (isEmail(user.receipt_email) ? user.receipt_email : '');
     const phone = isPhone(user.email) ? user.email : '';
     if (s.receipt && !email && !phone) fail(400, 'need_email');
+    // Разбор пары: даты обеих сторон; одну и ту же пару второй раз не продаём.
+    const pair = product.pairReport ? [body.pair?.a, body.pair?.b] : [null, null];
+    if (product.pairReport) {
+      if (!pair.every(validBirth)) fail(400, 'invalid', { field: 'pair' });
+      const had = db.get("SELECT inv_id FROM orders WHERE user_id = ? AND product = 'pair_report' AND status = 'paid' AND pair_a = ? AND pair_b = ?", user.id, ...pair);
+      if (had) fail(409, 'already_bought', { invId: had.inv_id });
+    }
     if (typed && typed !== user.email && typed !== user.receipt_email) db.run('UPDATE users SET receipt_email = ? WHERE id = ?', typed, user.id);
     // Номер заказа уникален: при совпадении берём другой.
     let invId;
     for (let i = 0; i < 5 && !invId; i++) {
       const candidate = newInvId();
-      const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at) VALUES (?, ?, ?, ?, 'new', ?)",
-        candidate, user.id, body.product, product.price, Date.now());
+      const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at, pair_a, pair_b) VALUES (?, ?, ?, ?, 'new', ?, ?, ?)",
+        candidate, user.id, body.product, product.price, Date.now(), ...pair);
       if (r.changes) invId = candidate;
     }
     if (!invId) fail(503, 'try_again');
@@ -151,6 +159,19 @@ export default function payRoutes(route) {
       app.log.warn(`tkassa: не удалось создать платёж ${invId}: ${e.message}`);
       fail(502, 'tkassa_unavailable');
     }
+  }, { auth: 'user' });
+
+  // Купленные разборы пар (для профиля) и сам разбор: только по оплаченному заказу этого пользователя.
+  route('GET', '/api/pair-reports', ({ app, user }) => ({
+    reports: app.db.all("SELECT inv_id, pair_a, pair_b, paid_at FROM orders WHERE user_id = ? AND product = 'pair_report' AND status = 'paid' ORDER BY paid_at DESC", user.id)
+      .map(o => ({ invId: o.inv_id, a: o.pair_a, b: o.pair_b, paidAt: o.paid_at })),
+  }), { auth: 'user' });
+
+  route('GET', '/api/pair-report', ({ app, user, url }) => {
+    const o = app.db.get("SELECT * FROM orders WHERE inv_id = ? AND user_id = ? AND product = 'pair_report'", String(url.searchParams.get('inv') || ''), user.id);
+    if (!o || !o.pair_a) fail(404, 'not_found');
+    if (o.status !== 'paid') fail(402, 'not_paid');
+    return { invId: o.inv_id, report: pairReport(o.pair_a, o.pair_b) };
   }, { auth: 'user' });
 
   // Уведомление Т-Кассы об изменении платежа (NotificationURL). Ответ — строка OK, иначе Т-Касса повторит.
