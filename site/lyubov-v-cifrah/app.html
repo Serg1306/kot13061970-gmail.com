@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Приложение «Любовь в цифрах» на телефон — установить бесплатно</title>
+<link rel="canonical" href="https://lyubovvcifrah.ru/app.html">
+<meta name="description" content="Установите «Любовь в цифрах» на телефон за 10 секунд: иконка на экране, уведомления о симпатиях и сообщениях. Без App Store и Google Play, бесплатно.">
+<meta name="rating" content="adult">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Любовь в цифрах">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Любовь в цифрах — приложение на телефон 💖">
+<meta property="og:description" content="Знакомства по дате рождения. Установка за 10 секунд, без магазина приложений.">
+<meta property="og:image" content="https://lyubovvcifrah.ru/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#470a1b">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Любовь">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Те же цвета и шрифты, что на главной и на /sovmestimost.html */
+:root {
+  --paper: #1f040b; --bg-pink: #470a1b; --card: #2e0611;
+  --ink: #f6e4e8; --muted: #d4b8c0; --line: #6b2238;
+  --rose: #ff7aa6; --sea: #8eaaff; --plum: #c3a2ff; --btn: #d42a64;
+  --font-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --font-script: "Great Vibes", "Segoe Script", cursive;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #470a1b; color: var(--ink); font: 400 1rem/1.6 var(--font-body); min-height: 100vh; }
+a { color: var(--rose); }
+:focus-visible { outline: 2px solid var(--plum); outline-offset: 3px; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 1.2rem 1rem 3rem; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.logo { font-family: var(--font-script); font-size: 2.1rem; line-height: 1; color: var(--ink); text-decoration: none; }
+.age { border: 1.5px solid var(--ink); border-radius: 999px; padding: .1rem .6rem; font-weight: 700; font-size: .85rem; }
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 1.2rem; align-items: center; margin-bottom: 1.4rem; }
+.hero img { width: 96px; height: 96px; border-radius: 24px; }
+@media (max-width: 520px) { .hero { grid-template-columns: 1fr; } .hero img { width: 80px; height: 80px; border-radius: 20px; } }
+h1 { font-weight: 700; font-size: clamp(1.8rem, 6vw, 2.6rem); line-height: 1.12; margin: 0 0 .5rem; }
+.lead { color: var(--muted); margin: 0; }
+.card { background: var(--card); border-radius: 24px; padding: 1.4rem; box-shadow: inset 0 0 0 1px rgb(246 228 232 / .12); margin-bottom: 1.2rem; }
+.btn { min-height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem; border-radius: 999px; padding: .75rem 1.4rem; font: 600 1.05rem var(--font-body); cursor: pointer; text-decoration: none; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); }
+.btn.rose { background: var(--btn); border-color: var(--btn); color: #fff; }
+.btn.wide { width: 100%; }
+.btn:active { transform: scale(.98); }
+[hidden] { display: none !important; }
+.tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin: 0 0 1rem; }
+.tabs button { min-height: 40px; border-radius: 999px; border: 1.5px solid var(--line); background: transparent; color: var(--muted); font: 600 .92rem var(--font-body); padding: .3rem .9rem; cursor: pointer; }
+.tabs button[aria-selected=true] { border-color: var(--rose); color: var(--ink); background: var(--paper); }
+ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: .8rem; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 2.2rem 1fr; gap: .7rem; align-items: start; }
+ol.steps li::before { content: counter(s); width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--paper); color: var(--rose); box-shadow: inset 0 0 0 1.5px var(--rose); }
+.ico { display: inline-grid; place-items: center; min-width: 1.6em; padding: 0 .3em; height: 1.6em; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); font-weight: 700; vertical-align: -.25em; }
+.warn { border: 1.5px dashed var(--rose); }
+.warn b { display: block; margin-bottom: .3rem; }
+.perks { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+@media (max-width: 520px) { .perks { grid-template-columns: 1fr; } }
+.perks li { background: var(--paper); border-radius: 18px; padding: .9rem 1rem; }
+.perks b { display: block; }
+.perks span { color: var(--muted); font-size: .92rem; }
+.alt { text-align: center; margin-top: 1rem; }
+h2 { font-weight: 700; font-size: 1.35rem; margin: 0 0 .8rem; }
+footer { margin-top: 2.5rem; color: var(--muted); font-size: .85rem; }
+footer a { color: inherit; }
+.toast { position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: .6rem 1rem; border-radius: 12px; font-size: .9rem; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.on { opacity: 1; }
+.cookie-note { position: fixed; left: 1rem; right: 1rem; bottom: 1rem; max-width: 640px; margin: 0 auto; background: var(--card); color: var(--ink); border: 1.5px solid var(--line); border-radius: 18px; padding: .9rem 1rem; display: grid; gap: .6rem; box-shadow: 0 10px 40px rgba(35, 22, 58, .15); font-size: .9rem; }
+.cookie-btns { display: flex; gap: .5rem; flex-wrap: wrap; }
+.cookie-btns .btn { min-height: 44px; padding: .45rem .9rem; font-size: .9rem; }
+@media (prefers-reduced-motion: reduce) { .btn:active { transform: none; } .toast { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="logo" href="/">Любовь в цифрах</a>
+    <span class="age" title="Сервис для совершеннолетних">18+</span>
+  </header>
+
+  <div class="hero">
+    <img src="icons/icon-192.png" alt="" width="96" height="96">
+    <div>
+      <h1>Любовь в цифрах — на ваш телефон</h1>
+      <p class="lead">Знакомства по дате рождения. Иконка на экране, уведомления о симпатиях и сообщениях. Ставится за 10 секунд, без App Store и Google Play, бесплатно.</p>
+    </div>
+  </div>
+
+  <!-- Открыто уже как приложение -->
+  <div class="card" id="isApp" hidden>
+    <h2>Приложение уже установлено</h2>
+    <a class="btn rose wide" href="/#join">Открыть «Любовь в цифрах»</a>
+  </div>
+
+  <!-- Открыто внутри ВК, Telegram и т. п.: там установить нельзя -->
+  <div class="card warn" id="inApp" hidden>
+    <b>Вы открыли страницу внутри приложения <span id="inAppName">соцсети</span>.</b>
+    Отсюда установка не работает. Нажмите <span class="ico">⋮</span> или <span class="ico">···</span> вверху справа и выберите «Открыть в браузере», а там — кнопку «Установить».
+    <div style="margin-top:.8rem"><button class="btn" type="button" id="copyLink">Скопировать ссылку</button></div>
+  </div>
+
+  <!-- Браузер умеет ставить в один тап (Chrome, Яндекс Браузер, Edge на Android и компьютере) -->
+  <div class="card" id="oneTap" hidden>
+    <button class="btn rose wide" type="button" id="installBtn">Установить приложение</button>
+  </div>
+
+  <section class="card" id="manual">
+    <h2>Как установить</h2>
+    <div class="tabs" role="tablist" aria-label="Устройство">
+      <button type="button" role="tab" data-os="android" aria-selected="true">Android</button>
+      <button type="button" role="tab" data-os="ios" aria-selected="false">iPhone</button>
+      <button type="button" role="tab" data-os="pc" aria-selected="false">Компьютер</button>
+    </div>
+    <ol class="steps" data-os="android">
+      <li><span>Откройте эту страницу в Chrome или Яндекс Браузере.</span></li>
+      <li><span>Нажмите <span class="ico">⋮</span> вверху справа (в Яндекс Браузере — <span class="ico">≡</span> внизу).</span></li>
+      <li><span>Выберите «Установить приложение» или «Добавить на главный экран».</span></li>
+      <li><span>На экране появится сердечко «Любовь» — открывайте как обычное приложение.</span></li>
+    </ol>
+    <ol class="steps" data-os="ios" hidden>
+      <li><span>Откройте эту страницу в Safari.</span></li>
+      <li><span>Нажмите «Поделиться» <span class="ico">⇪</span> внизу экрана.</span></li>
+      <li><span>Прокрутите и выберите «На экран Домой», затем «Добавить».</span></li>
+      <li><span>Иконка «Любовь» появится на рабочем столе iPhone.</span></li>
+    </ol>
+    <ol class="steps" data-os="pc" hidden>
+      <li><span>Откройте сайт в Chrome, Яндекс Браузере или Edge.</span></li>
+      <li><span>Нажмите значок установки <span class="ico">⊕</span> в адресной строке справа.</span></li>
+      <li><span>Подтвердите «Установить» — приложение откроется в своём окне.</span></li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Что внутри</h2>
+    <ul class="perks">
+      <li><b>Совместимость по дате рождения</b><span>Число судьбы, знак, восточный год и аркан пары.</span></li>
+      <li><b>Анкеты рядом</b><span>Листайте и ставьте симпатии, как в привычных приложениях.</span></li>
+      <li><b>Уведомления</b><span>Узнаете о взаимной симпатии и новом сообщении сразу.</span></li>
+      <li><b>Только реальные люди 18+</b><span>Вход через VK ID или Яндекс ID, фото проверяют модераторы.</span></li>
+    </ul>
+  </section>
+
+  <div class="alt"><a class="btn" id="openSite" href="/#join">Или просто открыть сайт</a></div>
+
+  <footer>
+    <p>Сервис знакомств для лиц старше 18 лет. Расчёт совместимости носит развлекательный характер.</p>
+    <p>ООО «ЦИФРА И РЕШЕНИЕ», ИНН 6684050640, ОГРН 1269600036452 · <a href="mailto:b1.u@bk.ru">b1.u@bk.ru</a><br>
+    <a href="oferta.html">Оферта</a> · <a href="terms.html">Пользовательское соглашение</a> · <a href="privacy.html">Политика конфиденциальности</a></p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  let METRIKA_ID = '';
+  const $ = s => document.querySelector(s);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('lvc.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('lvc.' + k, JSON.stringify(v)); } catch {} }
+  };
+  const goal = name => { if (window.ym && METRIKA_ID) window.ym(+METRIKA_ID, 'reachGoal', name); };
+  const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 2500); };
+
+  // Метки рекламы и реферальный код первого визита — как на главной (lvc.src, lvc.ref).
+  const q = new URLSearchParams(location.search);
+  if (q.get('ref') && !store.get('ref')) store.set('ref', q.get('ref').slice(0, 40));
+  if (!store.get('src') && q.get('utm_source')) store.set('src', { s: q.get('utm_source'), m: q.get('utm_medium') || '', c: q.get('utm_campaign') || '' });
+
+  const ua = navigator.userAgent;
+  const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const android = /android/i.test(ua);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  // Встроенные браузеры соцсетей: из них установить нельзя.
+  const inApp = [[/VKAndroidApp|VKClient|vkontakte/i, 'ВКонтакте'], [/Telegram/i, 'Telegram'], [/OKApp|OdnoklassnikiApp/i, 'Одноклассники'], [/Instagram/i, 'Instagram'], [/FBAN|FBAV/i, 'Facebook'], [/WhatsApp/i, 'WhatsApp']].find(([re]) => re.test(ua));
+
+  // Вкладки «Android / iPhone / Компьютер»
+  function pick(os) {
+    document.querySelectorAll('.tabs [data-os]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.os === os)));
+    document.querySelectorAll('ol.steps').forEach(o => { o.hidden = o.dataset.os !== os; });
+  }
+  $('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-os]'); if (b) pick(b.dataset.os); });
+  pick(ios ? 'ios' : android ? 'android' : 'pc');
+
+  if (standalone) { $('#isApp').hidden = false; $('#manual').hidden = true; }
+  if (inApp && !standalone) {
+    $('#inApp').hidden = false; $('#inAppName').textContent = inApp[1];
+    $('#copyLink').onclick = () => navigator.clipboard?.writeText(location.href).then(() => toast('Ссылка скопирована — вставьте её в браузер.'), () => toast(location.href));
+  }
+
+  let installEvt = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#oneTap').hidden = false; });
+  addEventListener('appinstalled', () => { installEvt = null; $('#oneTap').hidden = true; $('#isApp').hidden = false; goal('app_installed'); toast('Приложение установлено.'); });
+  $('#installBtn').onclick = async () => {
+    goal('app_install_click');
+    if (!installEvt) return;
+    installEvt.prompt();
+    await installEvt.userChoice.catch(() => {});
+    installEvt = null; $('#oneTap').hidden = true;
+  };
+  $('#openSite').addEventListener('click', () => goal('app_open_site'));
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+
+  // Cookie и Метрика: тот же выбор и та же память, что на главной (lvc.cookieOk).
+  function startMetrika(id) {
+    window.ym = window.ym || function () { (window.ym.a = window.ym.a || []).push(arguments); }; window.ym.l = Date.now();
+    const sc = document.createElement('script'); sc.async = true; sc.src = 'https://mc.yandex.ru/metrika/tag.js'; document.head.appendChild(sc);
+    window.ym(+id, 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: false });
+  }
+  function cookieConsent() {
+    const hasYm = /^\d+$/.test(METRIKA_ID);
+    const ok = store.get('cookieOk');
+    if (ok === 'all' && hasYm) startMetrika(METRIKA_ID);
+    else if (!ok) {
+      const n = document.createElement('div'); n.className = 'cookie-note'; n.setAttribute('role', 'region'); n.setAttribute('aria-label', 'Cookie');
+      n.innerHTML = hasYm
+        ? '<span>Мы используем cookie, чтобы сайт работал. С вашего разрешения включим Яндекс Метрику — статистику посещений. Подробнее — в <a href="privacy.html#ru-10">политике конфиденциальности</a>.</span><span class="cookie-btns"><button class="btn" type="button" data-ck="essential">Только нужные</button><button class="btn rose" type="button" data-ck="all">Принять</button></span>'
+        : '<span>Мы используем cookie и память браузера, чтобы сайт работал. Подробнее — в <a href="privacy.html#ru-10">политике конфиденциальности</a>.</span><span class="cookie-btns"><button class="btn rose" type="button" data-ck="essential">Понятно</button></span>';
+      n.onclick = e => { const b = e.target.closest('[data-ck]'); if (!b) return; store.set('cookieOk', b.dataset.ck); n.remove(); if (b.dataset.ck === 'all' && hasYm) startMetrika(METRIKA_ID); };
+      document.body.appendChild(n);
+    }
+  }
+  fetch('/api/config').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+    .then(cfg => { if (/^\d+$/.test(String(cfg.metrikaId || ''))) METRIKA_ID = String(cfg.metrikaId); cookieConsent(); });
+})();
+</script>
+</body>
+</html>
