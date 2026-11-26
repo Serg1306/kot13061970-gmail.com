@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import net from 'node:net';
 import { test } from 'node:test';
-import { renderMail } from '../mail.mjs';
+import { renderMail, sendSmtp } from '../mail.mjs';
 import { startServer } from './helpers.mjs';
 
 // Простейший SMTP-сервер для проверки диалога: EHLO, AUTH LOGIN, MAIL, RCPT, DATA.
-function fakeSmtp() {
+function fakeSmtp({ rejectPass = false } = {}) {
   const mails = [];
   const server = net.createServer(sock => {
     let buf = '', inData = false, data = '', auth = [];
@@ -22,7 +22,7 @@ function fakeSmtp() {
         }
         if (auth.length === 1 || auth.length === 2) {
           auth.push(Buffer.from(line, 'base64').toString());
-          sock.write(auth.length === 2 ? '334 UGFzc3dvcmQ6\r\n' : '235 ok\r\n');
+          sock.write(auth.length === 2 ? '334 UGFzc3dvcmQ6\r\n' : rejectPass ? '535 5.7.8 Invalid user or password\r\n' : '235 ok\r\n');
           continue;
         }
         if (/^EHLO/.test(line)) sock.write('250-fake\r\n250-AUTH LOGIN PLAIN\r\n250 8BITMIME\r\n');
@@ -107,4 +107,16 @@ test('вход по почте включается сам, когда наст�
     assert.equal((await c.get('/api/config')).body.emailLogin, false);
     assert.equal((await c.post('/api/auth/start', { email: 'guest@example.ru' })).body.error, 'code_login_off');
   } finally { await off.close(); smtp.server.close(); }
+});
+
+test('ошибка SMTP не уносит в журнал логин и пароль из AUTH LOGIN', async () => {
+  const smtp = fakeSmtp({ rejectPass: true });
+  await new Promise(r => smtp.server.listen(0, '127.0.0.1', r));
+  const pass = 'Super-Secret-Pass', user = 'robot@lvc.ru';
+  try {
+    const err = await sendSmtp({ host: '127.0.0.1', port: smtp.server.address().port, user, pass, from: user }, { to: 'x@y.ru', subject: 's', text: 't', html: 't' }).then(() => null, e => e);
+    assert.ok(err);
+    assert.match(err.message, /AUTH \(пароль\) → 535/);
+    for (const secret of [pass, user, Buffer.from(pass).toString('base64'), Buffer.from(user).toString('base64')]) assert.ok(!err.message.includes(secret), secret);
+  } finally { smtp.server.close(); }
 });

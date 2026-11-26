@@ -106,10 +106,12 @@ export async function sendSmtp(smtp, mail) {
   const secure = smtp.port === 465;
   let sock = await connect({ host: smtp.host, port: smtp.port, secure });
   let reader = replyReader(sock);
-  const expect = async (codes, line) => {
+  // В текст ошибки (он попадает в журнал сервера) идёт только название шага, а не то, что мы отправили:
+  // на шаге AUTH это логин и пароль в base64, в RCPT — почта получателя.
+  const expect = async (codes, line, step = line ? line.split(/[ :]/)[0] : 'приветствие') => {
     if (line !== undefined) sock.write(line + '\r\n');
     const r = await reader.read();
-    if (!codes.includes(r.code)) throw new Error(`smtp: ${line ? line.split(' ')[0] : 'приветствие'} → ${r.text}`);
+    if (!codes.includes(r.code)) throw new Error(`smtp: ${step} → ${String(r.text).replace(/\s+/g, ' ').slice(0, 200)}`);
     return r;
   };
   try {
@@ -129,13 +131,13 @@ export async function sendSmtp(smtp, mail) {
     }
     if (smtp.user) {
       await expect([334], 'AUTH LOGIN');
-      await expect([334], b64(smtp.user));
-      await expect([235], b64(smtp.pass));
+      await expect([334], b64(smtp.user), 'AUTH (логин)');
+      await expect([235], b64(smtp.pass), 'AUTH (пароль)');
     }
     await expect([250], `MAIL FROM:<${addressOf(smtp.from)}>`);
-    await expect([250, 251], `RCPT TO:<${mail.to}>`);
+    await expect([250, 251], `RCPT TO:<${mail.to}>`, 'RCPT TO');
     await expect([354], 'DATA');
-    await expect([250], buildMessage({ ...mail, from: smtp.from }) + '\r\n.');
+    await expect([250], buildMessage({ ...mail, from: smtp.from }) + '\r\n.', 'текст письма');
     sock.write('QUIT\r\n');
   } finally {
     sock.end();
