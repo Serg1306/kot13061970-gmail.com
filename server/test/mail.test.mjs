@@ -83,3 +83,28 @@ test('письма на всех языках сайта, неизвестный
   }
   assert.match(renderMail('message', 'es', { name: 'Ana', url: 'https://x' }).text, /Ana te ha escrito/);
 });
+
+test('вход по почте включается сам, когда настроена почта; телефон — нет; EMAIL_LOGIN=0 выключает', async () => {
+  const smtp = fakeSmtp();
+  await new Promise(r => smtp.server.listen(0, '127.0.0.1', r));
+  const mail = { SMTP_HOST: '127.0.0.1', SMTP_PORT: String(smtp.server.address().port), SMTP_USER: 'robot@lvc.ru', SMTP_PASS: 'secret', SMTP_FROM: 'robot@lvc.ru', DEV_CODES: '' };
+  const srv = await startServer(mail);
+  try {
+    const c = srv.client();
+    const cfg = (await c.get('/api/config')).body;
+    assert.equal(cfg.emailLogin, true);
+    assert.equal(cfg.codeLogin, false);
+    assert.equal(cfg.phoneLogin, false);
+    assert.equal((await c.post('/api/auth/start', { phone: '+79120000000' })).body.error, 'code_login_off');
+    assert.equal((await c.post('/api/auth/start', { email: 'guest@example.ru', lang: 'ru' })).status, 200);
+    const code = /(\d{6})/.exec(textPart(smtp.mails.at(-1).data))[1];
+    assert.equal((await c.post('/api/auth/verify', { email: 'guest@example.ru', code })).status, 200);
+    assert.equal((await c.get('/api/me')).status, 200);
+  } finally { await srv.close(); }
+  const off = await startServer({ ...mail, EMAIL_LOGIN: '0' });
+  try {
+    const c = off.client();
+    assert.equal((await c.get('/api/config')).body.emailLogin, false);
+    assert.equal((await c.post('/api/auth/start', { email: 'guest@example.ru' })).body.error, 'code_login_off');
+  } finally { await off.close(); smtp.server.close(); }
+});
