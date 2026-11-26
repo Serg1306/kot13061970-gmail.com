@@ -188,11 +188,13 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
   async function start() {
     try {
       const me = await api('GET', '/api/me');
-      if (!me.admin) return show('denied');
+      // Вошли обычным аккаунтом (VK ID, Яндекс ID): предлагаем войти почтой модератора, новый вход заменит этот.
+      if (!me.admin) return show('login');
       show('panel');
       await refresh();
     } catch (e) {
-      if (e.status === 401) return show('login');
+      // Не вошли или вошли обычным пользователем (через VK ID / Яндекс ID) — показываем вход модератора по почте.
+      if (e.status === 401 || e.status === 403) return show('login');
       $('#view').innerHTML = `<div class="card empty">Сервер недоступен (${esc(e.message)}).</div>`;
       show('panel');
     }
@@ -216,6 +218,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
     try {
       await api('POST', '/api/auth/verify', { email, code: $('#code').value.trim() });
       await start();
+      if (!$('#login').hidden) $('#loginErr').textContent = 'Эта почта не входит в список модераторов (ADMIN_EMAILS на сервере).';
     } catch (err) { $('#loginErr').textContent = ERRORS[err.message] || 'Ошибка: ' + err.message; }
   });
   $('#again').addEventListener('click', () => { $('#codeForm').hidden = true; $('#emailForm').hidden = false; $('#code').value = ''; });
