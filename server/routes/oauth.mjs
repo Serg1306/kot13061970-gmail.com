@@ -101,7 +101,7 @@ export default function oauthRoutes(route) {
       src: adSource({ s: q.get('s'), m: q.get('m'), c: q.get('c') }), ref: q.get('r'),
     });
     const redirectUri = `${base(app, req)}/api/oauth/${params.provider}/callback`;
-    redirect(res, authorizeUrl(params.provider, c, { state, challenge, redirectUri }), [stateCookie(app, req, state, STATE_TTL / 1000)]);
+    redirect(res, authorizeUrl(params.provider, c, { state, challenge, redirectUri, via: q.get('via') }), [stateCookie(app, req, state, STATE_TTL / 1000)]);
   }, { auth: 'none' });
 
   // Возврат от провайдера: код → профиль → аккаунт и сессия. Ошибки показываем на сайте, в окне входа.

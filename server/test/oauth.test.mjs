@@ -95,6 +95,15 @@ test('VK ID: новый аккаунт по телефону, подсказки
   assert.equal(to.origin + to.pathname, mock.url + '/vk/authorize');
   assert.equal(to.searchParams.get('redirect_uri'), 'https://lyubovvcifrah.ru/api/oauth/vk/callback');
   assert.equal(to.searchParams.get('code_challenge_method'), 'S256');
+  assert.equal(to.searchParams.get('scope'), 'vkid.personal_info', 'телефон и почту не запрашиваем');
+  assert.equal(to.searchParams.get('provider'), null);
+  // Одноклассники и Mail.ru — через тот же VK ID; посторонние значения не пропускаем.
+  const via = async v => new URL((await fetch(srv.base + '/api/oauth/vk?via=' + v, { redirect: 'manual' })).headers.get('location')).searchParams;
+  assert.equal((await via('ok_ru')).get('provider'), 'ok_ru');
+  assert.equal((await via('mail_ru')).get('provider'), 'mail_ru');
+  assert.equal((await via('evil')).get('provider'), null);
+  const ya = new URL((await fetch(srv.base + '/api/oauth/yandex', { redirect: 'manual' })).headers.get('location')).searchParams;
+  assert.equal(ya.get('scope'), 'login:info login:birthday login:avatar');
   assert.equal(back.status, 302);
   assert.equal(back.headers.get('location'), '/#join');
   assert.ok(session);

@@ -28,12 +28,20 @@ export const pkce = () => {
   return { verifier, challenge: crypto.createHash('sha256').update(verifier).digest('base64url') };
 };
 
-export function authorizeUrl(provider, c, { state, challenge, redirectUri }) {
+// Через VK ID же входят аккаунтом Одноклассников и Mail.ru (параметр provider), адрес возврата тот же.
+export const VK_VIA = ['ok_ru', 'mail_ru'];
+
+// Запрашиваем минимум: имя, пол, дату рождения и фото профиля. Телефон и почту не просим —
+// так меньше пугает экран согласия (VK ID и Яндекс ID сами подтверждают человека).
+export function authorizeUrl(provider, c, { state, challenge, redirectUri, via }) {
   const q = new URLSearchParams({
     response_type: 'code', client_id: c.clientId, redirect_uri: redirectUri, state,
     code_challenge: challenge, code_challenge_method: 'S256',
   });
-  if (provider === 'vk') q.set('scope', 'vkid.personal_info phone');
+  if (provider === 'vk') {
+    q.set('scope', 'vkid.personal_info');
+    if (VK_VIA.includes(via)) q.set('provider', via);
+  } else q.set('scope', 'login:info login:birthday login:avatar');
   return `${c.base}/authorize?${q}`;
 }
 
