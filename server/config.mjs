@@ -44,6 +44,8 @@ export function loadConfig(env = process.env) {
     // Вход и регистрация по коду из СМС или письма. По умолчанию выключены: регистрация только через VK ID и Яндекс ID.
     // Админы из ADMIN_EMAILS входят по коду всегда (страница /#admin-login).
     codeLogin: env.CODE_LOGIN === '1' || env.DEV_CODES === '1',
+    // Вход по коду из письма — включён сам, когда настроена почта (lyubov-mail). EMAIL_LOGIN=0 выключает. Телефон — только с CODE_LOGIN.
+    emailLogin: env.EMAIL_LOGIN !== '0',
     // Проверка «на фото есть лицо» при загрузке (server/face). Выключается только в автотестах.
     faceCheck: env.FACE_CHECK !== '0',
     // Аватарку из VK ID и Яндекс ID скачиваем только с этих доменов (и их поддоменов).
