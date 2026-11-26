@@ -160,7 +160,7 @@ export function createApp(env = process.env, { log = console } = {}) {
       res.writeHead(301, { location: p + '.html' + url.search }); return res.end();
     }
     const ext = path.extname(file).toLowerCase();
-    const cache = ['.html', '.js', '.mjs', '.webmanifest', '.json'].includes(ext) ? 'no-cache' : 'public, max-age=86400';
+    const cache = ['.html', '.js', '.mjs', '.css', '.webmanifest', '.json'].includes(ext) ? 'no-cache' : 'public, max-age=86400';
     if (!serveFile(req, res, file, cache)) sendText(res, 404, 'Not found');
   }
 
