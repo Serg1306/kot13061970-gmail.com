@@ -136,7 +136,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
 
   let queue = null, tab = 'photos', thread = null, email = '';
   const STATUS = { new: 'не оплачен', paid: 'оплачен', refunded: 'возврат' };
-  const PD_REASONS = { user_request: 'запрос пользователя', consent_withdrawn: 'отзыв согласия', ban: 'бан', retention: 'истёк срок хранения' };
+  const PD_REASONS = { user_request: 'запрос пользователя', consent_withdrawn: 'отзыв согласия', ban: 'бан', retention: 'истёк срок хранения', moderation: 'мусорная анкета или дубль' };
   // Статусы платежа Т-Кассы для сверки заказа.
   const TK_STATES = { NOT_FOUND: 'платёж не найден (человек не перешёл к оплате)', NEW: 'создан, не оплачен', FORM_SHOWED: 'открыта форма оплаты, не оплачен',
     AUTHORIZING: 'идёт оплата', AUTHORIZED: 'деньги заблокированы, ждут подтверждения', CONFIRMED: 'оплачен', REJECTED: 'отклонён банком',
@@ -288,6 +288,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
       const found = find.users ? (find.users.length ? `<div class="list">${find.users.map(u => `
           <div class="card row" style="justify-content:space-between">${person(u)}<span class="muted">${esc(u.city || '')}${u.lastSeen ? ' · был(а) ' + when(u.lastSeen) : ''}</span>
           <span class="row"><button class="btn" data-full="${esc(u.id)}" data-on="${u.fullAccess ? '' : '1'}" title="Все возможности VIP, подарки, поднятие анкеты и разборы — бесплатно">${u.fullAccess ? '✓ Полный доступ — снять' : 'Дать полный доступ'}</button>
+          <button class="btn" data-act="deljunk" data-id="${esc(u.id)}" title="Мусорная анкета или дубль: удалить анкету и все данные, без чёрного списка">Удалить анкету</button>
           <button class="btn rose" data-thread="${esc(u.id)}">Написать</button></span></div>`).join('')}</div>` : '<p class="muted">Никого не нашлось.</p>') : '';
       return `<form id="findUser" class="filters"><label>Написать любому пользователю: имя, почта, id или город<input name="q" type="search" value="${esc(find.q)}" placeholder="например, Анна или Москва"></label>
           <button class="btn" type="submit">Найти</button></form>${found}
@@ -413,6 +414,7 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
       note = prompt(REFUND_NOTE + '\n\nВозврат уже сделан в кабинете Т-Бизнеса? Напишите примечание (дата, причина):', '');
       if (note === null) return;
     }
+    if (act === 'deljunk' && !confirm('Удалить анкету и все данные пользователя? Это нельзя отменить. Для мусорных анкет и дублей.')) return;
     if (act === 'delban' && !confirm('Удалить все данные забаненного пользователя? Почта останется в чёрном списке (только хэш) на 3 года.')) return;
     b.disabled = true;
     try {
@@ -423,6 +425,11 @@ select { font: inherit; color: var(--ink); background: var(--card); border: 1px 
       }
       if (act === 'refund') { await api('POST', '/api/admin/refund', { invId: id, note }); return await loadPay(); }
       if (act === 'delban') await api('POST', '/api/admin/delete-user', { userId: id, reason: 'ban' });
+      if (act === 'deljunk') {
+        await api('POST', '/api/admin/delete-user', { userId: id, reason: 'moderation' });
+        find.users = (await api('GET', '/api/admin/users?q=' + encodeURIComponent(find.q))).users;
+        return render();
+      }
       if (act === 'photo') await api('POST', '/api/admin/photo', { id: Number(id), approve: ok === '1' });
       if (act === 'verify') await api('POST', '/api/admin/verify', { userId: id, approve: ok === '1' });
       if (act === 'ban' || act === 'dismiss') await api('POST', '/api/admin/report', { id: Number(id), action: act });

@@ -9,7 +9,7 @@ import { removeFile } from './media.mjs';
 import { uploadSrc } from './model.mjs';
 
 export const DESTRUCTION_METHOD = 'удаление из БД и файлов';
-export const REASONS = ['user_request', 'ban', 'retention', 'consent_withdrawn'];
+export const REASONS = ['user_request', 'ban', 'retention', 'consent_withdrawn', 'moderation'];
 export const ACCOUNT_CATEGORIES = 'e-mail; анкета (имя, дата рождения, пол, город, о себе); фото; селфи для проверки; '
   + 'сообщения и голосовые; посты; симпатии, визиты, друзья, блокировки; подарки; push-подписки; '
   + 'сессии; согласия (счета об оплате обезличены и хранятся для бухгалтерского учёта)';

@@ -40,3 +40,21 @@ test('адрес без .html ведёт на страницу с .html (301)', 
   assert.equal(r.headers.get('location'), '/goroda/chelyabinsk.html');
   assert.equal((await get('/goroda/net-takogo', 'lyubovvcifrah.ru')).status, 404);
 });
+
+test('разбор пары: свой адрес /para/ДД-ММ-ГГГГ-i-ДД-ММ-ГГГГ', async () => {
+  const r = await fetch(srv.base + '/para/24-03-1992-i-17-02-1988');
+  assert.equal(r.status, 200);
+  const html = await r.text();
+  assert.match(html, /Совместимость 24\.03\.1992 и 17\.02\.1988/);
+  assert.match(html, /rel="canonical" href="https:\/\/lyubovvcifrah\.ru\/para\/24-03-1992-i-17-02-1988"/);
+  assert.match(html, /Отправить разбор партнёру/);
+  assert.match(html, /Аркан пары/);
+  // форма без скрипта ведёт на адрес разбора
+  const q = await get('/para/?a=1992-03-24&b=1988-02-17', 'lyubovvcifrah.ru');
+  assert.equal(q.status, 301);
+  assert.equal(q.headers.get('location'), '/para/24-03-1992-i-17-02-1988');
+  // несуществующая дата и мусор — 404
+  assert.equal((await fetch(srv.base + '/para/31-02-1992-i-17-02-1988')).status, 404);
+  assert.equal((await fetch(srv.base + '/para/abc')).status, 404);
+  assert.equal((await get('/para/?a=x&b=y', 'lyubovvcifrah.ru')).status, 302);
+});
