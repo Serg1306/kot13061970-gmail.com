@@ -1416,7 +1416,9 @@ body.in-app .mx-fillbar, body.join-open .mx-fillbar { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .mx .mx-live-card img { transition: none; } }
 /* телефон: шапка никогда не шире экрана, даже с крупным шрифтом в настройках телефона; страница не ездит вбок */
-html { overflow-x: clip; }
+/* вбок не прокручивает окно (html); у body clip, а не hidden: иначе body становится своим скроллером и ломает sticky-сцены главной */
+html { overflow-x: hidden; }
+body { overflow-x: clip; }
 @media (max-width: 760px) {
   .top { max-width: 100%; }
   .top nav { flex-wrap: wrap; justify-content: flex-end; min-width: 0; max-width: 100%; row-gap: .4rem; }
