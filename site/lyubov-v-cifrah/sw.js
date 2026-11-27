@@ -1,12 +1,13 @@
 /* Service worker «Любовь в цифрах».
    - Страницы (навигация, *.html): сначала сеть, без сети — копия из кэша, иначе главная из кэша.
-   - Статика сайта (media/, icons/, goroda/*.js, css, картинки, manifest): сначала кэш.
+   - Стили и скрипты сайта (*.css, *.js) и словари: сначала сеть, без сети — кэш.
+   - Остальная статика (media/, icons/, картинки, manifest): сначала кэш.
    - Шрифты Google: отдаём из кэша и обновляем в фоне (stale-while-revalidate).
    - /api/, /uploads/, admin.html и любые запросы кроме GET — только сеть, никогда не кэшируются
      (личные данные и фото удалённых анкет не должны оседать в кэше).
    - Push: полезная нагрузка JSON { title, body, url } → уведомление; клик открывает или фокусирует вкладку.
    Чтобы обновить кэш у всех, увеличьте VERSION. */
-const VERSION = 'v30';
+const VERSION = 'v31';
 const STATIC = `lvc-static-${VERSION}`;
 const PAGES = `lvc-pages-${VERSION}`;
 const FONTS = `lvc-fonts-${VERSION}`;
@@ -113,7 +114,9 @@ self.addEventListener('fetch', event => {
   const isPage = req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/');
   if (isPage) { event.respondWith(networkFirst(event)); return; }
   if (url.pathname.endsWith('sw.js')) return;
-  if (url.pathname.includes('/i18n/')) { event.respondWith(freshFirst(req)); return; }
+  // словари, стили и скрипты сайта меняются с каждой выкладкой: сначала сеть, кэш только без сети
+  // (иначе после обновления вернувшиеся посетители видели старую вёрстку)
+  if (url.pathname.includes('/i18n/') || /\.(css|js|mjs)$/.test(url.pathname)) { event.respondWith(freshFirst(req)); return; }
   event.respondWith(cacheFirst(req));
 });
 
