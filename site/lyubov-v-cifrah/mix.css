@@ -330,17 +330,40 @@
 .mx .mx-pad .mx-hint { left: 50%; top: calc(100% + 30px); bottom: auto; margin: 0; white-space: nowrap; }
 @media (max-width: 760px) { .mx .mx-city { bottom: 16px; } .mx .mx-hero .mx-hint { display: none; } }
 
-/* первый экран: главное действие рядом с «Анкеты в моём городе» */
-.mx .mx-ctas { position: absolute; z-index: 30; left: 50%; bottom: 22px; translate: -50% 0; display: flex; gap: 12px; align-items: center; }
-.mx .mx-ctas .mx-city { position: relative; left: auto; bottom: auto; translate: none; }
-.mx .mx-join { display: inline-flex; align-items: center; text-decoration: none; white-space: nowrap; font: 600 15px/1 var(--ui); color: #fff; }
-/* нажатие видно сразу (Эмиль Ковальски): кнопки без 3D-стекла слегка сжимаются */
+/* первый экран: калькулятор совместимости прямо под заголовком — главная дверь на сайт */
+.mx .mx-quick { position: absolute; z-index: 30; left: 50%; bottom: 22px; translate: -50% 0; width: min(720px, calc(100% - 32px)); display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px 12px; align-items: end; padding: 14px 16px 16px; border-radius: 22px; background: rgb(31 4 11 / .82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 18px 50px rgb(0 0 0 / .4), inset 0 0 0 1px rgb(255 255 255 / .12); color: #fff; }
+.mx .mx-quick-t { grid-column: 1 / -1; margin: 0; font: 600 16px/1.3 var(--ui); }
+.mx .mx-quick label { display: grid; gap: 4px; font: 500 12px/1.2 var(--ui); color: #ffc2d4; min-width: 0; }
+.mx .mx-quick input { width: 100%; min-width: 0; height: 44px; border: 0; border-radius: 12px; padding: 0 10px; background: #fff; color: #3b0a18; font: 500 16px/1 var(--ui); color-scheme: light; }
+.mx .mx-quick input:focus-visible { outline: 2px solid #ffc2d4; outline-offset: 2px; }
+.mx .mx-quick button { white-space: nowrap; font: 600 15px/1 var(--ui); }
 .mx .mx-fields button, .mx .mx-big a { transition: transform .14s cubic-bezier(.23, 1, .32, 1), background-color .2s; }
 .mx .mx-fields button:active, .mx .mx-big a:active { transform: scale(.97); }
 @media (max-width: 760px) {
-  .mx .mx-ctas { bottom: 16px; gap: 8px; width: calc(100% - 24px); justify-content: center; }
-  .mx .mx-ctas > a { font-size: 14px; padding-inline: 14px; }
+  .mx .mx-quick { bottom: 12px; width: calc(100% - 24px); grid-template-columns: 1fr 1fr; padding: 12px; border-radius: 18px; }
+  .mx .mx-quick-t { font-size: 14px; }
+  .mx .mx-quick button { grid-column: 1 / -1; width: 100%; }
 }
+
+/* на компьютере календарь и видео чуть выше, чтобы калькулятор их не закрывал */
+@media (min-width: 761px) { .mx .mx-hero .mx-pad, .mx .mx-hero .mx-film { translate: 0 -56px; } }
+
+/* разбор пары (окно после «Посчитать» и «Щёлк!») */
+.pair-dlg { width: min(560px, calc(100vw - 1.5rem)); }
+.pair-dlg .dlg { gap: .9rem; }
+.pair-dlg h2 { margin: 0; font-size: 1.15rem; }
+.pr-top { display: flex; align-items: center; gap: 1rem; }
+.pr-pct { font-size: 3.2rem; line-height: 1; font-weight: 700; }
+.pr-pct small { font-size: .5em; }
+.pr-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.pr-lines li { border-left: 4px solid var(--c); padding: .15rem 0 .15rem .75rem; }
+.pr-lines li > div { display: flex; flex-wrap: wrap; gap: .2rem .6rem; align-items: baseline; }
+.pr-who { color: var(--muted); font-size: .9rem; }
+.pr-pts { margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pr-lines p { margin: .2rem 0 0; font-size: .92rem; line-height: 1.4; }
+.pr-btns { display: grid; gap: .55rem; }
+.pr-btns .btn { width: 100%; justify-content: center; }
+.pr-more { margin: 0; text-align: center; font-size: .88rem; }
 
 /* «Двенадцать месяцев»: вместо пустых контурных номеров — листок календаря со знаками зодиака этого месяца */
 .mx .mx-leafm { width: clamp(200px, 20vw, 300px); }
@@ -351,3 +374,7 @@
 .mx .mx-leaf .mx-ln { position: absolute; left: 16px; top: 14px; font: 500 16px/1 var(--cal); letter-spacing: .12em; color: var(--mx-ink); opacity: .55; }
 @media (max-width: 760px) { .mx .mx-leafm { width: 58vw; } .mx .mx-leaf { font-size: 28px; } }
 
+
+/* стоковые фото честно подписаны: «Фото — примеры» */
+.mx .mx-note-corner { position: absolute; z-index: 6; top: 14px; right: var(--gutter, 16px); margin: 0; padding: 3px 10px; border-radius: 999px; background: rgb(31 4 11 / .55); pointer-events: none; }
+@media (max-width: 760px) { .mx .mx-note-corner { top: 8px; right: 12px; font-size: 11px; } }

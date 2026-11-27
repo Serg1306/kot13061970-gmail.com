@@ -1,4 +1,5 @@
 // Сборка приложения: база, почта, push, маршруты API, статика сайта и загрузок.
+import { pairPage, pairSlug, parsePairSlug } from './para.mjs';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import http from 'node:http';
@@ -148,6 +149,21 @@ export function createApp(env = process.env, { log = console } = {}) {
     }
     // Скрытые файлы и папки (.env, .git) не отдаются никогда.
     if (p.split('/').some(seg => seg.startsWith('.'))) return sendText(res, 404, 'Not found');
+    // Разбор пары: /para/24-03-1992-i-17-02-1988 (форма без скрипта приходит на /para/?a=…&b=…).
+    if (p === '/para' || p.startsWith('/para/')) {
+      const slug = p.replace(/^\/para\/?/, '').replace(/\/$/, '');
+      if (!slug) {
+        const a = url.searchParams.get('a') || '', b = url.searchParams.get('b') || '';
+        const ok = /^\d{4}-\d{2}-\d{2}$/.test(a) && /^\d{4}-\d{2}-\d{2}$/.test(b) && parsePairSlug(pairSlug(a, b));
+        res.writeHead(ok ? 301 : 302, { location: ok ? '/para/' + pairSlug(a, b) : '/sovmestimost.html' });
+        return res.end();
+      }
+      const pair = parsePairSlug(slug);
+      if (!pair) return sendText(res, 404, 'Not found');
+      const html = Buffer.from(pairPage(pair, config.publicUrl || `${isHttps(req, config.publicUrl) ? 'https' : 'http'}://${host}`));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'content-length': html.length, 'cache-control': 'public, max-age=3600' });
+      return res.end(req.method === 'HEAD' ? undefined : html);
+    }
     let file = safeJoin(config.siteDir, p.endsWith('/') ? p + 'index.html' : p);
     if (!file) return sendText(res, 400, 'Bad request');
     if (fs.existsSync(file) && fs.statSync(file).isDirectory()) {

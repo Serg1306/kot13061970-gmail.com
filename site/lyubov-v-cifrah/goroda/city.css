@@ -109,3 +109,7 @@ footer p { margin: .25rem 0; max-width: none; }
 
 /* колёсики даты (wheel-date.js) в цветах страницы */
 :root { --wheel-bg: var(--paper); --wheel-ink: var(--ink); --wheel-muted: var(--muted); --wheel-line: var(--line); --wheel-accent: var(--rose); }
+
+/* честный счётчик анкет (compat.js) */
+.city-count { margin: 1rem 0 0; padding: .7rem 1rem; border-radius: 14px; background: color-mix(in srgb, var(--rose) 14%, transparent); font-size: .95rem; }
+.city-n { color: var(--muted); font-size: .82em; white-space: nowrap; }

@@ -41,11 +41,14 @@ function counters(db, me, hidden) {
 export default function peopleRoutes(route) {
   // Список анкет работает и без входа (карусель и города на главной). С сессией — без себя и заблокированных.
   // Невидимки в списке есть: режим невидимки влияет только на визиты.
+  // Гостям (главная, города) анкеты без одобренного фото не показываем: пустые карточки выглядят как заброшенный сайт.
+  // В кабинете вошедшие видят всех.
   route('GET', '/api/people', ({ app, user }) => {
     const { db } = app;
     const now = Date.now();
     const me = user ? user.id : '';
     const rows = db.all(`SELECT * FROM users u WHERE u.name IS NOT NULL AND u.banned = 0 AND u.id != :me
+        AND (:me != '' OR EXISTS (SELECT 1 FROM photos ph WHERE ph.user_id = u.id AND ph.status = 'approved'))
         AND NOT EXISTS (SELECT 1 FROM blocks b WHERE (b.from_id = :me AND b.to_id = u.id) OR (b.from_id = u.id AND b.to_id = :me))
       ORDER BY (u.boost_until > :now) DESC, u.boost_until DESC, u.last_seen DESC LIMIT 200`, { me, now });
     return { people: peopleOut(db, rows, me || null, now) };

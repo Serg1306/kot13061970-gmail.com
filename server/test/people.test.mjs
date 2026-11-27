@@ -255,3 +255,13 @@ test('подробности анкеты как на Mamba: семья, тел�
   assert.deepEqual([me.marital, me.job, me.langs, me.body], [null, null, [], null]);
   assert.equal((await a.get('/api/account/export')).body.profile.langs.length, 0);
 });
+
+test('гостям список людей показывает только анкеты с фото, вошедшим — всех', async () => {
+  const withPhoto = await srv.user('guest-photo@example.ru', { name: 'С фото' });
+  const noPhoto = await srv.user('guest-nophoto@example.ru', { name: 'Без фото' });
+  await withPhoto.post('/api/photos', { dataUrl: JPEG });
+  const guest = (await srv.client().get('/api/people')).body.people.map(p => p.id);
+  assert.ok(guest.includes(withPhoto.id));
+  assert.ok(!guest.includes(noPhoto.id));
+  assert.ok(await person(withPhoto, noPhoto.id), 'в кабинете анкета без фото видна');
+});

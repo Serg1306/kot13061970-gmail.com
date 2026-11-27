@@ -131,6 +131,41 @@
     run();
   }
   if (typeof document !== 'undefined') document.querySelectorAll('[data-calc]').forEach(initCalc);
+
+  /* ---------- честный счётчик анкет: в каком городе сколько людей ---------- */
+  // Пока людей мало, страница города прямо пишет, сколько анкет, и зовёт стать первым.
+  const plural = n => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? 'анкета' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? 'анкеты' : 'анкет'; };
+  function cityCounts() {
+    return fetch('/api/people', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : { people: [] }).then(d => {
+      const n = {};
+      (d.people || []).forEach(p => { if (p.city) n[p.city] = (n[p.city] || 0) + 1; });
+      return n;
+    });
+  }
+  function initCounts() {
+    const cta = document.querySelector('.hero .cta a[href*="city="]');
+    const links = document.querySelectorAll('main li > a[href$=".html"]');
+    if (!cta && !links.length) return;
+    cityCounts().then(n => {
+      if (cta) {
+        const city = new URL(cta.href, location.href).searchParams.get('city') || '';
+        const k = n[city] || 0, box = document.createElement('p');
+        box.className = 'city-count' + (k < 30 ? ' few' : '');
+        box.textContent = k >= 30 ? `${city}: ${k} ${plural(k)} на сайте — заходите знакомиться.`
+          : k ? `${city}: пока ${k} ${plural(k)}. Сайт новый — станьте одним из первых, и новые люди из вашего города увидят вас сразу.`
+            : `${city}: пока 0 анкет. Станьте первым — новые люди из вашего города увидят вас сразу.`;
+        cta.parentElement.after(box);
+        if (k < 30) cta.textContent = 'Стать первым в городе';
+      }
+      links.forEach(a => {
+        const k = n[a.textContent.trim()];
+        const s = document.createElement('small'); s.className = 'city-n';
+        s.textContent = k ? ` · ${k} ${plural(k)}` : ' · пока нет анкет';
+        a.append(s);
+      });
+    }).catch(() => {});
+  }
+  if (typeof document !== 'undefined' && typeof fetch !== 'undefined') initCounts();
   if (typeof module !== 'undefined' && module.exports) module.exports = { compat, lifePath, zodiac, eastern, arcanum, scoreNumerology, scoreZodiac, scoreEastern, verdictOf };
   else if (typeof window !== 'undefined') window.LVC = { compat, verdictOf };
 })();
