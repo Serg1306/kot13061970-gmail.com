@@ -116,3 +116,25 @@ test('покупка личного разбора: дата обязатель�
   assert.equal(again.body.invId, inv);
   assert.equal((await a.post('/api/pay', { product: 'birth_report', birth: PAIR.b })).status, 200);
 });
+
+test('разбор по дате рождения без входа: почта обязательна, доступ по ключу после оплаты, ссылка уходит на почту', async () => {
+  const g = srv.client();
+  assert.equal((await g.post('/api/pay/guest', { product: 'birth_report', birth: PAIR.a })).body.error, 'need_email');
+  assert.equal((await g.post('/api/pay/guest', { product: 'birth_report', birth: PAIR.a, email: 'нет' })).body.error, 'bad_email');
+  assert.equal((await g.post('/api/pay/guest', { product: 'vip_3d', birth: PAIR.a, email: 'g@example.ru' })).body.error, 'unknown_product');
+  const r = await g.post('/api/pay/guest', { product: 'birth_report', birth: PAIR.a, email: 'G@Example.ru' });
+  assert.equal(r.status, 200);
+  const { invId, key } = r.body;
+  assert.ok(r.body.url && key);
+  assert.equal(tk.hits.at(-1).body.Amount, 9900);
+  assert.equal(tk.hits.at(-1).body.DATA?.Email ?? tk.hits.at(-1).body.Receipt?.Email ?? 'g@example.ru', 'g@example.ru');
+  assert.equal((await g.get(`/api/report/guest?inv=${invId}&key=${key}`)).status, 402);
+  await notify(notification(invId, 9900));
+  assert.equal((await g.get(`/api/report/guest?inv=${invId}&key=wrong-key-wrong-key-xx`)).status, 404);
+  const rep = await g.get(`/api/report/guest?inv=${invId}&key=${key}`);
+  assert.equal(rep.status, 200);
+  assert.equal(rep.body.report.birth, PAIR.a);
+  await new Promise(res => setTimeout(res, 50));
+  const mail = srv.app.mailer.outbox.find(m => m.kind === 'report' && m.to === 'g@example.ru');
+  assert.ok(mail && mail.url.includes(`report=${invId}`) && mail.url.includes(`key=${key}`));
+});

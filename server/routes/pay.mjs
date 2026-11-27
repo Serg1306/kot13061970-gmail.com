@@ -8,6 +8,7 @@ import { textFor } from '../langs.mjs';
 import { DAY, addEvent, walletOf } from '../model.mjs';
 import { birthReport } from '../birthReport.mjs';
 import { pairReport, validBirth } from '../pairReport.mjs';
+import crypto from 'node:crypto';
 
 const PAID_TEXT = {
   ru: t => `Оплата получена: ${t}. Спасибо!`,
@@ -27,7 +28,8 @@ export function creditOrder(db, invId) {
     if (!order) return false;
     const now = Date.now();
     const r = db.run("UPDATE orders SET status = 'paid', paid_at = ? WHERE inv_id = ? AND status = 'new'", now, invId);
-    if (!r.changes || !order.user_id) return false;
+    if (!r.changes) return false;
+    if (!order.user_id) return true; // разбор, купленный без входа: начислять в кабинет нечего
     const product = CATALOG[order.product];
     if (product.vipDays) {
       db.run('UPDATE users SET vip_until = MAX(vip_until, ?) + ? WHERE id = ?', now, product.vipDays * DAY, order.user_id);
@@ -40,6 +42,17 @@ export function creditOrder(db, invId) {
     addEvent(db, order.user_id, 'system', null, textFor(PAID_TEXT, lang)(product.title));
     return true;
   });
+}
+
+// Разбор, купленный без входа: ссылка с ключом приходит на почту из окна оплаты (на неё же банк шлёт чек).
+export function guestReportUrl(base, order) {
+  return `${String(base || '').replace(/\/$/, '')}/?report=${encodeURIComponent(order.inv_id)}&key=${encodeURIComponent(order.guest_key)}`;
+}
+export async function mailGuestReport(app, invId) {
+  const o = app.db.get('SELECT * FROM orders WHERE inv_id = ?', invId);
+  if (!o || o.user_id || !o.guest_key || !o.guest_email || o.status !== 'paid') return;
+  try { await app.mailer.send(o.guest_email, 'report', 'ru', { url: guestReportUrl(app.config.publicUrl, o) }); }
+  catch (e) { app.log.warn(`почта: не удалось отправить ссылку на разбор ${invId}: ${e.message}`); }
 }
 
 const REFUND_TEXT = {
@@ -92,7 +105,7 @@ export async function checkOrder(app, invId) {
   const paid = st.paid && st.amount === priceKopecks(order.product);
   if (st.paid && !paid) app.log.error(`tkassa: заказ ${invId} оплачен на другую сумму (${st.amount} коп.)`);
   const credited = paid ? creditOrder(db, invId) : false;
-  if (credited) app.log.info(`tkassa: заказ ${invId} оплачен (найден сверкой)`);
+  if (credited) { app.log.info(`tkassa: заказ ${invId} оплачен (найден сверкой)`); mailGuestReport(app, invId); }
   return { state: st.state, paid, credited };
 }
 
@@ -174,6 +187,51 @@ export default function payRoutes(route) {
     }
   }, { auth: 'user' });
 
+  // Разбор по дате рождения без входа: регистрация нужна только для знакомств.
+  // Почта обязательна: на неё банк присылает чек, а мы — ссылку на разбор (с секретным ключом).
+  route('POST', '/api/pay/guest', async ({ app, body, req, ip }) => {
+    const { db } = app;
+    const s = settings(app.config.env);
+    if (!isConfigured(s)) fail(503, 'not_configured');
+    const product = CATALOG[body.product];
+    if (!product || !product.birthReport) fail(400, 'unknown_product');
+    app.limiter.check(`payg:${ip}`, 20, 3600e3);
+    if (!validBirth(body.birth)) fail(400, 'invalid', { field: 'birth' });
+    const typed = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    if (!typed) fail(400, 'need_email');
+    if (!isEmail(typed)) fail(400, 'bad_email');
+    const key = crypto.randomBytes(18).toString('base64url');
+    let invId;
+    for (let i = 0; i < 5 && !invId; i++) {
+      const candidate = newInvId();
+      const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at, pair_a, guest_key, guest_email) VALUES (?, NULL, ?, ?, 'new', ?, ?, ?, ?)",
+        candidate, body.product, product.price, Date.now(), body.birth, key, typed);
+      if (r.changes) invId = candidate;
+    }
+    if (!invId) fail(503, 'try_again');
+    const base = siteUrl(app, req);
+    try {
+      const p = await initPayment(s, body.product, {
+        invId, email: typed, phone: '',
+        successUrl: `${base}/?pay=ok&order=${invId}&key=${key}`, failUrl: `${base}/?pay=fail`, notificationUrl: `${base}/api/tkassa-notify`,
+      });
+      db.run('UPDATE orders SET payment_id = ? WHERE inv_id = ?', p.paymentId, invId);
+      return { url: p.url, invId, key };
+    } catch (e) {
+      app.log.warn(`tkassa: не удалось создать платёж ${invId}: ${e.message}`);
+      fail(502, 'tkassa_unavailable');
+    }
+  }, { auth: 'none' });
+
+  route('GET', '/api/report/guest', ({ app, url }) => {
+    const inv = String(url.searchParams.get('inv') || ''), key = String(url.searchParams.get('key') || '');
+    const o = app.db.get("SELECT * FROM orders WHERE inv_id = ? AND product = 'birth_report'", inv);
+    const ok = o && o.guest_key && key.length === o.guest_key.length && crypto.timingSafeEqual(Buffer.from(key), Buffer.from(o.guest_key));
+    if (!ok || !o.pair_a) fail(404, 'not_found');
+    if (o.status !== 'paid') fail(402, 'not_paid');
+    return { invId: o.inv_id, kind: 'birth', report: birthReport(o.pair_a) };
+  }, { auth: 'none' });
+
   // Купленные разборы (для профиля) и сам разбор: только по оплаченному заказу этого пользователя.
   // kind: birth — личный разбор по дате рождения, pair — разбор пары (продавался до декабря 2026).
   const KIND = { birth_report: 'birth', pair_report: 'pair' };
@@ -205,6 +263,7 @@ export default function payRoutes(route) {
       } else {
         const credited = creditOrder(db, n.invId);
         log.info(`tkassa: заказ ${n.invId} (${order.product}) ${credited ? 'оплачен' : 'уже был начислен'}`);
+        if (credited) mailGuestReport(app, n.invId);
       }
     } else if (['REFUNDED', 'PARTIAL_REFUNDED', 'REVERSED'].includes(n.status)) {
       log.warn(`tkassa: по заказу ${n.invId} пришёл статус ${n.status} — оформите возврат в admin.html`);
