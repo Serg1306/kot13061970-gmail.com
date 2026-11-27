@@ -243,6 +243,20 @@
   .mx .mx-slot { height: 100px; }
   .mx .mx-booth[data-scene] .mx-why { margin-top: 92px; }
 }
+/* фотобудка на компьютере: колёсики дат рядом, а не друг под другом, чтобы будка, полоска и кнопка
+   «Поделиться в сторис» влезали в экран; если экран всё же низкий, сцена растёт вниз и ничего не обрезается */
+@media (min-width: 761px) {
+  .mx .mx-booth[data-scene] .mx-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(14px, 2vw, 28px); }
+  .mx .mx-booth[data-scene] .mx-fields button { grid-column: 1 / -1; }
+  .mx .mx-booth[data-scene] .mx-stage { height: auto; min-height: 100vh; min-height: 100svh; overflow: visible; }
+}
+@media (min-width: 761px) and (max-height: 820px) {
+  .mx .mx-booth[data-scene] .mx-stage { gap: 14px; padding: 20px var(--gutter); }
+  .mx .mx-booth[data-scene] h2 { font-size: clamp(44px, 5vw, 64px); }
+  .mx .mx-booth[data-scene] .mx-cabin { padding: 20px 26px; }
+  .mx .mx-slot { height: 170px; }
+  .mx .mx-booth[data-scene] .mx-why { margin-top: 170px; }
+}
 /* «Сегодня»: число перелистывается (alive.js), на выходе лист отрывается и улетает */
 .mx .mx-big .mx-d.flip { animation: flipNum .12s ease-out; }
 @keyframes flipNum { from { transform: rotateX(80deg); opacity: .3; } to { transform: none; opacity: 1; } }
