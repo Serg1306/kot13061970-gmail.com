@@ -652,7 +652,7 @@ footer .legal { flex-basis: 100%; max-width: none; padding-top: 1rem; border-top
 @media (max-width: 640px) {
   .cookie-note { left: 0; right: 0; bottom: 0; max-width: none; border-radius: 16px 16px 0 0; flex-direction: column; align-items: stretch; gap: .55rem; padding: .7rem 1rem calc(.7rem + env(safe-area-inset-bottom)); font-size: .8rem; line-height: 1.35; max-height: 22vh; max-height: 22svh; overflow: auto; }
   .cookie-note .cookie-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); flex-wrap: nowrap; width: 100%; }
-  .cookie-note .cookie-btns .btn { min-width: 0; width: 100%; padding: .55rem .6rem; font-size: .85rem; white-space: nowrap; justify-content: center; }
+  .cookie-note .cookie-btns .btn { min-width: 0; width: 100%; padding: .55rem .6rem; font-size: .85rem; white-space: normal; line-height: 1.15; justify-content: center; }
 }
 .tile .badge.wait { left: auto; right: .4rem; background: var(--sun); color: #23163a; }
 .safety { display: flex; gap: 1.2rem; flex-wrap: wrap; border-top: 1px dashed var(--line); padding-top: .7rem; }
@@ -1415,6 +1415,14 @@ body.in-app .mx-fillbar, body.join-open .mx-fillbar { display: none; }
   .mx .mx-live-cities button:hover { border-color: var(--blush); }
 }
 @media (prefers-reduced-motion: reduce) { .mx .mx-live-card img { transition: none; } }
+/* телефон: шапка никогда не шире экрана, даже с крупным шрифтом в настройках телефона; страница не ездит вбок */
+html { overflow-x: clip; }
+@media (max-width: 760px) {
+  .top { max-width: 100%; }
+  .top nav { flex-wrap: wrap; justify-content: flex-end; min-width: 0; max-width: 100%; row-gap: .4rem; }
+  .top nav > * { flex: 0 1 auto; min-width: 0; }
+  .top nav select.lang { max-width: 8.5rem; text-overflow: ellipsis; }
+}
 </style>
 </head>
 <body>
@@ -3044,7 +3052,7 @@ body.in-app .mx-fillbar, body.join-open .mx-fillbar { display: none; }
   // Фотолинейка, как в Мамбе: сверху каждой вкладки — поднятые и VIP-анкеты, затем самые совместимые; своя анкета попадает сюда после поднятия
   function renderPhotoline(all) {
     const box = $('#photoline'); if (!box) return;
-    const top = all.filter(p => !blocked.has(p.id)).sort((a, b) => (b.boosted || b.vip ? 1 : 0) - (a.boosted || a.vip ? 1 : 0) || b.res.total - a.res.total).slice(0, 16);
+    const top = all.filter(p => !blocked.has(p.id) && p.hasPhoto !== false).sort((a, b) => (b.boosted || b.vip ? 1 : 0) - (a.boosted || a.vip ? 1 : 0) || b.res.total - a.res.total).slice(0, 16);
     const me = store.get('user'), boosted = wallet().boostUntil > Date.now();
     box.innerHTML = `<button class="pl-item pl-add" type="button" ${boosted ? 'disabled' : 'data-boost'} aria-label="${boosted ? 'Вы в фотолинейке' : `Попасть сюда за ${BOOST_COST} монет`}">
         <span class="pl-ava">${boosted ? avatar(me, false, myPhotos[0]?.src) : '+'}</span><span class="pl-name">${boosted ? 'Вы здесь' : 'Попасть сюда'}</span></button>
