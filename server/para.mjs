@@ -33,6 +33,13 @@ function signPage(za, zb) {
   return `/sovmestimost-znakov/${SIGN_SLUG[x]}-${SIGN_SLUG[y]}.html`;
 }
 
+// Страница пары чисел судьбы (мужчина X, женщина Y; пол здесь неизвестен — первый человек ставится как X).
+// Мастер-числа 11 и 22 в совместимости ведут себя как 2 и 4.
+const numPage = (a, b) => {
+  const r = n => (n === 11 ? 2 : n === 22 ? 4 : n);
+  return `/sovmestimost-chisel/muzhchina-${r(a)}-zhenshchina-${r(b)}.html`;
+};
+
 export function pairPage({ a, b }, publicUrl = '') {
   const L = lvc();
   const r = L.compat(a, b), pa = L.parse(a), pb = L.parse(b);
@@ -98,7 +105,7 @@ ${lines}
 <h2>Аркан пары: ${r.pairArcanum}, ${esc(r.arc[0])}</h2>
 <p>${esc(r.arc[1])} Аркан пары считается из дней рождения: день каждого переводится в аркан от 1 до 22, арканы складываются.</p>
 <h2>Как считается процент</h2>
-<p>Четыре системы, у каждой свой вес: число судьбы — 30, знак и стихия — 25, восточный год — 25, аркан пары — 20. Итог — сумма баллов. Подробнее о знаках этой пары — <a href="${signPage(fa.z, fb.z)}">совместимость ${esc(fa.z.name)} и ${esc(fb.z.name)}</a>.</p>
+<p>Четыре системы, у каждой свой вес: число судьбы — 30, знак и стихия — 25, восточный год — 25, аркан пары — 20. Итог — сумма баллов. Подробнее о знаках этой пары — <a href="${signPage(fa.z, fb.z)}">совместимость ${esc(fa.z.name)} и ${esc(fb.z.name)}</a>, о числах судьбы — <a href="${numPage(fa.life, fb.life)}">совместимость чисел ${fa.life} и ${fb.life}</a>.</p>
 <h2>Посчитать другую пару</h2>
 <form class="again card" action="/para/" method="get">
 <label>Ваша дата рождения<input type="date" name="a" min="1920-01-01" required></label>

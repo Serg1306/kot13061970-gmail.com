@@ -58,3 +58,21 @@ test('разбор пары: свой адрес /para/ДД-ММ-ГГГГ-i-ДД
   assert.equal((await fetch(srv.base + '/para/abc')).status, 404);
   assert.equal((await get('/para/?a=x&b=y', 'lyubovvcifrah.ru')).status, 302);
 });
+
+test('страницы совместимости чисел судьбы: 81 пара, индекс, sitemap и ссылка с /para/', async () => {
+  const hub = await fetch(srv.base + '/sovmestimost-chisel/');
+  assert.equal(hub.status, 200);
+  const h = await hub.text();
+  assert.equal((h.match(/href="\/sovmestimost-chisel\/muzhchina-\d-zhenshchina-\d\.html"/g) || []).length >= 81, true);
+  const r = await fetch(srv.base + '/sovmestimost-chisel/muzhchina-2-zhenshchina-8.html');
+  assert.equal(r.status, 200);
+  const html = await r.text();
+  assert.match(html, /<h1>Совместимость чисел судьбы 2 и 8: мужчина 2 и женщина 8<\/h1>/);
+  assert.match(html, /rel="canonical" href="https:\/\/lyubovvcifrah\.ru\/sovmestimost-chisel\/muzhchina-2-zhenshchina-8\.html"/);
+  assert.match(html, />94<small>%/); // 2 и 8 — одна семья чисел, как в compat.js
+  const sm = await (await fetch(srv.base + '/sitemap-sovmestimost.xml')).text();
+  assert.equal((sm.match(/sovmestimost-chisel\/muzhchina-/g) || []).length, 81);
+  // 24.03.1992 — число судьбы 3, 17.02.1988 — 9
+  const para = await (await fetch(srv.base + '/para/24-03-1992-i-17-02-1988')).text();
+  assert.match(para, /href="\/sovmestimost-chisel\/muzhchina-3-zhenshchina-9\.html"/);
+});
