@@ -344,23 +344,23 @@
 .mx .mx-pad .mx-hint { left: 50%; top: calc(100% + 30px); bottom: auto; margin: 0; white-space: nowrap; }
 @media (max-width: 760px) { .mx .mx-city { bottom: 16px; } .mx .mx-hero .mx-hint { display: none; } }
 
-/* первый экран: калькулятор совместимости прямо под заголовком — главная дверь на сайт */
-.mx .mx-quick { position: absolute; z-index: 30; left: 50%; bottom: 22px; translate: -50% 0; width: min(720px, calc(100% - 32px)); display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px 12px; align-items: end; padding: 14px 16px 16px; border-radius: 22px; background: rgb(31 4 11 / .82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 18px 50px rgb(0 0 0 / .4), inset 0 0 0 1px rgb(255 255 255 / .12); color: #fff; }
-.mx .mx-quick-t { grid-column: 1 / -1; margin: 0; font: 600 16px/1.3 var(--ui); }
-.mx .mx-quick label { display: grid; gap: 4px; font: 500 12px/1.2 var(--ui); color: #ffc2d4; min-width: 0; }
-.mx .mx-quick input { width: 100%; min-width: 0; height: 44px; border: 0; border-radius: 12px; padding: 0 10px; background: #fff; color: #3b0a18; font: 500 16px/1 var(--ui); color-scheme: light; }
+/* калькулятор совместимости — отдельный блок сразу под первым экраном (на календаре он закрывал лист) */
+.mx .mx-qs { padding: clamp(56px, 9vh, 96px) var(--gutter); background: var(--wine-900); color: #fff; scroll-margin-top: 70px; }
+.mx .mx-qs-in { max-width: 760px; margin: 0 auto; display: grid; gap: 14px; text-align: center; }
+.mx .mx-qs h2 { margin: 0; font: 800 clamp(32px, 4.6vw, 56px)/.98 var(--ui); letter-spacing: -.04em; }
+.mx .mx-qs-lead { margin: 0 0 8px; font: 400 17px/1.45 var(--ui); color: var(--blush-2); }
+.mx .mx-quick { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px 12px; align-items: end; padding: 16px; border-radius: 22px; background: var(--wine-950); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .12); text-align: left; }
+.mx .mx-quick label { display: grid; gap: 6px; font: 500 13px/1.2 var(--ui); color: #ffc2d4; min-width: 0; }
+.mx .mx-quick input { width: 100%; min-width: 0; height: 48px; border: 0; border-radius: 12px; padding: 0 10px; background: #fff; color: #3b0a18; font: 500 16px/1 var(--ui); color-scheme: light; }
 .mx .mx-quick input:focus-visible { outline: 2px solid #ffc2d4; outline-offset: 2px; }
 .mx .mx-quick button { white-space: nowrap; font: 600 15px/1 var(--ui); }
 .mx .mx-fields button, .mx .mx-big a { transition: transform .14s cubic-bezier(.23, 1, .32, 1), background-color .2s; }
 .mx .mx-fields button:active, .mx .mx-big a:active { transform: scale(.97); }
 @media (max-width: 760px) {
-  .mx .mx-quick { bottom: 12px; width: calc(100% - 24px); grid-template-columns: 1fr 1fr; padding: 12px; border-radius: 18px; }
-  .mx .mx-quick-t { font-size: 14px; }
+  .mx .mx-quick { grid-template-columns: 1fr 1fr; padding: 12px; border-radius: 18px; }
+  .mx .mx-qs-lead { font-size: 15px; }
   .mx .mx-quick button { grid-column: 1 / -1; width: 100%; }
 }
-
-/* на компьютере календарь и видео чуть выше, чтобы калькулятор их не закрывал */
-@media (min-width: 761px) { .mx .mx-hero .mx-pad, .mx .mx-hero .mx-film { translate: 0 -56px; } }
 
 /* разбор пары (окно после «Посчитать» и «Щёлк!») */
 .pair-dlg { width: min(560px, calc(100vw - 1.5rem)); }
@@ -378,6 +378,11 @@
 .pr-btns { display: grid; gap: .55rem; }
 .pr-btns .btn { width: 100%; justify-content: center; }
 .pr-more { margin: 0; text-align: center; font-size: .88rem; }
+.pr-full { display: grid; gap: .5rem; padding: 1rem; border-radius: 18px; background: rgb(255 194 212 / .1); box-shadow: inset 0 0 0 1px rgb(255 194 212 / .25); }
+.pr-full h3 { margin: 0; font-size: 1.05rem; display: flex; justify-content: space-between; gap: .6rem; }
+.pr-full h3 span { white-space: nowrap; }
+.pr-full p { margin: 0; font-size: .92rem; color: var(--muted, #d4b8c0); }
+.pr-full .btn { width: 100%; justify-content: center; }
 
 /* «Двенадцать месяцев»: вместо пустых контурных номеров — листок календаря со знаками зодиака этого месяца */
 .mx .mx-leafm { width: clamp(200px, 20vw, 300px); }

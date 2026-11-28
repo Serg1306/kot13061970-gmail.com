@@ -72,7 +72,7 @@ h1{font-size:clamp(1.5rem,5vw,2.2rem);line-height:1.15;margin:.3rem 0 .9rem}h2{f
 ul.lines{list-style:none;margin:1rem 0 0;padding:0;display:grid;gap:.7rem}ul.lines li{border-left:4px solid var(--c);padding:.1rem 0 .1rem .8rem}
 ul.lines li div{display:flex;flex-wrap:wrap;gap:.2rem .6rem;align-items:baseline}.pts{margin-left:auto;font-weight:600}ul.lines p{margin:.2rem 0 0;font-size:.95rem}
 .btns{display:grid;gap:.6rem;margin-top:1.2rem}.btn{display:block;text-align:center;border:0;border-radius:999px;padding:.85rem 1.2rem;font:600 1rem/1.2 var(--f);text-decoration:none;cursor:pointer;background:#ffc2d4;color:#3b0a18}
-.btn.rose{background:var(--btn);color:#fff}.btn.blue{background:#4f7cff;color:#fff}
+.btn.rose{background:var(--btn);color:#fff}.btn.sun{background:#ffd9a0;color:#3b0a18}.btn.blue{background:#4f7cff;color:#fff}
 form.again{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}form.again label{display:grid;gap:.25rem;font-size:.85rem;color:var(--muted)}
 form.again input{height:44px;border:0;border-radius:12px;padding:0 .6rem;font:500 1rem var(--f);color-scheme:light}form.again .btn{grid-column:1/-1}
 .toast{position:fixed;left:50%;bottom:1rem;translate:-50% 0;background:#fff;color:#3b0a18;border-radius:14px;padding:.6rem 1rem;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
@@ -89,10 +89,12 @@ ${lines}
 </ul>
 <div class="btns">
 <button class="btn rose" type="button" id="send" data-url="${esc(url)}?utm_source=share&amp;utm_medium=pair">Отправить разбор партнёру</button>
+<a class="btn sun" href="/#parabuy=${a},${b}">Полный разбор пары — 99 ₽</a>
 <a class="btn" href="/#story=${a},${b}">Скачать картинку для сторис</a>
 <a class="btn blue" href="/?utm_source=para&amp;utm_medium=match#join">Кто в вашем городе совпадает на 85%+</a>
 </div>
 </div>
+<p class="muted">В полном разборе — пятнадцать разделов: портреты обоих в любви, матрица судьбы и квадраты Пифагора пары, быт и деньги, год и месяцы пары, удачные даты. Без регистрации.</p>
 <h2>Аркан пары: ${r.pairArcanum}, ${esc(r.arc[0])}</h2>
 <p>${esc(r.arc[1])} Аркан пары считается из дней рождения: день каждого переводится в аркан от 1 до 22, арканы складываются.</p>
 <h2>Как считается процент</h2>

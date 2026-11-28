@@ -51,7 +51,7 @@ export function guestReportUrl(base, order) {
 export async function mailGuestReport(app, invId) {
   const o = app.db.get('SELECT * FROM orders WHERE inv_id = ?', invId);
   if (!o || o.user_id || !o.guest_key || !o.guest_email || o.status !== 'paid') return;
-  try { await app.mailer.send(o.guest_email, 'report', 'ru', { url: guestReportUrl(app.config.publicUrl, o) }); }
+  try { await app.mailer.send(o.guest_email, 'report', 'ru', { url: guestReportUrl(app.config.publicUrl, o), pair: o.product === 'pair_report' }); }
   catch (e) { app.log.warn(`почта: не удалось отправить ссылку на разбор ${invId}: ${e.message}`); }
 }
 
@@ -138,13 +138,14 @@ export default function payRoutes(route) {
     if (!product) fail(400, 'unknown_product');
     app.limiter.check(`pay:${user.id}`, 20, 3600e3);
     // Полный доступ (выдаёт администратор): разборы открываются без оплаты, заказ на 0 ₽ сразу оплачен.
-    if (user.full_access && product.birthReport) {
-      if (!validBirth(body.birth)) fail(400, 'invalid', { field: 'birth' });
-      const had = db.get("SELECT inv_id FROM orders WHERE user_id = ? AND product = 'birth_report' AND status = 'paid' AND pair_a = ?", user.id, body.birth);
+    if (user.full_access && (product.birthReport || product.pairReport)) {
+      const fp = product.pairReport ? [body.pair?.a, body.pair?.b] : [body.birth, null];
+      if (!fp.filter((x, i) => i === 0 || product.pairReport).every(validBirth)) fail(400, 'invalid', { field: product.pairReport ? 'pair' : 'birth' });
+      const had = db.get("SELECT inv_id FROM orders WHERE user_id = ? AND product = ? AND status = 'paid' AND pair_a = ? AND pair_b IS ?", user.id, body.product, ...fp);
       if (had) fail(409, 'already_bought', { invId: had.inv_id });
       for (let i = 0; i < 5; i++) {
         const inv = newInvId(), now = Date.now();
-        const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at, paid_at, pair_a) VALUES (?, ?, 'birth_report', 0, 'paid', ?, ?, ?)", inv, user.id, now, now, body.birth);
+        const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at, paid_at, pair_a, pair_b) VALUES (?, ?, ?, 0, 'paid', ?, ?, ?, ?)", inv, user.id, body.product, now, now, ...fp);
         if (r.changes) return { invId: inv, free: true };
       }
       fail(503, 'try_again');
@@ -194,9 +195,11 @@ export default function payRoutes(route) {
     const s = settings(app.config.env);
     if (!isConfigured(s)) fail(503, 'not_configured');
     const product = CATALOG[body.product];
-    if (!product || !product.birthReport) fail(400, 'unknown_product');
+    if (!product || !(product.birthReport || product.pairReport)) fail(400, 'unknown_product');
     app.limiter.check(`payg:${ip}`, 20, 3600e3);
-    if (!validBirth(body.birth)) fail(400, 'invalid', { field: 'birth' });
+    // личный разбор — одна дата (pair_a), разбор пары — две
+    const dates = product.pairReport ? [body.pair?.a, body.pair?.b] : [body.birth, null];
+    if (!dates.filter((x, i) => i === 0 || product.pairReport).every(validBirth)) fail(400, 'invalid', { field: product.pairReport ? 'pair' : 'birth' });
     const typed = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
     if (!typed) fail(400, 'need_email');
     if (!isEmail(typed)) fail(400, 'bad_email');
@@ -204,8 +207,8 @@ export default function payRoutes(route) {
     let invId;
     for (let i = 0; i < 5 && !invId; i++) {
       const candidate = newInvId();
-      const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at, pair_a, guest_key, guest_email) VALUES (?, NULL, ?, ?, 'new', ?, ?, ?, ?)",
-        candidate, body.product, product.price, Date.now(), body.birth, key, typed);
+      const r = db.run("INSERT OR IGNORE INTO orders (inv_id, user_id, product, price, status, created_at, pair_a, pair_b, guest_key, guest_email) VALUES (?, NULL, ?, ?, 'new', ?, ?, ?, ?, ?)",
+        candidate, body.product, product.price, Date.now(), ...dates, key, typed);
       if (r.changes) invId = candidate;
     }
     if (!invId) fail(503, 'try_again');
@@ -225,15 +228,17 @@ export default function payRoutes(route) {
 
   route('GET', '/api/report/guest', ({ app, url }) => {
     const inv = String(url.searchParams.get('inv') || ''), key = String(url.searchParams.get('key') || '');
-    const o = app.db.get("SELECT * FROM orders WHERE inv_id = ? AND product = 'birth_report'", inv);
+    const o = app.db.get("SELECT * FROM orders WHERE inv_id = ? AND product IN ('birth_report', 'pair_report')", inv);
     const ok = o && o.guest_key && key.length === o.guest_key.length && crypto.timingSafeEqual(Buffer.from(key), Buffer.from(o.guest_key));
-    if (!ok || !o.pair_a) fail(404, 'not_found');
+    if (!ok || !o.pair_a || (o.product === 'pair_report' && !o.pair_b)) fail(404, 'not_found');
     if (o.status !== 'paid') fail(402, 'not_paid');
-    return { invId: o.inv_id, kind: 'birth', report: birthReport(o.pair_a) };
+    return o.product === 'pair_report'
+      ? { invId: o.inv_id, kind: 'pair', report: pairReport(o.pair_a, o.pair_b) }
+      : { invId: o.inv_id, kind: 'birth', report: birthReport(o.pair_a) };
   }, { auth: 'none' });
 
   // Купленные разборы (для профиля) и сам разбор: только по оплаченному заказу этого пользователя.
-  // kind: birth — личный разбор по дате рождения, pair — разбор пары (продавался до декабря 2026).
+  // kind: birth — личный разбор по дате рождения, pair — полный разбор пары.
   const KIND = { birth_report: 'birth', pair_report: 'pair' };
   route('GET', '/api/reports', ({ app, user }) => ({
     reports: app.db.all("SELECT inv_id, product, pair_a, pair_b, paid_at FROM orders WHERE user_id = ? AND product IN ('birth_report', 'pair_report') AND status = 'paid' ORDER BY paid_at DESC", user.id)

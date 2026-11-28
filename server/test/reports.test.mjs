@@ -22,8 +22,10 @@ test('расчёт разбора: даты и разделы', () => {
   for (const bad of ['1988-02-30', '1920-01-01', '2999-01-01', '17.02.1988', '', null]) assert.equal(validBirth(bad), false, bad);
   const r = pairReport(PAIR.a, PAIR.b, new Date('2026-11-25T12:00:00Z'));
   assert.equal(r.total, 93);
-  assert.deepEqual(r.sections.map(s => s.key), ['systems', 'easy', 'spark', 'talk', 'dates', 'tips']);
+  assert.deepEqual(r.sections.map(s => s.key), ['main', 'systems', 'easy', 'spark', 'you', 'partner', 'talk', 'stars', 'matrix', 'pyth', 'home', 'year', 'months', 'dates', 'tips']);
   for (const s of r.sections) assert.ok(JSON.stringify(s).length > 80, s.key);
+  assert.ok(JSON.stringify(r).length > 12000);
+  assert.doesNotMatch(JSON.stringify(r), /undefined|NaN/);
 });
 
 test('покупка разбора: пара обязательна, доступ только после оплаты, повторно не продаём', async () => {
@@ -137,4 +139,21 @@ test('разбор по дате рождения без входа: почта 
   await new Promise(res => setTimeout(res, 50));
   const mail = srv.app.mailer.outbox.find(m => m.kind === 'report' && m.to === 'g@example.ru');
   assert.ok(mail && mail.url.includes(`report=${invId}`) && mail.url.includes(`key=${key}`));
+});
+
+test('полный разбор пары без входа: обе даты обязательны, доступ по ключу после оплаты', async () => {
+  const g = srv.client();
+  assert.equal((await g.post('/api/pay/guest', { product: 'pair_report', pair: { a: PAIR.a }, email: 'p@example.ru' })).body.error, 'invalid');
+  const r = await g.post('/api/pay/guest', { product: 'pair_report', pair: PAIR, email: 'p@example.ru' });
+  assert.equal(r.status, 200);
+  const { invId, key } = r.body;
+  assert.equal(tk.hits.at(-1).body.Amount, 9900);
+  assert.equal((await g.get(`/api/report/guest?inv=${invId}&key=${key}`)).status, 402);
+  await notify(notification(invId, 9900));
+  const rep = await g.get(`/api/report/guest?inv=${invId}&key=${key}`);
+  assert.equal(rep.status, 200);
+  assert.equal(rep.body.kind, 'pair');
+  assert.equal(rep.body.report.total, 93);
+  await new Promise(res => setTimeout(res, 50));
+  assert.ok(srv.app.mailer.outbox.find(m => m.kind === 'report' && m.to === 'p@example.ru' && m.pair));
 });
