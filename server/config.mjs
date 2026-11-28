@@ -29,6 +29,7 @@ export function loadConfig(env = process.env) {
       user: env.SMTP_USER || '',
       pass: env.SMTP_PASS || '',
       from: env.SMTP_FROM || env.SMTP_USER || '',
+      replyTo: env.SMTP_REPLY_TO || '',
     } : null,
     // СМС с кодом входа (SMS.ru), см. server/sms.mjs.
     sms: env.SMS_RU_API_ID ? {
