@@ -70,7 +70,7 @@ function upgrade(sock, host) {
   });
 }
 
-export function buildMessage({ from, to, subject, text, html }) {
+export function buildMessage({ from, to, subject, text, html, replyTo }) {
   const boundary = 'lvc' + crypto.randomBytes(12).toString('hex');
   const m = /^(.*?)\s*<([^>]+)>$/.exec(from);
   const fromHeader = m && m[1] ? `${encodeWord(m[1].replace(/^"|"$/g, ''))} <${m[2]}>` : from;
@@ -81,6 +81,9 @@ export function buildMessage({ from, to, subject, text, html }) {
     `Subject: ${encodeWord(subject)}`,
     `Date: ${new Date().toUTCString().replace('GMT', '+0000')}`,
     `Message-ID: <${crypto.randomBytes(12).toString('hex')}@${domain}>`,
+    ...(replyTo ? [`Reply-To: ${replyTo}`] : []),
+    // Письмо от робота: автоответчики на него не отвечают, почтовики видят, что это не рассылка от человека.
+    'Auto-Submitted: auto-generated',
     'MIME-Version: 1.0',
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     '',
@@ -130,14 +133,20 @@ export async function sendSmtp(smtp, mail) {
       }
     }
     if (smtp.user) {
-      await expect([334], 'AUTH LOGIN');
-      await expect([334], b64(smtp.user), 'AUTH (логин)');
-      await expect([235], b64(smtp.pass), 'AUTH (пароль)');
+      // AUTH LOGIN (Яндекс Почта) или AUTH PLAIN, если сервер объявил только его.
+      const mechs = /^250[ -]AUTH[ =](.*)$/im.exec(ehlo.text)?.[1].toUpperCase().split(/\s+/) || [];
+      if (mechs.includes('PLAIN') && !mechs.includes('LOGIN')) {
+        await expect([235], `AUTH PLAIN ${b64(`\0${smtp.user}\0${smtp.pass}`)}`, 'AUTH (логин и пароль)');
+      } else {
+        await expect([334], 'AUTH LOGIN');
+        await expect([334], b64(smtp.user), 'AUTH (логин)');
+        await expect([235], b64(smtp.pass), 'AUTH (пароль)');
+      }
     }
     await expect([250], `MAIL FROM:<${addressOf(smtp.from)}>`);
     await expect([250, 251], `RCPT TO:<${mail.to}>`, 'RCPT TO');
     await expect([354], 'DATA');
-    await expect([250], buildMessage({ ...mail, from: smtp.from }) + '\r\n.', 'текст письма');
+    await expect([250], buildMessage({ replyTo: smtp.replyTo, ...mail, from: smtp.from }) + '\r\n.', 'текст письма');
     sock.write('QUIT\r\n');
   } finally {
     sock.end();
