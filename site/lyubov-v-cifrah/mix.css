@@ -344,26 +344,9 @@
 .mx .mx-pad .mx-hint { left: 50%; top: calc(100% + 30px); bottom: auto; margin: 0; white-space: nowrap; }
 @media (max-width: 760px) { .mx .mx-city { bottom: 16px; } .mx .mx-hero .mx-hint { display: none; } }
 
-/* калькулятор совместимости — отдельный блок сразу под первым экраном (на календаре он закрывал лист) */
-.mx .mx-qs { padding: clamp(56px, 9vh, 96px) var(--gutter); background: var(--wine-900); color: #fff; scroll-margin-top: 70px; }
-.mx .mx-qs-in { max-width: 760px; margin: 0 auto; display: grid; gap: 14px; text-align: center; }
-.mx .mx-qs h2 { margin: 0; font: 800 clamp(32px, 4.6vw, 56px)/.98 var(--ui); letter-spacing: -.04em; }
-.mx .mx-qs-lead { margin: 0 0 8px; font: 400 17px/1.45 var(--ui); color: var(--blush-2); }
-.mx .mx-quick { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px 12px; align-items: end; padding: 16px; border-radius: 22px; background: var(--wine-950); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .12); text-align: left; }
-.mx .mx-quick label { display: grid; gap: 6px; font: 500 13px/1.2 var(--ui); color: #ffc2d4; min-width: 0; }
-.mx .mx-quick input { width: 100%; min-width: 0; height: 48px; border: 0; border-radius: 12px; padding: 0 10px; background: #fff; color: #3b0a18; font: 500 16px/1 var(--ui); color-scheme: light; }
-.mx .mx-quick input:focus-visible { outline: 2px solid #ffc2d4; outline-offset: 2px; }
-.mx .mx-quick button { white-space: nowrap; font: 600 15px/1 var(--ui); }
 .mx .mx-fields button, .mx .mx-big a { transition: transform .14s cubic-bezier(.23, 1, .32, 1), background-color .2s; }
 .mx .mx-fields button:active, .mx .mx-big a:active { transform: scale(.97); }
-.mx .mx-qs-more { margin: 4px 0 0; font: 500 15px/1.4 var(--ui); }
-.mx .mx-qs-more a { color: #ffc2d4; text-underline-offset: 3px; }
 .mx .mx-rb + .mx-rb { padding-top: 0; }
-@media (max-width: 760px) {
-  .mx .mx-quick { grid-template-columns: 1fr 1fr; padding: 12px; border-radius: 18px; }
-  .mx .mx-qs-lead { font-size: 15px; }
-  .mx .mx-quick button { grid-column: 1 / -1; width: 100%; }
-}
 
 /* разбор пары (окно после «Посчитать» и «Щёлк!») */
 .pair-dlg { width: min(560px, calc(100vw - 1.5rem)); }
