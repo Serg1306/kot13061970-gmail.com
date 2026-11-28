@@ -1,7 +1,14 @@
-// «Полный разбор пары» (платная услуга pair_report, 99 ₽). Считается по тем же правилам, что бесплатный процент
-// (site/lyubov-v-cifrah/compat.js через server/compat.mjs), и раскладывает пару по темам: где легко, где искрит,
-// как говорить друг с другом, удачные даты для свидания и советы. Тексты только на сервере: без оплаты их не получить.
+// «Полный разбор пары» (платная услуга pair_report, 99 ₽, можно без регистрации). Считается по тем же правилам, что
+// бесплатный процент (site/lyubov-v-cifrah/compat.js через server/compat.mjs), и раскладывает пару по темам: портреты
+// обоих в любви, где легко и где искрит, как говорить, матрица и квадраты Пифагора пары, быт и деньги, год и месяцы пары,
+// удачные даты и советы. Тексты только на сервере (здесь и в server/report/*): без оплаты их не получить.
 import { lvc } from './compat.mjs';
+import { matrix, pythagoras } from './birthReport.mjs';
+import { ARC } from './report/arcana.mjs';
+import { LIFE, YEAR } from './report/numbers.mjs';
+import { CELL } from './report/pythagoras.mjs';
+import { ANIMAL, SIGN } from './report/signs.mjs';
+import { LOVE_EL, MONTH2 } from './report/extra.mjs';
 
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -96,6 +103,21 @@ function eastRelation(a, b) {
   if ((a.i + b.i) % 12 === 1) return 'friends';
   return 'neutral';
 }
+const arc22 = n => { while (n > 22) n = n > 99 ? digitSum(n) : n - 22; return n || 22; };
+const personalYear = (p, year) => reduce9(digitSum(`${p.d}${p.m}${year}`));
+const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
+const cap = t => t[0].toUpperCase() + t.slice(1);
+// Квадраты Пифагора рядом: у кого какой качества больше и как это сочетается в паре.
+function pythPair(c1, c2) {
+  return Array.from({ length: 9 }, (_, k) => k + 1).map(i => {
+    const [name] = CELL[i], x = c1[i], y = c2[i];
+    const how = x === 0 && y === 0 ? 'у обоих этой цифры нет — это общая зона роста: развивайте её вместе и не ждите от партнёра того, чего нет и у вас'
+      : Math.abs(x - y) >= 2 ? `сильнее ${x > y ? 'у вас' : 'у партнёра'}: в этом ${x > y ? 'вы' : 'партнёр'} ведёт, а другой учится — хорошее дополнение, если не давить`
+      : x === y ? 'поровну: здесь вы похожи и понимаете друг друга с полуслова'
+      : `чуть больше ${x > y ? 'у вас' : 'у партнёра'}: разница небольшая и скорее помогает`;
+    return { title: `${name}: у вас ${x}, у партнёра ${y}`, text: `${cap(how)}.` };
+  });
+}
 const fmt = d => d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', weekday: 'long', timeZone: 'UTC' });
 
 // Удачные даты: число дня (сумма цифр даты) совпадает с числом судьбы одного из вас или с числом пары.
@@ -126,7 +148,47 @@ export function pairReport(a, b, now = Date.now()) {
   const spark = p => p.v >= 80 ? PART_MILD[p.key] : p.key === 'east' ? eastLine.text : PART_SPARK[p.key];
   const weak = sorted.slice(-2).reverse();
   const eastGood = rel === 'allies' || rel === 'friends';
+  // матрица пары: точки обеих матриц складываются
+  const m1 = matrix(pa), m2 = matrix(pb);
+  const pm = k => arc22(m1[k] + m2[k]);
+  const center = pm('E'), meet = pm('A'), money = arc22(arc22(m1.C + m1.H) + arc22(m2.C + m2.H)), love = arc22(arc22(m1.D + m1.H) + arc22(m2.D + m2.H)), aim = arc22(center + pm('personal'));
+  const an = k => `${k}, ${ARC[k].name}`;
+  const py1 = pythagoras(pa), py2 = pythagoras(pb);
+  const N1 = LIFE[n1], N2 = LIFE[n2], S1 = SIGN[z1.name], S2 = SIGN[z2.name], LE1 = LOVE_EL[z1.el], LE2 = LOVE_EL[z2.el];
+  const nowD = new Date(now), year = nowD.getUTCFullYear();
+  const pairYear = yy => reduce9(personalYear(pa, yy) + personalYear(pb, yy));
+  const yearItem = yy => { const v = pairYear(yy), Y = YEAR[v]; return { title: `${yy}: год пары ${v}, ${Y[0]}`, text: `${Y[1]} Для пары. ${Y[2]} ${Y[4]} Лично у вас — ${YEAR[personalYear(pa, yy)][0]}, у партнёра — ${YEAR[personalYear(pb, yy)][0]}.` }; };
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const dt = new Date(Date.UTC(year, nowD.getUTCMonth() + i, 1));
+    const v = reduce9(pairYear(dt.getUTCFullYear()) + dt.getUTCMonth() + 1), M2 = MONTH2[v];
+    return { title: `${cap(MONTHS[dt.getUTCMonth()])} ${dt.getUTCFullYear()}: месяц пары ${v}`, text: `${M2[0]}. ${M2[1]}` };
+  });
+  const portrait = (who, n, N, z, S, LE, e) => ({
+    paras: [`${who === 'you' ? 'Вы' : 'Партнёр'}: число судьбы ${n} (${N.who.toLowerCase()}), ${z.name} — стихия ${z.el}, восточный год ${e.name}.`, N.love, S[5]],
+    items: [
+      { title: 'Сильные стороны', text: `${cap(N.strengths.join(', '))}.` },
+      { title: 'Ловушки', text: `${cap(N.shadow.join(', '))}.` },
+      { title: 'Язык любви', text: LE[0] },
+      { title: 'Идеальное свидание', text: LE[1] },
+      { title: 'Как покорить', text: LE[2] },
+      { title: 'Что разрушает отношения', text: LE[3] },
+      { title: 'По восточному году', text: ANIMAL[e.name][1] },
+    ],
+  });
   const sections = [
+    {
+      key: 'main', title: 'Главное о паре',
+      paras: [
+        `Совместимость ${c.total}%: ${L.verdictOf(c.total).toLowerCase()}. Код пары: числа судьбы ${n1} и ${n2}, ${z1.name} и ${z2.name} (${z1.el} и ${z2.el}), ${e1.name} и ${e2.name}, аркан пары ${an(c.pairArcanum)}, центр матрицы пары ${an(center)}.`,
+        ARC[center].plus,
+      ],
+      items: [
+        { title: 'Чем пара сильна', text: `${PART_GOOD[sorted[0].key]} ${EL_PAIR[elKey]}` },
+        { title: 'Ловушка пары', text: ARC[center].minus },
+        { title: 'Любовь в паре', text: ARC[center].love },
+        { title: 'Задача пары', text: ARC[aim].purpose },
+      ],
+    },
     {
       key: 'systems', title: 'Четыре системы',
       items: c.parts.map(p => ({ title: `${p.t}: ${p.v}%`, text: p.why })),
@@ -146,6 +208,8 @@ export function pairReport(a, b, now = Date.now()) {
         ...(eastGood || weak.some(p => p.key === 'east') ? [] : [eastLine]),
       ],
     },
+    { key: 'you', title: `Вы в любви: число ${n1}, ${z1.name}`, ...portrait('you', n1, N1, z1, S1, LE1, e1) },
+    { key: 'partner', title: `Партнёр в любви: число ${n2}, ${z2.name}`, ...portrait('partner', n2, N2, z2, S2, LE2, e2) },
     {
       key: 'talk', title: 'Как говорить друг с другом',
       items: [
@@ -156,6 +220,51 @@ export function pairReport(a, b, now = Date.now()) {
       ],
     },
     {
+      key: 'stars', title: `Знаки и восточный год: ${z1.name} и ${z2.name}, ${e1.name} и ${e2.name}`,
+      paras: [S1[2], S2[2], EL_PAIR[elKey]],
+      items: [
+        { title: `Вы: ${z1.glyph} ${z1.name}`, text: `${cap(S1[3].join(', '))}; слабые места — ${S1[4].join(', ')}.` },
+        { title: `Партнёр: ${z2.glyph} ${z2.name}`, text: `${cap(S2[3].join(', '))}; слабые места — ${S2[4].join(', ')}.` },
+        { title: `Год ${e1.name}`, text: ANIMAL[e1.name][0] },
+        { title: `Год ${e2.name}`, text: ANIMAL[e2.name][0] },
+        eastLine,
+      ],
+    },
+    {
+      key: 'matrix', title: 'Матрица судьбы пары',
+      paras: ['Матрица пары складывается из двух личных матриц: каждая точка — сумма ваших точек, сведённая к аркану от 1 до 22. Она показывает, ради чего вы встретились и где у союза сила.'],
+      items: [
+        { title: `Центр пары: ${an(center)}`, text: ARC[center].plus },
+        { title: `Энергия знакомства: ${an(meet)}`, text: ARC[meet].love },
+        { title: `Любовь пары: ${an(love)}`, text: ARC[love].love },
+        { title: `Деньги пары: ${an(money)}`, text: ARC[money].money },
+        { title: `Предназначение пары: ${an(aim)}`, text: ARC[aim].purpose },
+        { title: 'Совет матрицы', text: ARC[center].tip },
+      ],
+    },
+    {
+      key: 'pyth', title: 'Квадраты Пифагора рядом',
+      paras: [`Квадрат Пифагора показывает, сколько в человеке каждой из девяти энергий. Ваши рабочие числа: ${py1.work.join(', ')}; у партнёра: ${py2.work.join(', ')}. Там, где у одного много, а у другого мало, вы дополняете друг друга.`],
+      items: pythPair(py1.counts, py2.counts),
+    },
+    {
+      key: 'home', title: 'Быт и деньги',
+      paras: [`Вы. ${N1.money}`, `Партнёр. ${N2.money}`],
+      items: [
+        { title: `Деньги пары по матрице: ${an(money)}`, text: ARC[money].money },
+        { title: 'Кто за что отвечает', text: n1 === n2 ? 'У вас одно число судьбы: подходы к делам похожи, поэтому договоритесь о ролях заранее, иначе оба будете тянуть одно и то же.' : `Вы — ${N1.who.toLowerCase()}, партнёр — ${N2.who.toLowerCase()}. Отдайте каждому ту часть быта и денег, где его сильные стороны: ${N1.strengths[0]} у вас и ${N2.strengths[0]} у партнёра.` },
+        { title: 'Работа вам', text: N1.work },
+        { title: 'Работа партнёру', text: N2.work },
+        { title: 'Как восстанавливаться вместе', text: `Вам: ${N1.energy} Партнёру: ${N2.energy}` },
+      ],
+    },
+    {
+      key: 'year', title: 'Год пары',
+      paras: ['Год пары — сумма ваших личных годов. Он подсказывает, на что у союза есть силы прямо сейчас.'],
+      items: [yearItem(year), yearItem(year + 1)],
+    },
+    { key: 'months', title: 'Месяцы пары на год вперёд', items: months },
+    {
       key: 'dates', title: 'Удачные даты для свидания',
       text: `Число вашей пары — ${lucky.pairNum}. Хорошие дни — когда сумма цифр даты сводится к числу одного из вас или пары.`,
       items: lucky.dates.map(d => ({ title: d.title, text: d.why, date: d.date })),
@@ -165,6 +274,8 @@ export function pairReport(a, b, now = Date.now()) {
       items: [
         { title: `Аркан пары ${c.pairArcanum}, ${c.arc[0]}`, text: `${c.arc[1]} ${ARC_TIP[c.pairArcanum]}` },
         { title: 'О разногласиях', text: spark(sorted.at(-1)) },
+        { title: 'Вам', text: N1.tip },
+        { title: 'Партнёру', text: N2.tip },
         { title: 'Главное', text: 'Проценты показывают, где вам легко, а где придётся договариваться. Решают всё равно разговор и внимание друг к другу.' },
       ],
     },
