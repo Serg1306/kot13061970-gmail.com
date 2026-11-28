@@ -26,7 +26,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="fonts/fonts.css">
-<link rel="stylesheet" href="mix.css?v=34">
+<link rel="stylesheet" href="mix.css?v=35">
 <script>document.documentElement.classList.add('js')</script>
 <style>
 /* Любовь в цифрах: светлая «бумага», баклажановые чернила, кольцо совместимости — главный элемент страницы */
@@ -1483,19 +1483,6 @@ body { overflow-x: clip; }
           <div class="mx-sticky mx-n2" data-range=".44 1"><b>Огонь + воздух</b>Стихии усиливают друг друга</div>
           <div class="mx-sticky mx-n3" data-range=".64 1"><b>Обезьяна + Дракон</b>Союзники по восточному кругу</div>
         </div>
-      </div>
-    </section>
-
-    <section class="mx-qs" id="schitat" aria-labelledby="mxQuickT">
-      <div class="mx-qs-in">
-        <h2 id="mxQuickT">Посчитайте совместимость</h2>
-        <p class="mx-qs-lead">Две даты рождения — процент и разбор пары по четырём системам. Без регистрации.</p>
-        <form class="mx-quick" action="/para/" method="get" data-quick aria-labelledby="mxQuickT">
-          <label><span>Ваша дата рождения</span><input type="date" name="a" data-no-wheel min="1920-01-01" required></label>
-          <label><span>Дата партнёра</span><input type="date" name="b" data-no-wheel min="1920-01-01" required></label>
-          <button class="g3 g3-brand g3-sm" type="submit">Посчитать</button>
-        </form>
-        <p class="mx-qs-more"><a href="#razbor-pary">Полный разбор пары за 99 ₽ — пятнадцать разделов</a></p>
       </div>
     </section>
 
@@ -4861,14 +4848,6 @@ body { overflow-x: clip; }
     if (!valid(a) || !valid(b)) return toast('Укажите обе даты рождения.');
     goal('report_click'); openPairBuy(a, b);
   });
-  // Первый экран: две даты и «Посчитать». Без скрипта форма ведёт на страницу разбора /para/.
-  document.querySelector('form[data-quick]')?.addEventListener('submit', e => {
-    const [a, b] = [...e.currentTarget.querySelectorAll('input[type=date]')].map(i => i.value);
-    if (!valid(a) || !valid(b)) return;
-    e.preventDefault();
-    if (!store.get('user') && ageOf(a) >= 18) store.set('guestBirth', a);
-    pairReport(a, b);
-  });
   // Фотобудка: после «Щёлк!» вспышка, затем тот же разбор.
   document.querySelector('.mx-booth form[data-calc]')?.addEventListener('submit', e => {
     const [a, b] = [...e.currentTarget.querySelectorAll('input[type=date]')].map(i => i.value);
@@ -5400,11 +5379,11 @@ body { overflow-x: clip; }
     document.getElementById('mxTW').textContent = d.toLocaleDateString(en, { weekday: 'long' });
   })();
 </script>
-<script src="compat.js?v=34" defer></script>
-<script src="scroll.js?v=34" defer></script>
+<script src="compat.js?v=35" defer></script>
+<script src="scroll.js?v=35" defer></script>
 <script src="logo3d.js" defer></script>
 <script src="globe.js" defer></script>
-<script src="alive.js?v=34" defer></script>
-<script src="wheel-date.js?v=34" defer></script>
+<script src="alive.js?v=35" defer></script>
+<script src="wheel-date.js?v=35" defer></script>
 </body>
 </html>
