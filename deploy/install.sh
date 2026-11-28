@@ -217,17 +217,10 @@ echo "Готово. Адреса уведомлений и возврата са
 case "$K" in *DEMO|*demo) echo "Сейчас включён ТЕСТОВЫЙ терминал. После проверки запустите команду ещё раз с боевым терминалом.";; esac
 EOF
 
-cat > /usr/local/bin/lyubov-mail <<'EOF'
-#!/usr/bin/env bash
-# Почта для кодов входа. Для Яндекса нужен «пароль приложения»: id.yandex.ru → Безопасность → Пароли приложений → Почта.
-set -e
-. /usr/local/lib/lyubov-env.sh
-read -r -p "Адрес почты на Яндексе, с которой будут уходить письма: " U </dev/tty
-read -r -s -p "Пароль приложения (ввод не отображается): " P </dev/tty; echo
-setenv SMTP_HOST smtp.yandex.ru; setenv SMTP_PORT 465; setenv SMTP_USER "$U"; setenv SMTP_PASS "$P"
-setenv SMTP_FROM "Любовь в цифрах <$U>"
-systemctl restart lyubov
-echo "Готово. Попробуйте войти на сайт — код должен прийти на почту."
+cat > /usr/local/bin/lyubov-mail <<EOF
+#!/bin/sh
+# Почта для кодов входа: сам скрипт лежит в репозитории и обновляется вместе с сайтом.
+exec bash "$APP/deploy/lyubov-mail.sh"
 EOF
 
 cat > /usr/local/bin/lyubov-sms <<'EOF'

@@ -5,7 +5,7 @@ import { renderMail, sendSmtp } from '../mail.mjs';
 import { startServer } from './helpers.mjs';
 
 // Простейший SMTP-сервер для проверки диалога: EHLO, AUTH LOGIN, MAIL, RCPT, DATA.
-function fakeSmtp({ rejectPass = false } = {}) {
+function fakeSmtp({ rejectPass = false, authLine = '250-AUTH LOGIN PLAIN' } = {}) {
   const mails = [];
   const server = net.createServer(sock => {
     let buf = '', inData = false, data = '', auth = [];
@@ -25,7 +25,8 @@ function fakeSmtp({ rejectPass = false } = {}) {
           sock.write(auth.length === 2 ? '334 UGFzc3dvcmQ6\r\n' : rejectPass ? '535 5.7.8 Invalid user or password\r\n' : '235 ok\r\n');
           continue;
         }
-        if (/^EHLO/.test(line)) sock.write('250-fake\r\n250-AUTH LOGIN PLAIN\r\n250 8BITMIME\r\n');
+        if (/^EHLO/.test(line)) sock.write(`250-fake\r\n${authLine}\r\n250 8BITMIME\r\n`);
+        else if (/^AUTH PLAIN /.test(line)) { auth.push(...Buffer.from(line.slice(11), 'base64').toString().split('\0')); sock.write('235 ok\r\n'); }
         else if (line === 'AUTH LOGIN') { auth.push('start'); sock.write('334 VXNlcm5hbWU6\r\n'); }
         else if (/^MAIL FROM:/.test(line)) { mail.from = line; sock.write('250 ok\r\n'); }
         else if (/^RCPT TO:/.test(line)) { mail.to = line; sock.write('250 ok\r\n'); }
@@ -63,6 +64,25 @@ test('письмо с кодом уходит через SMTP с AUTH LOGIN', as
     assert.match(textPart(m.data), new RegExp(`Ваш код для входа.*${r.body.devCode}`));
   } finally {
     await srv.close();
+    smtp.server.close();
+  }
+});
+
+test('AUTH PLAIN, если сервер не умеет LOGIN; Reply-To и Auto-Submitted в письме', async () => {
+  const smtp = fakeSmtp({ authLine: '250-AUTH PLAIN' });
+  await new Promise(r => smtp.server.listen(0, '127.0.0.1', r));
+  try {
+    await sendSmtp({
+      host: '127.0.0.1', port: smtp.server.address().port, user: 'key-id', pass: 'key-secret',
+      from: 'Любовь в цифрах <noreply@lvc.ru>', replyTo: 'help@lvc.ru',
+    }, { to: 'a@b.ru', subject: 'Код', text: 'x', html: '<p>x</p>' });
+    const m = smtp.mails[0];
+    assert.deepEqual(m.auth, ['', 'key-id', 'key-secret']);
+    assert.equal(m.from, 'MAIL FROM:<noreply@lvc.ru>');
+    assert.match(m.data, /^Reply-To: help@lvc\.ru$/m);
+    assert.match(m.data, /^Auto-Submitted: auto-generated$/m);
+    assert.match(m.data, /^Message-ID: <[0-9a-f]+@lvc\.ru>$/m);
+  } finally {
     smtp.server.close();
   }
 });
